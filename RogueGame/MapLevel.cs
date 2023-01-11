@@ -12,19 +12,21 @@ namespace RogueGame{
         // Box drawing constants and other symbols.
         private const char HORIZONTAL = '═';
         private const char VERTICAL = '║';
-        private const char CORNER_TL = '╔';
-        private const char CORNER_BR = '╝';
-        private const char CORNER_TR = '╗';
-        private const char CORNER_BL = '╚';
+        private const char CORNER_NW = '╔';
+        private const char CORNER_SE = '╝';
+        private const char CORNER_NE = '╗';
+        private const char CORNER_SW = '╚';
         private const char ROOM_INT = '.';
         private const char ROOM_DOOR = '╬';
-        private const int REGION_WT = 26;
+        private const char HALLWAY = '▓';
+        private const int REGION_WD = 26;
         private const int REGION_HT = 8;
         private const int MAX_ROOM_WT = 24;  // Based on screen width of 80, 78 allowed
-        private const int MAX_ROOM_HT = 6;   // Based on screen height of 24, 24 allowed
+        private const int MAX_ROOM_HT = 6;   // Based on screen height of 25, 24 allowed
         private const int MIN_ROOM_WT = 4;
         private const int MIN_ROOM_HT = 4;
-        private const int ROOM_SKIP_PCT = 20;
+        private const int ROOM_SKIP_PCT = 10;
+        private const int ROOM_EXIT_PCT = 85;
 
         private MapSpace[,] dLevel = new MapSpace[80, 25];   // Array to hold map definition.
 
@@ -60,7 +62,7 @@ namespace RogueGame{
             // First row and first column of array are skipped so everything is 1 based.
             for (int y = 1; y < 18; y += REGION_HT)
             {
-                for (int x = 1; x < 54; x += REGION_WT)
+                for (int x = 1; x < 54; x += REGION_WD)
                 {
                     if (rand.Next(101) > ROOM_SKIP_PCT)        //10% chance of not creating room
                     {
@@ -70,7 +72,7 @@ namespace RogueGame{
 
                         // Center room in region
                         roomAnchorY = (int)((REGION_HT - roomHeight) / 2) + y;
-                        roomAnchorX = (int)((REGION_WT - roomWidth) / 2) + x;
+                        roomAnchorX = (int)((REGION_WD - roomWidth) / 2) + x;
 
                         // Create room - let's section this out in its own procedure
                         RoomGeneration(roomAnchorX, roomAnchorY, roomWidth, roomHeight);
@@ -90,45 +92,142 @@ namespace RogueGame{
 
         }
 
-        private void RoomGeneration(int roomAnchorX, int roomAnchorY, int roomWidth, int roomHeight)
+        private void RoomGeneration(int westWallX, int northWallY, int roomWidth, int roomHeight)
         {
             // Create room on map based on inputs
 
-            // Draw the boundaries of the room
-            Debug.WriteLine($"Creating room at {roomAnchorX}, {roomAnchorY} to {roomAnchorX + roomWidth}, {roomAnchorY + roomHeight}");
+            int eastWallX = westWallX + roomWidth;
+            int southWallY = northWallY + roomHeight;
+            int regionNumber = GetRegionNumber(westWallX, northWallY);
+            int doorway = 0; int[,] doors = new int[2,4];
+            var rand = new Random(DateTime.Now.Millisecond);
 
-            for (int y = roomAnchorY; y < (roomAnchorY + roomHeight + 1); y++)
+
+            for (int y = northWallY; y < (southWallY + 1); y++)
             {
-                for (int x = roomAnchorX; x < (roomAnchorX + roomWidth + 1); x++)
+                for (int x = westWallX; x < (eastWallX + 1); x++)
                 {
-                    if (y == roomAnchorY || y == roomAnchorY + roomHeight)
+                    if (y == northWallY || y == southWallY)
                     {
                         dLevel[x, y] = new MapSpace(HORIZONTAL, false, false);
                     }
                     
-                    if (x == roomAnchorX || x == roomAnchorX + roomWidth)
+                    if (x == westWallX || x == eastWallX)
                     {
                         dLevel[x, y] = new MapSpace(VERTICAL, false, false);
                     }
                 }
             }
 
-            // Set the corners
-            dLevel[roomAnchorX, roomAnchorY] = new MapSpace(CORNER_TL, false, false);
-            dLevel[roomAnchorX + roomWidth, roomAnchorY] = new MapSpace(CORNER_TR, false, false);
-            dLevel[roomAnchorX, roomAnchorY + roomHeight] = new MapSpace(CORNER_BL, false, false);
-            dLevel[roomAnchorX + roomWidth, roomAnchorY + roomHeight] = new MapSpace(CORNER_BR, false, false);
-
             // Fill in any blanks.
-            for (int y = roomAnchorY; y < (roomAnchorY + roomHeight + 1); y++)
+            for (int y = northWallY; y < (southWallY + 1); y++)
             {
-                for (int x = roomAnchorX; x < (roomAnchorX + roomWidth + 1); x++)
+                for (int x = westWallX; x < (eastWallX + 1); x++)
                 {
                     if (dLevel[x, y] == null)
-                        dLevel[x, y] = new MapSpace('.', false, false);
+                        dLevel[x, y] = new MapSpace(ROOM_INT, false, false);
                 }
             }
 
+            // Add doorways
+            if (regionNumber >= 4)  // North doorways
+            {
+                if (rand.Next(100) <= ROOM_EXIT_PCT)
+                {
+                    doorway = rand.Next(westWallX + 1, eastWallX - 1);
+                    dLevel[doorway, northWallY] = new MapSpace(ROOM_DOOR, false, false);
+                    doors[0, 0] = doorway;
+                    doors[1, 0] = northWallY;
+                }
+            }
+
+            if (regionNumber <= 6)  // South doorways
+            {
+                if (rand.Next(100) <= ROOM_EXIT_PCT)
+                {
+                    doorway = rand.Next(westWallX + 1, eastWallX - 1);
+                    dLevel[doorway, southWallY] = new MapSpace(ROOM_DOOR, false, false);
+                    doors[0, 1] = doorway;
+                    doors[1, 1] = southWallY;
+                }
+            }
+
+            if ("147258".Contains(regionNumber.ToString()))  // East doorways
+            {
+                if (rand.Next(100) <= ROOM_EXIT_PCT)
+                {
+                    doorway = rand.Next(northWallY + 1, southWallY - 1);
+                    dLevel[eastWallX, doorway] = new MapSpace(ROOM_DOOR, false, false);
+                    doors[0, 2] = eastWallX;
+                    doors[1, 2] = doorway;
+                }
+            }
+
+            if ("258369".Contains(regionNumber.ToString()))  // West doorways
+            {
+                if (rand.Next(100) <= ROOM_EXIT_PCT)
+                {
+                    doorway = rand.Next(northWallY + 1, southWallY - 1);
+                    dLevel[westWallX, doorway] = new MapSpace(ROOM_DOOR, false, false);
+                    doors[0, 3] = westWallX;
+                    doors[1, 3] = doorway;
+                }
+            }
+
+
+            // Create the hallways
+
+            for (int i = 0; i < 4; i++)
+            {
+                switch (i)
+                {
+                    case 0:     // North
+                        if (doors[0,0] > 0)
+                            dLevel[doors[0, 0], doors[1, 0] - 1] = new MapSpace(HALLWAY, false, false);
+                        break;
+                    case 1:     // South
+                        if (doors[0, 1] > 0)
+                            dLevel[doors[0, 1], doors[1, 1] + 1] = new MapSpace(HALLWAY, false, false);
+                        break;
+                    case 2:     // East
+                        if (doors[0, 2] > 0)
+                            dLevel[doors[0, 2] + 1, doors[1, 2]] = new MapSpace(HALLWAY, false, false);
+                        break;
+                    case 3:     // West
+                        if (doors[0, 3] > 0)
+                            dLevel[doors[0, 3] - 1, doors[1, 3]] = new MapSpace(HALLWAY, false, false);
+                        break;
+                    default:
+
+                        break;
+                }
+            }
+    
+
+            // Set the corners.
+     
+            dLevel[westWallX, northWallY] = new MapSpace(CORNER_NW, false, false);
+            dLevel[eastWallX, northWallY] = new MapSpace(CORNER_NE, false, false);
+            dLevel[westWallX, southWallY] = new MapSpace(CORNER_SW, false, false);
+            dLevel[eastWallX, southWallY] = new MapSpace(CORNER_SE, false, false);
+
+
+
+        }
+
+        private int GetRegionNumber(int RoomAnchorX, int RoomAnchorY)
+        {
+            // The map is divided into a 3 x 3 grid of 9 equal regions.
+            // This function returns 1 to 9 to indicate where the region is on the map.
+
+            int returnVal;
+
+            int regionX = ((int)RoomAnchorX / 26) + 1;
+            int regionY = ((int)RoomAnchorY / 8) + 1;
+
+            returnVal = (regionX) + ((regionY - 1) * 3);
+
+            return returnVal;
         }
 
         public string MapRow(int rowNumber)

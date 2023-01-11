@@ -228,3 +228,8 @@ Adding classes MapLevel to contain mapping functions and nested MapSpace class t
             }
 
         }
+
+
+    Standardized wall and corner names based on directions (SE, NW, etc..).  Added calculated variables for east 
+    and south walls in room generator.
+
