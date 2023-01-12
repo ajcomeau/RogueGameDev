@@ -233,3 +233,23 @@ Adding classes MapLevel to contain mapping functions and nested MapSpace class t
     Standardized wall and corner names based on directions (SE, NW, etc..).  Added calculated variables for east 
     and south walls in room generator.
 
+
+
+    RoomGeneration further changed to add doors on each room and one hallway character for each door.
+
+
+    -----------------------------------
+
+
+    Hallway Generation Algorithm
+
+    By the time the program is ready to draw hallways, all rooms have been drawn with doorways and each door has 
+    a single hallway character attached to it.  The relation of the door to the hallway character will indicate
+    if it's a N,S,E or W entrance.
+
+    Private enum Direction added.
+
+
+    Add search functions to search map in various directions.
+
+
