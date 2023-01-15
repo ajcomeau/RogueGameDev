@@ -13,11 +13,11 @@ namespace RogueGame{
     {
 
         private enum Direction{
-            Missing = 0,
+            None = 0,
             North = 1,
             East = 2,
-            South = 3,
-            West = 4
+            South = -1,
+            West = -2
         }
 
         // Box drawing constants and other symbols.
@@ -235,10 +235,9 @@ namespace RogueGame{
             // After all rooms are generated with exits and initial hallway characters, scan for any possible disconnected
             // rooms and look for other rooms to connect to.
 
-            int counter = 0;
             bool connected = false;
+            Dictionary<Direction, MapSpace> adjacentSpaces;
             Direction hallwayDirection;
-            MapSpace[] adjacentSpaces;
 
             // Scan from 0,0 to 79,24 looking for lone hallway characters
             for (int y = 1; y < 25; y++)
@@ -248,41 +247,38 @@ namespace RogueGame{
                     if (dLevel[x, y].MapCharacter == HALLWAY)
                     {
                         adjacentSpaces = SearchAdjacent("" + ROOM_DOOR + HALLWAY, x, y);
-                        counter = 0;
-                        for (int i = 0; i < adjacentSpaces.Length; i++)
+                        if (adjacentSpaces.Count > 0)
                         {
-                            if (adjacentSpaces[i] is not null)
+                            foreach (KeyValuePair<Direction, MapSpace> entry in adjacentSpaces)
                             {
-                                counter += 1;
-                                if (adjacentSpaces[i].MapCharacter == ROOM_DOOR)
                                 {
-                                    switch (i)
+                                    if (entry.Value.MapCharacter == ROOM_DOOR)
                                     {
-                                        case 0: hallwayDirection = Direction.South; break;
-                                        case 1: hallwayDirection = Direction.West; break;
-                                        case 2: hallwayDirection = Direction.North; break;
-                                        case 3: hallwayDirection = Direction.East; break;
+                                        // Whichever side the doorway is on, the hallway is pointing the opposite.
+                                        // Since the enumeration int values are -1,1,-2,2, we can do this with one statement.
+                                        hallwayDirection = (Direction)((int)entry.Key * -1);
                                     }
                                 }
                             }
+
+                            // If a character was found on more than one side, the hallway is already connected.
+                            if (adjacentSpaces.Count > 1)
+                            {
+                                connected = true;
+                            }
                         }
 
-                        // If a character was found on more than one side, the hallway is already connected.
-                        if (counter > 1) { 
-                            connected = true;                            
+
+                        if (dLevel[x, y].MapCharacter == HALLWAY && !connected)
+                        {
+                            // Start looking for available connections.
+
+
+
                         }
-                    }
-
-
-                    if (!connected)
-                    {
-                        // Start looking for available connections.
-
 
 
                     }
-
-
                 }
             }
         }
@@ -292,34 +288,34 @@ namespace RogueGame{
             
         }*/
 
-        private MapSpace[] SearchAdjacent(string characters, int x, int y)
+        private Dictionary<Direction, MapSpace> SearchAdjacent(string characters, int x, int y)
         {
 
             // Search for specific character in four directions around point.
-            // Populate four spaces in order of NESW.
+            // Return list of directions and characters found.
 
-            MapSpace[] retValue = new MapSpace[4];
+            Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>(); 
 
             foreach (char c in characters)
             {
                 if (y - 1 >= 0 && dLevel[x, y - 1].MapCharacter == c)  // North
                 {
-                    retValue[0] = dLevel[x, y - 1];
+                    retValue.Add(Direction.North, dLevel[x, y - 1]);
                 }
 
                 if (x + 1 <= 24 && dLevel[x + 1, y].MapCharacter == c) // East
                 {
-                    retValue[1] = dLevel[x + 1, y];
+                    retValue.Add(Direction.East, dLevel[x + 1, y]);
                 }
 
                 if (y + 1 <= 24 && dLevel[x, y + 1].MapCharacter == c)  // South
                 {
-                    retValue[2] = dLevel[x, y + 1];
+                    retValue.Add(Direction.South, dLevel[x, y + 1]);
                 }
 
                 if ((x - 1) >= 0 && dLevel[x - 1, y].MapCharacter == c)  // West
                 {
-                    retValue[3] = dLevel[x - 1, y];
+                    retValue.Add(Direction.West, dLevel[x - 1, y]);
                 }
             }
             
