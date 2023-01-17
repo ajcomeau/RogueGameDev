@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Collections;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 namespace RogueGame{
 
@@ -241,55 +242,86 @@ namespace RogueGame{
             Dictionary<Direction, MapSpace> adjacentChars = new Dictionary<Direction, MapSpace>();
             Dictionary<Direction, MapSpace> surroundingChars = new Dictionary<Direction, MapSpace>();
 
-            for (int i = deadEnds.Count - 1; i >= 0; i--)
-            {
-                hallwaySpace = deadEnds[i];
-                // Get region number and hallway direction to know which direction to move in.
-                roomRegion = GetRegionNumber(hallwaySpace.X, hallwaySpace.Y);
-                adjacentChars = SearchAdjacent("" + ROOM_DOOR, hallwaySpace.X, hallwaySpace.Y);
-
-                // If there are doors on more than one side, the hallway is already connected.
-                // Otherwise, get its direction.
-                    
-                if (adjacentChars.Count == 1)
-                    hallDirection = (Direction)((int)adjacentChars.ElementAt(0).Key * -1);
-
-
-                while (hallDirection != Direction.None)
+            // First, let's draw the hallways we can from the initial hallway spaces.
+            for (int counter = 0; counter < 5; counter++)
+            {            
+                for (int i = deadEnds.Count - 1; i >= 0; i--)
                 {
+                    hallwaySpace = deadEnds[i];
+                    // Find out where the door is in relation to the space.
+                    adjacentChars = SearchAdjacent("" + ROOM_DOOR, hallwaySpace.X, hallwaySpace.Y);
+
+                    // If there are doors on more than one side, the hallway is already connected.
+                    // Otherwise, get its direction.                    
+                    if (adjacentChars.Count == 1)
+                        hallDirection = (Direction)((int)adjacentChars.ElementAt(0).Key * -1);
+                    else
+                        deadEnds.RemoveAt(i);
+
                     // Search in four directions to decide where to move.
                     surroundingChars = SearchAllDirections(hallwaySpace.X, hallwaySpace.Y);
                     // Remove opposite direction of current hallway. We're not doubling back.
                     //surroundingChars.Remove((Direction)((int)hallDirection * -1)); 
 
-                    switch(hallDirection)
+                    switch (hallDirection)
                     {
                         case Direction.North:
                             if (surroundingChars[Direction.North].MapCharacter == HALLWAY)
+                            {
                                 DrawHallway(hallwaySpace, surroundingChars[Direction.North]);
+                                deadEnds.RemoveAt(i);
+                            }
                             break;
                         case Direction.South:
                             if (surroundingChars[Direction.South].MapCharacter == HALLWAY)
+                            {
                                 DrawHallway(hallwaySpace, surroundingChars[Direction.South]);
+                                deadEnds.RemoveAt(i);
+                            }
                             break;
                         case Direction.West:
                             if (surroundingChars[Direction.West].MapCharacter == HALLWAY)
+                            {
                                 DrawHallway(hallwaySpace, surroundingChars[Direction.West]);
+                                deadEnds.RemoveAt(i);
+                            }
                             break;
                         case Direction.East:
                             if (surroundingChars[Direction.East].MapCharacter == HALLWAY)
+                            {
                                 DrawHallway(hallwaySpace, surroundingChars[Direction.East]);
+                                deadEnds.RemoveAt(i);
+                            }
                             break;
+                        default: break;
                     }
-
-                    hallDirection = Direction.None;
-                    deadEnds.RemoveAt(i);
                 }
 
+                for (int i = 0; i < deadEnds.Count; i++)
+                {
+                    Dictionary<Direction, MapSpace> clearSpaces = SearchAdjacent("" + EMPTY + ROOM_DOOR, deadEnds[i].X, deadEnds[i].Y);
 
+                    foreach (KeyValuePair<Direction, MapSpace> entry in clearSpaces)
+                    {
+                        if(entry.Value.MapCharacter == ROOM_DOOR)
+                            hallDirection = (Direction)((int)entry.Key * -1);
+                    }
 
+                    if (clearSpaces.ContainsKey(hallDirection) && clearSpaces[hallDirection].MapCharacter == EMPTY)
+                        levelMap[clearSpaces[hallDirection].X, clearSpaces[hallDirection].Y] = new MapSpace(HALLWAY, clearSpaces[hallDirection]);
+                    else
+                    {
+                        foreach (KeyValuePair<Direction, MapSpace> entry in clearSpaces)
+                        {
+                            if (entry.Value.MapCharacter == EMPTY)
+                            {
+                                levelMap[clearSpaces[entry.Key].X, clearSpaces[entry.Key].Y] = new MapSpace(HALLWAY, entry.Value);
+                                deadEnds.Add(levelMap[clearSpaces[entry.Key].X, clearSpaces[entry.Key].Y]);
+                            }
+                        }
+                    }
+                }
             }
-            
         }
 
         private void DrawHallway(MapSpace start, MapSpace end)
@@ -550,6 +582,14 @@ namespace RogueGame{
                 searchToDisp = false;
                 xc = 0;
                 yc = 0;
+            }
+
+            public MapSpace(char mapChar, MapSpace oldSpace)
+            {
+                this.mapChar = mapChar;
+                this.displayChar = mapChar;
+                this.searchToDisp= oldSpace.searchToDisp;
+                this.xc= oldSpace.X; this.yc= oldSpace.Y;    
             }
 
             public MapSpace(char mapChar, int X, int Y)
