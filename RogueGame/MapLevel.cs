@@ -45,10 +45,10 @@ namespace RogueGame{
         private const int MIN_ROOM_WT = 4;
         private const int MIN_ROOM_HT = 4;
         private const int ROOM_SKIP_PCT = 10;
-        private const int ROOM_EXIT_PCT = 90;
+        private const int ROOM_EXIT_PCT = 92;
 
         private MapSpace[,] levelMap = new MapSpace[80, 25];   // Array to hold map definition.
-        private List<MapSpace> deadEnds = new List<MapSpace>();  // Holds hallway endings during map generation.
+        private Dictionary<MapSpace, Direction> deadEnds = new Dictionary<MapSpace, Direction>();  // Holds hallway endings during map generation.
 
         public MapSpace[,] LevelMap
         {
@@ -125,7 +125,7 @@ namespace RogueGame{
             int regionNumber = GetRegionNumber(westWallX, northWallY);
             int doorway = 0;
             Dictionary<Direction, MapSpace> doorWays = new Dictionary<Direction, MapSpace>();
-            var rand = new Random(DateTime.Now.Millisecond);
+            var rand = new Random();
 
 
             for (int y = northWallY; y < (southWallY + 1); y++)
@@ -157,9 +157,9 @@ namespace RogueGame{
             // Add doorways
             if (regionNumber >= 4)  // North doorways
             {
-                if (rand.Next(100) <= ROOM_EXIT_PCT)
+                if (rand.Next(101) <= ROOM_EXIT_PCT)
                 {
-                    doorway = rand.Next(westWallX + 1, eastWallX - 1);
+                    doorway = rand.Next(westWallX + 1, eastWallX);
                     levelMap[doorway, northWallY] = new MapSpace(ROOM_DOOR, false, false, doorway, northWallY);
                     doorWays.Add(Direction.North, levelMap[doorway, northWallY]);
                 }
@@ -167,9 +167,9 @@ namespace RogueGame{
 
             if (regionNumber <= 6)  // South doorways
             {
-                if (rand.Next(100) <= ROOM_EXIT_PCT)
+                if (rand.Next(101) <= ROOM_EXIT_PCT)
                 {
-                    doorway = rand.Next(westWallX + 1, eastWallX - 1);
+                    doorway = rand.Next(westWallX + 1, eastWallX);
                     levelMap[doorway, southWallY] = new MapSpace(ROOM_DOOR, false, false, doorway, southWallY);
                     doorWays.Add(Direction.South, levelMap[doorway, southWallY]);
                 }
@@ -177,9 +177,9 @@ namespace RogueGame{
 
             if ("147258".Contains(regionNumber.ToString()))  // East doorways
             {
-                if (rand.Next(100) <= ROOM_EXIT_PCT)
+                if (rand.Next(101) <= ROOM_EXIT_PCT)
                 {
-                    doorway = rand.Next(northWallY + 1, southWallY - 1);
+                    doorway = rand.Next(northWallY + 1, southWallY);
                     levelMap[eastWallX, doorway] = new MapSpace(ROOM_DOOR, false, false, eastWallX, doorway);
                     doorWays.Add(Direction.East, levelMap[eastWallX, doorway]);
                 }
@@ -187,9 +187,9 @@ namespace RogueGame{
 
             if ("258369".Contains(regionNumber.ToString()))  // West doorways
             {
-                if (rand.Next(100) <= ROOM_EXIT_PCT)
+                if (rand.Next(101) <= ROOM_EXIT_PCT)
                 {
-                    doorway = rand.Next(northWallY + 1, southWallY - 1);
+                    doorway = rand.Next(northWallY + 1, southWallY);
                     levelMap[westWallX, doorway] = new MapSpace(ROOM_DOOR, false, false, westWallX, doorway);
                     doorWays.Add(Direction.West, levelMap[westWallX, doorway]);
                 }
@@ -204,19 +204,19 @@ namespace RogueGame{
                 {
                     case Direction.North:     // North
                         levelMap[entry.Value.X, entry.Value.Y - 1] = new MapSpace(HALLWAY, false, false, entry.Value.X, entry.Value.Y - 1);
-                        deadEnds.Add(levelMap[entry.Value.X, entry.Value.Y - 1]);
+                        deadEnds.Add(levelMap[entry.Value.X, entry.Value.Y - 1], entry.Key);
                         break;
                     case Direction.South:     // South
                         levelMap[entry.Value.X, entry.Value.Y + 1] = new MapSpace(HALLWAY, false, false, entry.Value.X, entry.Value.Y + 1);
-                        deadEnds.Add(levelMap[entry.Value.X, entry.Value.Y + 1]);
+                        deadEnds.Add(levelMap[entry.Value.X, entry.Value.Y + 1], entry.Key);
                         break;
                     case Direction.East:     // East
                         levelMap[entry.Value.X + 1, entry.Value.Y] = new MapSpace(HALLWAY, false, false, entry.Value.X + 1, entry.Value.Y);
-                        deadEnds.Add(levelMap[entry.Value.X + 1, entry.Value.Y]);
+                        deadEnds.Add(levelMap[entry.Value.X + 1, entry.Value.Y], entry.Key);
                         break;
                     case Direction.West:     // West
                         levelMap[entry.Value.X - 1, entry.Value.Y] = new MapSpace(HALLWAY, false, false, entry.Value.X - 1, entry.Value.Y);
-                        deadEnds.Add(levelMap[entry.Value.X - 1, entry.Value.Y]);
+                        deadEnds.Add(levelMap[entry.Value.X - 1, entry.Value.Y], entry.Key);
                         break;
                     default:
 
@@ -238,7 +238,7 @@ namespace RogueGame{
             // After all rooms are generated with exits and initial hallway characters, scan for any possible disconnected
             // rooms and look for other rooms to connect to.
             int roomRegion = 0;
-            Direction hallDirection = Direction.None; Direction direction90;
+            Direction hallDirection = Direction.None; Direction direction90; Direction direction270;
             MapSpace hallwaySpace;
             Dictionary<Direction, MapSpace> adjacentChars = new Dictionary<Direction, MapSpace>();
             Dictionary<Direction, MapSpace> surroundingChars = new Dictionary<Direction, MapSpace>();
@@ -247,26 +247,34 @@ namespace RogueGame{
 
             for (int i = deadEnds.Count - 1; i >= 0; i--)  // Count backwards so we can remove processed items.
             {
+
                 // If there are doors on more than one side, the hallway is already connected.
-                // Otherwise, get its direction and a 90 degree turn for reference.                    
-                if (SearchAdjacent("" + ROOM_DOOR, deadEnds[i].X, deadEnds[i].Y).Count > 1)
-                    deadEnds.RemoveAt(i);                 
+                // Otherwise, get its direction and a 90 degree turn for reference.
+                hallwaySpace = deadEnds.ElementAt(i).Key;
+
+                if (SearchAdjacent("" + ROOM_DOOR, hallwaySpace.X, hallwaySpace.Y).Count > 1)
+                    deadEnds.Remove(hallwaySpace);
             }
 
             while (deadEnds.Count > 0)
             {
                 for (int i = deadEnds.Count - 1; i >= 0; i--)  // Count backwards so we can remove processed items.
                 {
-                    hallwaySpace = deadEnds[i];
-                    // Search in four directions to decide where to move.
-                    if(SearchAdjacent("" + ROOM_DOOR, hallwaySpace.X, hallwaySpace.Y).Count == 1)
-                    {
-                        hallDirection = (Direction)((int)adjacentChars.ElementAt(0).Key * -1);
-                        direction90 = (Math.Abs((int)hallDirection) == 1) ? (Direction)2 : (Direction)1;
-                    }
-                    else
-                        hallDirection = Direction.None;
+                    // If there's a neighboring hallway space, this one is already connected.
+                    hallwaySpace = deadEnds.ElementAt(i).Key;
 
+                    if (SearchAdjacent("" + HALLWAY, hallwaySpace.X, hallwaySpace.Y).Count > 1)
+                        deadEnds.Remove(hallwaySpace);
+                }
+
+                for (int i = deadEnds.Count - 1; i >= 0; i--)  // Count backwards so we can remove processed items.
+                {
+                    hallwaySpace = deadEnds.ElementAt(i).Key;
+                    hallDirection = deadEnds.ElementAt(i).Value;
+                    direction90 = (Math.Abs((int)hallDirection) == 1) ? (Direction)2 : (Direction)1;
+                    direction270 = (Direction)((int)direction90 * -1);
+                    
+                    // Look for distant hallways in all directions.
                     if (hallDirection != Direction.None)
                     {
                         surroundingChars = SearchAllDirections(hallwaySpace.X, hallwaySpace.Y);
@@ -277,25 +285,34 @@ namespace RogueGame{
                                 Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
                                     $"{surroundingChars[hallDirection].X}, {surroundingChars[hallDirection].Y}.");
                                 DrawHallway(hallwaySpace, surroundingChars[hallDirection]);
-                                deadEnds.RemoveAt(i);
+                                deadEnds.Remove(hallwaySpace);
                             break;
                             case true when (surroundingChars[direction90].MapCharacter == HALLWAY):
                                 Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
-                                    $"{surroundingChars[hallDirection].X}, {surroundingChars[hallDirection].Y}.");
-                                DrawHallway(hallwaySpace, surroundingChars[hallDirection]);
-                                deadEnds.RemoveAt(i);
+                                    $"{surroundingChars[direction90].X}, {surroundingChars[direction90].Y}.");
+                                DrawHallway(hallwaySpace, surroundingChars[direction90]);
+                                deadEnds.Remove(hallwaySpace);
                             break;
-                            case true when (surroundingChars[direction90 * -1].MapCharacter == HALLWAY):
+                            case true when (surroundingChars[direction270].MapCharacter == HALLWAY):
                                 Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
-                                    $"{surroundingChars[hallDirection].X}, {surroundingChars[hallDirection].Y}.");
-                                DrawHallway(hallwaySpace, surroundingChars[hallDirection]);
-                                deadEnds.RemoveAt(i);
+                                    $"{surroundingChars[direction270].X}, {surroundingChars[direction270].Y}.");
+                                DrawHallway(hallwaySpace, surroundingChars[direction270]);
+                                deadEnds.Remove(hallwaySpace);
                             break;
+                            default:
+                                adjacentChars = SearchAdjacent("" + EMPTY, hallwaySpace.X, hallwaySpace.Y);
+                                if (adjacentChars.ContainsKey(hallDirection))
+                                    levelMap[adjacentChars[hallDirection].X, adjacentChars[hallDirection].Y] = new MapSpace(HALLWAY, adjacentChars[hallDirection]);
+                                else if (adjacentChars.ContainsKey(direction90))
+                                    levelMap[adjacentChars[direction90].X, adjacentChars[direction90].Y] = new MapSpace(HALLWAY, adjacentChars[direction90]);
+                                else if (adjacentChars.ContainsKey(direction270))
+                                    levelMap[adjacentChars[direction270].X, adjacentChars[direction270].Y] = new MapSpace(HALLWAY, adjacentChars[direction270]);
+                                break;
 
                         }
                     }
+                    Console.Write(MapText());
                 }
-                Console.Write(MapText());
             }
 
 
