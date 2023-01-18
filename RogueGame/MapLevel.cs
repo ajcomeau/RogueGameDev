@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Collections;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 namespace RogueGame{
@@ -44,7 +45,7 @@ namespace RogueGame{
         private const int MIN_ROOM_WT = 4;
         private const int MIN_ROOM_HT = 4;
         private const int ROOM_SKIP_PCT = 10;
-        private const int ROOM_EXIT_PCT = 85;
+        private const int ROOM_EXIT_PCT = 90;
 
         private MapSpace[,] levelMap = new MapSpace[80, 25];   // Array to hold map definition.
         private List<MapSpace> deadEnds = new List<MapSpace>();  // Holds hallway endings during map generation.
@@ -243,85 +244,52 @@ namespace RogueGame{
             Dictionary<Direction, MapSpace> surroundingChars = new Dictionary<Direction, MapSpace>();
 
             // First, let's draw the hallways we can from the initial hallway spaces.
-            for (int counter = 0; counter < 5; counter++)
-            {            
-                for (int i = deadEnds.Count - 1; i >= 0; i--)
-                {
-                    hallwaySpace = deadEnds[i];
-                    // Find out where the door is in relation to the space.
-                    adjacentChars = SearchAdjacent("" + ROOM_DOOR, hallwaySpace.X, hallwaySpace.Y);
+         
+            for (int i = deadEnds.Count - 1; i >= 0; i--)  // Count backwards so we can remove processed items.
+            {
+                hallwaySpace = deadEnds[i];
+                // Find out where the door is in relation to the space.
+                adjacentChars = SearchAdjacent("" + ROOM_DOOR, hallwaySpace.X, hallwaySpace.Y);
 
-                    // If there are doors on more than one side, the hallway is already connected.
-                    // Otherwise, get its direction.                    
-                    if (adjacentChars.Count == 1)
-                        hallDirection = (Direction)((int)adjacentChars.ElementAt(0).Key * -1);
-                    else
+                // If there are doors on more than one side, the hallway is already connected.
+                // Otherwise, get its direction.                    
+                if (adjacentChars.Count == 1)
+                    hallDirection = (Direction)((int)adjacentChars.ElementAt(0).Key * -1);
+                else
+                    deadEnds.RemoveAt(i);
+
+                // Search in four directions to decide where to move.
+                surroundingChars = SearchAllDirections(hallwaySpace.X, hallwaySpace.Y);
+
+                // First, draw hallways straight out from the room if there's a corresponding door on another room.
+
+                if (hallDirection != Direction.None)
+                {
+                    if (surroundingChars[hallDirection].MapCharacter == HALLWAY)
+                    {
+                        Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
+                            $"{surroundingChars[hallDirection].X}, {surroundingChars[hallDirection].Y}.");
+                        DrawHallway(hallwaySpace, surroundingChars[hallDirection]);
                         deadEnds.RemoveAt(i);
-
-                    // Search in four directions to decide where to move.
-                    surroundingChars = SearchAllDirections(hallwaySpace.X, hallwaySpace.Y);
-                    // Remove opposite direction of current hallway. We're not doubling back.
-                    //surroundingChars.Remove((Direction)((int)hallDirection * -1)); 
-
-                    switch (hallDirection)
-                    {
-                        case Direction.North:
-                            if (surroundingChars[Direction.North].MapCharacter == HALLWAY)
-                            {
-                                DrawHallway(hallwaySpace, surroundingChars[Direction.North]);
-                                deadEnds.RemoveAt(i);
-                            }
-                            break;
-                        case Direction.South:
-                            if (surroundingChars[Direction.South].MapCharacter == HALLWAY)
-                            {
-                                DrawHallway(hallwaySpace, surroundingChars[Direction.South]);
-                                deadEnds.RemoveAt(i);
-                            }
-                            break;
-                        case Direction.West:
-                            if (surroundingChars[Direction.West].MapCharacter == HALLWAY)
-                            {
-                                DrawHallway(hallwaySpace, surroundingChars[Direction.West]);
-                                deadEnds.RemoveAt(i);
-                            }
-                            break;
-                        case Direction.East:
-                            if (surroundingChars[Direction.East].MapCharacter == HALLWAY)
-                            {
-                                DrawHallway(hallwaySpace, surroundingChars[Direction.East]);
-                                deadEnds.RemoveAt(i);
-                            }
-                            break;
-                        default: break;
                     }
-                }
-
-                for (int i = 0; i < deadEnds.Count; i++)
-                {
-                    Dictionary<Direction, MapSpace> clearSpaces = SearchAdjacent("" + EMPTY + ROOM_DOOR, deadEnds[i].X, deadEnds[i].Y);
-
-                    foreach (KeyValuePair<Direction, MapSpace> entry in clearSpaces)
-                    {
-                        if(entry.Value.MapCharacter == ROOM_DOOR)
-                            hallDirection = (Direction)((int)entry.Key * -1);
-                    }
-
-                    if (clearSpaces.ContainsKey(hallDirection) && clearSpaces[hallDirection].MapCharacter == EMPTY)
-                        levelMap[clearSpaces[hallDirection].X, clearSpaces[hallDirection].Y] = new MapSpace(HALLWAY, clearSpaces[hallDirection]);
                     else
                     {
-                        foreach (KeyValuePair<Direction, MapSpace> entry in clearSpaces)
+                        hallwaySpace = SearchByDistance(hallDirection, hallwaySpace.X, hallwaySpace.Y, 1);
+                        if(hallwaySpace.X + hallwaySpace.Y > 0 && hallwaySpace.MapCharacter == ' ')
                         {
-                            if (entry.Value.MapCharacter == EMPTY)
-                            {
-                                levelMap[clearSpaces[entry.Key].X, clearSpaces[entry.Key].Y] = new MapSpace(HALLWAY, entry.Value);
-                                deadEnds.Add(levelMap[clearSpaces[entry.Key].X, clearSpaces[entry.Key].Y]);
-                            }
+                            levelMap[hallwaySpace.X, hallwaySpace.Y] = new MapSpace(HALLWAY, hallwaySpace.X, hallwaySpace.Y);
+                            deadEnds[i] = new MapSpace(HALLWAY, hallwaySpace.X, hallwaySpace.Y);
                         }
+
                     }
                 }
             }
+
+
+            
+            Console.Write(MapText());
+            //}
+
         }
 
         private void DrawHallway(MapSpace start, MapSpace end)
@@ -399,46 +367,44 @@ namespace RogueGame{
         private MapSpace SearchToNextObject(Direction direction, int startX, int startY)
         {
             // Get the next non-space object found in a given direction.
-            MapSpace retValue = levelMap[startX, startY];
-            bool edge = false;
+            MapSpace retValue;
             int currentX = startX, currentY = startY;
+
+            currentY = (currentY > MAP_HT) ? MAP_HT : currentY; 
+            currentY = (currentY < 0) ? 0 : currentY;
+            currentX = (currentX > MAP_WD) ? MAP_WD : currentX; 
+            currentX = (currentX < 0) ? 0 : currentX;
+
+            retValue = levelMap[currentX, currentY];
 
             switch (direction)
             {
                 case Direction.North:
-                    while(retValue.MapCharacter == ' ' && !edge)
+                    while(retValue.MapCharacter == ' ' && currentY > 0)
                     {
                         retValue = levelMap[currentX, currentY];
-                        if (currentY -1 > 0)
-                            currentY--;
-                        else edge= true;
+                        currentY--;
                     }
                     break;
                 case Direction.East:
-                    while (retValue.MapCharacter == ' ' && !edge)
+                    while (retValue.MapCharacter == ' ' && currentX <= MAP_WD)
                     {
                         retValue = levelMap[currentX, currentY];
-                        if (currentX + 1 <= MAP_WD)
-                            currentX++;
-                        else edge = true;
+                        currentX++;
                     }
                     break;
                 case Direction.South:
-                    while (retValue.MapCharacter == ' ' && !edge)
+                    while (retValue.MapCharacter == ' ' && currentY <= MAP_HT)
                     {
                         retValue = levelMap[currentX, currentY];
-                        if (currentY + 1 <= MAP_HT)
-                            currentY++;
-                        else edge = true;
+                        currentY++;
                     }
                     break;
                 case Direction.West:
-                    while (retValue.MapCharacter == ' ' && !edge)
+                    while (retValue.MapCharacter == ' ' && currentX > 0)
                     {
                         retValue = levelMap[currentX, currentY];
-                        if (currentX - 1 <= 0)
-                            currentX--;
-                        else edge = true;
+                        currentX--;
                     }
                     break;
             }
@@ -476,30 +442,38 @@ namespace RogueGame{
             return retValue;
         }        
 
-        private MapSpace SearchByDistance(char item, Direction direction, int x, int y, int spaces)
+        private MapSpace SearchByDistance(Direction direction, int x, int y, int spaces)
         {
+            MapSpace retValue = new MapSpace();
 
             // Search for specific character a given number of spaces, stopping at edge if necessary.
-            MapSpace retValue = new MapSpace();
+            // If the search goes off the grid, return a blank mapspace.
+            y = (y > MAP_HT) ? MAP_HT : y;
+            y = (y < 0) ? 0 : y;
+            x = (x > MAP_WD) ? MAP_WD : x;
+            x = (x < 0) ? 0 : x;
 
             for (int i = 1; i <= spaces; i++)
             {
                 switch (direction)
                 {
                     case Direction.North:
-                        if (y - i >= 0 && levelMap[x, y - i].MapCharacter == item)
+                        if ((y - i) >= 0)
                             retValue = levelMap[x, y - i];
+
                         break;
                     case Direction.East:
-                        if (x + i <= 24 && levelMap[x + i, y].MapCharacter == item)
+                        if ((x + i) >= MAP_WD)
                             retValue = levelMap[x + i, y];
+    
                         break;
                     case Direction.South:
-                        if (y + i <= 24 && levelMap[x, y + i].MapCharacter == item)
+                        if ((y + i) <= MAP_HT)
                             retValue = levelMap[x, y + i];
+    
                         break;
                     case Direction.West:
-                        if ((x - i) >= 0 && levelMap[x - i, y].MapCharacter == item)
+                        if ((x - i) >= 0)
                             retValue = levelMap[x - i, y];
                         break;
                 }
@@ -523,20 +497,27 @@ namespace RogueGame{
             return returnVal;
         }
 
-        public string MapRow(int rowNumber)
+        public string MapText()
         {
-            string retValue = "";
+            // Output the array to text for display.
+            string lineValue = "", retValue = "";
 
-            // Return the specified row from the array in string form for display.
-            for (int x = 0; x < 80; x++)
+            for (int y = 0; y <= MAP_HT; y++)
             {
-                retValue += levelMap[x, rowNumber].DisplayCharacter;
-            }
-            // Add new line character.
-            retValue += "\n";
+                for (int x = 0; x < MAP_WD; x++)
+                    lineValue += levelMap[x, y].DisplayCharacter;
 
+                lineValue += "\n";
+
+                // Add new line character.
+                retValue += lineValue;
+                lineValue = "";
+            }
+            Debug.Write(retValue);
             return retValue;
         }
+
+
 
 
         internal class MapSpace{
