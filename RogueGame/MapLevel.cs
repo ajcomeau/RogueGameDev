@@ -26,7 +26,7 @@ namespace RogueGame{
         }
 
         // Box drawing constants and other symbols.
-        private const char HORIZONTAL = '═';
+        private const char HORIZONTAL = '═';        // Unicode symbols can be copy-pasted from https://www.w3.org/TR/xml-entity-names/025.html.  
         private const char VERTICAL = '║';
         private const char CORNER_NW = '╔';
         private const char CORNER_SE = '╝';
@@ -36,55 +36,57 @@ namespace RogueGame{
         private const char ROOM_DOOR = '╬';
         private const char HALLWAY = '▓';
         private const char EMPTY = ' ';
-        private const int REGION_WD = 26;
+        private const int REGION_WD = 26;           //  Width / height of region holding single room.
         private const int REGION_HT = 8;
-        private const int MAP_WD = 79;
+        private const int MAP_WD = 78;              // Max width / height of map display.
         private const int MAP_HT = 24;
-        private const int MAX_ROOM_WT = 24;  // Based on screen width of 80, 78 allowed
-        private const int MAX_ROOM_HT = 6;   // Based on screen height of 25, 24 allowed
-        private const int MIN_ROOM_WT = 4;
+        private const int MAX_ROOM_WT = 24;         // Based on screen width of 80, 78 allowed
+        private const int MAX_ROOM_HT = 6;          // Based on screen height of 25, 24 allowed
+        private const int MIN_ROOM_WT = 4;          // Minimum width / height of single room.
         private const int MIN_ROOM_HT = 4;
-        private const int ROOM_SKIP_PCT = 10;
-        private const int ROOM_EXIT_PCT = 92;
+        private const int ROOM_SKIP_PCT = 10;       // Probability that room creation will be skipped for one region.
+        private const int ROOM_EXIT_PCT = 95;       // Probability that room wall will contain exit.
 
-        private MapSpace[,] levelMap = new MapSpace[80, 25];   // Array to hold map definition.
-        private Dictionary<MapSpace, Direction> deadEnds = new Dictionary<MapSpace, Direction>();  // Holds hallway endings during map generation.
+        // Array to hold map definition.
+        private MapSpace[,] levelMap = new MapSpace[80, 25];
+        // Dictionary to hold hallway endings during map generation.
+        private Dictionary<MapSpace, Direction> deadEnds = new Dictionary<MapSpace, Direction>();  
 
         public MapSpace[,] LevelMap
         {
-            // Read-only - Only class should be able to edit map.
+            // Read-only - The map is available to other classes but only
+            // the class should be able to edit.
             get { return levelMap; }
-
         }
+
         public MapLevel()
         {
-            // Generate a new map for this level.
+            // Constructor - generate a new map for this level.
             MapGeneration();
 
         }
 
-
         private void MapGeneration()
         {
+            // Primary generation procedure
+            // Screen is divided into nine cell regions and a room is randomly generated in each.
+            // Room exterior must be at least four spaces in each direction but not more than the
+            // size of its cell region, minus one space, to allow for hallways between rooms.
+            
             var rand = new Random();
             int roomWidth = 0, roomHeight = 0, roomAnchorX = 0, roomAnchorY = 0;
 
-            // Primary generation procedure
-            // Screen is divided into nine cell regions and a room is randomly generated in each.
-            // Room exterior must be at least five spaces in each direction but not more than the
-            // size of its cell region, minus one space, to allow for hallways between rooms.
-
-            // Clear map
+            // Clear map by creating new array of map spaces.
             levelMap = new MapSpace[80, 25];
 
-            // Use the for statements to count cells L to R and top to bottom.
+            // Define the map left to right, top to bottom.
             // Increment the count based on a third of the way in each direction.
             // First row and first column of array are skipped so everything is 1 based.
             for (int y = 1; y < 18; y += REGION_HT)
             {
                 for (int x = 1; x < 54; x += REGION_WD)
                 {
-                    if (rand.Next(101) > ROOM_SKIP_PCT)        //10% chance of not creating room
+                    if (rand.Next(101) > ROOM_SKIP_PCT)
                     {
                         // Room size
                         roomHeight = rand.Next(MIN_ROOM_HT, MAX_ROOM_HT + 1);
@@ -100,7 +102,7 @@ namespace RogueGame{
                 }
             }
 
-            // Fill in the blanks for the remaining cells.
+            // After the rooms are generated, fill in the blanks for the remaining cells.
             for (int y = 0; y < 25; y++)
             {
                 for (int x = 0; x < 80; x++)
@@ -120,17 +122,21 @@ namespace RogueGame{
         {
             // Create room on map based on inputs
 
-            int eastWallX = westWallX + roomWidth;
-            int southWallY = northWallY + roomHeight;
+            int eastWallX = westWallX + roomWidth;          // Calculate room width
+            int southWallY = northWallY + roomHeight;       // Calculate room height
+
+            // Regions are defined 1 to 9, L to R, top to bottom.
             int regionNumber = GetRegionNumber(westWallX, northWallY);
             int doorway = 0;
+            
+            // Remember the exits created.
             Dictionary<Direction, MapSpace> doorWays = new Dictionary<Direction, MapSpace>();
             var rand = new Random();
 
-
-            for (int y = northWallY; y < (southWallY + 1); y++)
+            // Create horizontal and vertical walls for room.
+            for (int y = northWallY; y <= southWallY; y++)
             {
-                for (int x = westWallX; x < (eastWallX + 1); x++)
+                for (int x = westWallX; x <= eastWallX; x++)
                 {
                     if (y == northWallY || y == southWallY)
                     {
@@ -144,17 +150,20 @@ namespace RogueGame{
                 }
             }
 
-            // Fill in any blanks.  Null spaces cause issues.
-            for (int y = northWallY; y < (southWallY + 1); y++)
+            // Fill in any blank spaces in array.
+            for (int y = northWallY; y <= southWallY; y++)
             {
-                for (int x = westWallX; x < (eastWallX + 1); x++)
+                for (int x = westWallX; x <= eastWallX; x++)
                 {
                     if (levelMap[x, y] == null)
                         levelMap[x, y] = new MapSpace(ROOM_INT, false, false, x, y);
                 }
             }
 
-            // Add doorways
+            // Add doorways on room. Room walls facing the edges of the map do not get exits
+            // so the ROOM_EXIT_PCT constant needs to be high to ensure that every room gets
+            // at least one.
+
             if (regionNumber >= 4)  // North doorways
             {
                 if (rand.Next(101) <= ROOM_EXIT_PCT)
@@ -196,7 +205,7 @@ namespace RogueGame{
             }
 
 
-            // Add a hallway character or two for every door and add the characters to the deadEnds list for further generation.
+            // Add a hallway character for every door and add the characters to the deadEnds list for further generation.
 
             foreach (KeyValuePair<Direction, MapSpace> entry in doorWays)
             {
@@ -239,9 +248,10 @@ namespace RogueGame{
             // rooms and look for other rooms to connect to.
             int roomRegion = 0;
             Direction hallDirection = Direction.None; Direction direction90; Direction direction270;
-            MapSpace hallwaySpace;
+            MapSpace hallwaySpace, newSpace;
             Dictionary<Direction, MapSpace> adjacentChars = new Dictionary<Direction, MapSpace>();
             Dictionary<Direction, MapSpace> surroundingChars = new Dictionary<Direction, MapSpace>();
+            var rand = new Random();
 
             // Iterate through the list of hallway endings until all are resolved one way or another.
 
@@ -300,13 +310,29 @@ namespace RogueGame{
                                 deadEnds.Remove(hallwaySpace);
                             break;
                             default:
+                                // If there's no hallway to connect to, just add another space for the next iteration to pick up on.
                                 adjacentChars = SearchAdjacent("" + EMPTY, hallwaySpace.X, hallwaySpace.Y);
                                 if (adjacentChars.ContainsKey(hallDirection))
-                                    levelMap[adjacentChars[hallDirection].X, adjacentChars[hallDirection].Y] = new MapSpace(HALLWAY, adjacentChars[hallDirection]);
+                                {
+                                    newSpace = new MapSpace(HALLWAY, adjacentChars[hallDirection]);
+                                    levelMap[adjacentChars[hallDirection].X, adjacentChars[hallDirection].Y] = newSpace;
+                                    deadEnds.Remove(hallwaySpace);
+                                    deadEnds.Add(newSpace, hallDirection);
+                                }                                    
                                 else if (adjacentChars.ContainsKey(direction90))
-                                    levelMap[adjacentChars[direction90].X, adjacentChars[direction90].Y] = new MapSpace(HALLWAY, adjacentChars[direction90]);
+                                {
+                                    newSpace = new MapSpace(HALLWAY, adjacentChars[direction90]);
+                                    levelMap[adjacentChars[direction90].X, adjacentChars[direction90].Y] = newSpace;
+                                    deadEnds.Remove(hallwaySpace);
+                                    deadEnds.Add(newSpace, direction90);
+                                }
                                 else if (adjacentChars.ContainsKey(direction270))
-                                    levelMap[adjacentChars[direction270].X, adjacentChars[direction270].Y] = new MapSpace(HALLWAY, adjacentChars[direction270]);
+                                {
+                                    newSpace = new MapSpace(HALLWAY, adjacentChars[direction270]);
+                                    levelMap[adjacentChars[direction270].X, adjacentChars[direction270].Y] = newSpace;
+                                    deadEnds.Remove(hallwaySpace);
+                                    deadEnds.Add(newSpace, direction270);
+                                }
                                 break;
 
                         }
@@ -535,7 +561,7 @@ namespace RogueGame{
 
             for (int y = 0; y <= MAP_HT; y++)
             {
-                for (int x = 0; x < MAP_WD; x++)
+                for (int x = 0; x <= MAP_WD; x++)
                     lineValue += levelMap[x, y].DisplayCharacter;
 
                 lineValue += "\n";
