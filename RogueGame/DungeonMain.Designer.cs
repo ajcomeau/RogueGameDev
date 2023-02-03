@@ -28,11 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.lblStatusMsg = new System.Windows.Forms.Label();
             this.lblStats = new System.Windows.Forms.Label();
             this.lblArray = new System.Windows.Forms.Label();
             this.btnGenerate = new System.Windows.Forms.Button();
             this.btnNext = new System.Windows.Forms.Button();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.SuspendLayout();
             // 
             // lblStatusMsg
@@ -74,6 +76,7 @@
             this.btnGenerate.Size = new System.Drawing.Size(101, 23);
             this.btnGenerate.TabIndex = 3;
             this.btnGenerate.Text = "Generate";
+            this.toolTip1.SetToolTip(this.btnGenerate, "Flip through next 100 maps");
             this.btnGenerate.UseVisualStyleBackColor = true;
             this.btnGenerate.Click += new System.EventHandler(this.btnGenerate_Click);
             // 
@@ -85,6 +88,7 @@
             this.btnNext.Size = new System.Drawing.Size(68, 23);
             this.btnNext.TabIndex = 4;
             this.btnNext.Text = "Next";
+            this.toolTip1.SetToolTip(this.btnNext, "Show next map");
             this.btnNext.UseVisualStyleBackColor = true;
             this.btnNext.Click += new System.EventHandler(this.btnNext_Click);
             // 
@@ -117,5 +121,6 @@
         private Label lblArray;
         private Button btnGenerate;
         private Button btnNext;
+        private ToolTip toolTip1;
     }
 }

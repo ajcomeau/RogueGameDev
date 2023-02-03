@@ -9,7 +9,6 @@ using System.Runtime.CompilerServices;
 using System.Collections;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
-using System.Diagnostics;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 namespace RogueGame{
@@ -74,7 +73,6 @@ namespace RogueGame{
             // Verify that the generate map is free of isolated rooms or sections and rooms with no exits.
 
             bool retValue = true;
-            int regionNumber; 
             List<int> regionCheck = new List<int>();
             List<char> dirCheck = new List<char>();
 
@@ -190,75 +188,56 @@ namespace RogueGame{
                     {
                         levelMap[x, y] = new MapSpace(HORIZONTAL, false, false, x, y);
                     }
-
-                    if (x == westWallX || x == eastWallX)
+                    else if (x == westWallX || x == eastWallX)
                     {
                         levelMap[x, y] = new MapSpace(VERTICAL, false, false, x, y);
                     }
-                }
-            }
-
-            // Fill in any blank spaces in array.
-            for (int y = northWallY; y <= southWallY; y++)
-            {
-                for (int x = westWallX; x <= eastWallX; x++)
-                {
-                    if (levelMap[x, y] == null)
+                    else if (levelMap[x, y] == null)
                         levelMap[x, y] = new MapSpace(ROOM_INT, false, false, x, y);
                 }
             }
+
+
 
             // Add doorways and initial hallways on room. Room walls facing the edges of the map do not get exits
             // so the ROOM_EXIT_PCT constant needs to be high to ensure that every room gets at least one and we
             // still might need to repeat the process anyway.
 
             while (doorCount == 0) { 
-                if (regionNumber >= 4)  // North doorways
+                if (regionNumber >= 4 && rand.Next(101) <= ROOM_EXIT_PCT)  // North doorways
                 {
-                    if (rand.Next(101) <= ROOM_EXIT_PCT)
-                    {
-                        doorway = rand.Next(westWallX + 1, eastWallX);
-                        levelMap[doorway, northWallY] = new MapSpace(ROOM_DOOR, false, false, doorway, northWallY);
-                        levelMap[doorway, northWallY - 1] = new MapSpace(HALLWAY, false, false, doorway, northWallY - 1);
-                        deadEnds.Add(levelMap[doorway, northWallY - 1], Direction.North);
-                        doorCount++;
-                    }
+                    doorway = rand.Next(westWallX + 1, eastWallX);
+                    levelMap[doorway, northWallY] = new MapSpace(ROOM_DOOR, false, false, doorway, northWallY);
+                    levelMap[doorway, northWallY - 1] = new MapSpace(HALLWAY, false, false, doorway, northWallY - 1);
+                    deadEnds.Add(levelMap[doorway, northWallY - 1], Direction.North);
+                    doorCount++;
                 }
 
-                if (regionNumber <= 6)  // South doorways
+                if (regionNumber <= 6 && rand.Next(101) <= ROOM_EXIT_PCT)  // South doorways
                 {
-                    if (rand.Next(101) <= ROOM_EXIT_PCT)
-                    {
-                        doorway = rand.Next(westWallX + 1, eastWallX);
-                        levelMap[doorway, southWallY] = new MapSpace(ROOM_DOOR, false, false, doorway, southWallY);
-                        levelMap[doorway, southWallY + 1] = new MapSpace(HALLWAY, false, false, doorway, southWallY + 1);
-                        deadEnds.Add(levelMap[doorway, southWallY + 1], Direction.South);
-                        doorCount++;
-                    }
+                    doorway = rand.Next(westWallX + 1, eastWallX);
+                    levelMap[doorway, southWallY] = new MapSpace(ROOM_DOOR, false, false, doorway, southWallY);
+                    levelMap[doorway, southWallY + 1] = new MapSpace(HALLWAY, false, false, doorway, southWallY + 1);
+                    deadEnds.Add(levelMap[doorway, southWallY + 1], Direction.South);
+                    doorCount++;
                 }
 
-                if ("147258".Contains(regionNumber.ToString()))  // East doorways
+                if ("147258".Contains(regionNumber.ToString()) && rand.Next(101) <= ROOM_EXIT_PCT)  // East doorways
                 {
-                    if (rand.Next(101) <= ROOM_EXIT_PCT)
-                    {
-                        doorway = rand.Next(northWallY + 1, southWallY);
-                        levelMap[eastWallX, doorway] = new MapSpace(ROOM_DOOR, false, false, eastWallX, doorway);
-                        levelMap[eastWallX + 1, doorway] = new MapSpace(HALLWAY, false, false, eastWallX + 1, doorway);
-                        deadEnds.Add(levelMap[eastWallX + 1, doorway], Direction.East);
-                        doorCount++;
-                    }
+                    doorway = rand.Next(northWallY + 1, southWallY);
+                    levelMap[eastWallX, doorway] = new MapSpace(ROOM_DOOR, false, false, eastWallX, doorway);
+                    levelMap[eastWallX + 1, doorway] = new MapSpace(HALLWAY, false, false, eastWallX + 1, doorway);
+                    deadEnds.Add(levelMap[eastWallX + 1, doorway], Direction.East);
+                    doorCount++;
                 }
 
-                if ("258369".Contains(regionNumber.ToString()))  // West doorways
+                if ("258369".Contains(regionNumber.ToString()) && rand.Next(101) <= ROOM_EXIT_PCT)  // West doorways
                 {
-                    if (rand.Next(101) <= ROOM_EXIT_PCT)
-                    {
-                        doorway = rand.Next(northWallY + 1, southWallY);
-                        levelMap[westWallX, doorway] = new MapSpace(ROOM_DOOR, false, false, westWallX, doorway);
-                        levelMap[westWallX - 1, doorway] = new MapSpace(HALLWAY, false, false, westWallX - 1, doorway);
-                        deadEnds.Add(levelMap[westWallX - 1, doorway], Direction.West);
-                        doorCount++;
-                    }
+                    doorway = rand.Next(northWallY + 1, southWallY);
+                    levelMap[westWallX, doorway] = new MapSpace(ROOM_DOOR, false, false, westWallX, doorway);
+                    levelMap[westWallX - 1, doorway] = new MapSpace(HALLWAY, false, false, westWallX - 1, doorway);
+                    deadEnds.Add(levelMap[westWallX - 1, doorway], Direction.West);
+                    doorCount++;
                 }
             }
 
@@ -280,9 +259,8 @@ namespace RogueGame{
             Dictionary<Direction, MapSpace> adjacentChars = new Dictionary<Direction, MapSpace>();
             Dictionary<Direction, MapSpace> surroundingChars = new Dictionary<Direction, MapSpace>();
             var rand = new Random();
-            int roomRegion = 0;
 
-            // Iterate through the list of hallway endings until all are resolved one way or another.
+            // Iterate through the list of hallway endings (deadends) until all are resolved one way or another.
             // Count backwards so we can remove processed items.
 
             // If there are doors on more than one side, the hallway is already connected.
@@ -290,7 +268,7 @@ namespace RogueGame{
             {
                 hallwaySpace = deadEnds.ElementAt(i).Key;
 
-                if (SearchAdjacent("" + ROOM_DOOR, hallwaySpace.X, hallwaySpace.Y).Count > 1)
+                if (SearchAdjacent(ROOM_DOOR, hallwaySpace.X, hallwaySpace.Y).Count > 1)
                     deadEnds.Remove(hallwaySpace);
             }
 
@@ -301,7 +279,7 @@ namespace RogueGame{
                 {
                     hallwaySpace = deadEnds.ElementAt(i).Key;
 
-                    if (SearchAdjacent("" + HALLWAY, hallwaySpace.X, hallwaySpace.Y).Count > 1)
+                    if (SearchAdjacent(HALLWAY, hallwaySpace.X, hallwaySpace.Y).Count > 1)
                         deadEnds.Remove(hallwaySpace);
                 }
 
@@ -341,7 +319,7 @@ namespace RogueGame{
                             default:
                                 // If there's no hallway to connect to, just add another space where possible for the
                                 // next iteration to pick up on.
-                                adjacentChars = SearchAdjacent("" + EMPTY, hallwaySpace.X, hallwaySpace.Y);
+                                adjacentChars = SearchAdjacent(EMPTY, hallwaySpace.X, hallwaySpace.Y);
                                 if (adjacentChars.ContainsKey(hallDirection))
                                 {
                                     newSpace = new MapSpace(HALLWAY, adjacentChars[hallDirection]);
@@ -390,7 +368,7 @@ namespace RogueGame{
                     for (int y = start.Y; y >= end.Y; y--)
                     {
                         levelMap[end.X, y] = new MapSpace(HALLWAY, end.X, y);
-                        if (SearchAdjacent("" + HALLWAY, end.X, y).Count > 1)
+                        if (SearchAdjacent(HALLWAY, end.X, y).Count > 1)
                             break;
                     }
                     break;
@@ -398,7 +376,7 @@ namespace RogueGame{
                     for (int y = start.Y; y <= end.Y; y++)
                     {
                         levelMap[end.X, y] = new MapSpace(HALLWAY, end.X, y);
-                        if (SearchAdjacent("" + HALLWAY, end.X, y).Count > 1)
+                        if (SearchAdjacent(HALLWAY, end.X, y).Count > 1)
                             break;
                     }
                     break;
@@ -406,7 +384,7 @@ namespace RogueGame{
                     for (int x = start.X; x <= end.X; x++)
                     {
                         levelMap[x, end.Y] = new MapSpace(HALLWAY, x, end.Y);
-                        if (SearchAdjacent("" + HALLWAY, x, end.Y).Count > 1)
+                        if (SearchAdjacent(HALLWAY, x, end.Y).Count > 1)
                             break;
                     }
                     break;
@@ -414,7 +392,7 @@ namespace RogueGame{
                     for (int x = start.X; x >= end.X; x--)
                     {
                         levelMap[x, end.Y] = new MapSpace(HALLWAY, x, end.Y);
-                        if (SearchAdjacent("" + HALLWAY, x, end.Y).Count > 1)
+                        if (SearchAdjacent(HALLWAY, x, end.Y).Count > 1)
                             break;
                     }
                     break;           
@@ -437,29 +415,25 @@ namespace RogueGame{
             return retValue;
         }
 
-        private Dictionary<Direction, MapSpace> SearchAdjacent(string characters, int x, int y)
+        private Dictionary<Direction, MapSpace> SearchAdjacent(char character, int x, int y)
         {
 
             // Search for specific character in four directions around point.
             // Return list of directions and characters found.
 
-            Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>(); 
+            Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
 
-            foreach (char c in characters)
-            {
-                if (y - 1 >= 0 && levelMap[x, y - 1].MapCharacter == c)  // North
-                    retValue.Add(Direction.North, levelMap[x, y - 1]);
+            if (y - 1 >= 0 && levelMap[x, y - 1].MapCharacter == character)  // North
+                retValue.Add(Direction.North, levelMap[x, y - 1]);
 
-                if (x + 1 <= MAP_WD && levelMap[x + 1, y].MapCharacter == c) // East
-                    retValue.Add(Direction.East, levelMap[x + 1, y]);
+            if (x + 1 <= MAP_WD && levelMap[x + 1, y].MapCharacter == character) // East
+                retValue.Add(Direction.East, levelMap[x + 1, y]);
 
-                if (y + 1 <= MAP_HT && levelMap[x, y + 1].MapCharacter == c)  // South
-                    retValue.Add(Direction.South, levelMap[x, y + 1]);
+            if (y + 1 <= MAP_HT && levelMap[x, y + 1].MapCharacter == character)  // South
+                retValue.Add(Direction.South, levelMap[x, y + 1]);
 
-                if ((x - 1) >= 0 && levelMap[x - 1, y].MapCharacter == c)  // West
-                    retValue.Add(Direction.West, levelMap[x - 1, y]);
-            }
-            
+            if ((x - 1) >= 0 && levelMap[x - 1, y].MapCharacter == character)  // West
+                retValue.Add(Direction.West, levelMap[x - 1, y]);
 
             return retValue;
         }
@@ -565,75 +539,47 @@ namespace RogueGame{
 
 
         internal class MapSpace{
-            private char mapChar;           // Actual character on map.
-            private char displayChar;       // Displayed character - space for hidden object.
-            private bool searchToDisp;      // Does the player need to search to reveal?
-            private int xc;                   // X coordinate
-            private int yc;                  // Y coordinate
-            
-            public char MapCharacter
-            {
-                get { return mapChar; }
-                set { mapChar = value; }
-            }
-
-            public char DisplayCharacter
-            {
-                get { return displayChar; }
-                set { displayChar = value; }
-            }
-            public bool SearchRequired
-            {
-                get { return searchToDisp; }
-            }
-
-            public int X
-            {
-                get { return xc; }
-                set { xc = value; }
-            }
-
-            public int Y
-            {
-                get { return yc; }
-                set { yc = value; }
-            }
+            public char MapCharacter { get; set; } // Actual character on map.
+            public bool SearchRequired { get; set; }  // Does the player need to search to reveal?
+            public char DisplayCharacter { get; set; }  // Displayed character - space for hidden object.
+            public int X { get; set; }
+            public int Y { get; set; }
 
             public MapSpace()
             {
                 // Create blank space for map
-                mapChar = ' ';
-                displayChar = ' ';
-                searchToDisp = false;
-                xc = 0;
-                yc = 0;
+                MapCharacter = ' ';
+                DisplayCharacter = ' ';
+                SearchRequired = false;
+                X = 0;
+                Y = 0;
             }
 
             public MapSpace(char mapChar, MapSpace oldSpace)
             {
-                this.mapChar = mapChar;
-                this.displayChar = mapChar;
-                this.searchToDisp= oldSpace.searchToDisp;
-                this.xc= oldSpace.X; this.yc= oldSpace.Y;    
+                this.MapCharacter = mapChar;
+                this.DisplayCharacter = mapChar;
+                this.SearchRequired = oldSpace.SearchRequired;
+                this.X = oldSpace.X; this.Y = oldSpace.Y;    
             }
 
             public MapSpace(char mapChar, int X, int Y)
             {
                 // Create visible character
-                this.mapChar = mapChar;
-                this.displayChar = false ? ' ' : mapChar;
-                this.searchToDisp = false;
-                this.xc = X;
-                this.yc = Y;
+                this.MapCharacter = mapChar;
+                this.DisplayCharacter = false ? ' ' : mapChar;
+                this.SearchRequired = false;
+                this.X = X;
+                this.Y = Y;
             }
 
             public MapSpace(char mapChar, Boolean hidden, Boolean search, int X, int Y)
             {
-                this.mapChar = mapChar;
-                this.displayChar = hidden ? ' ' : mapChar;
-                this.searchToDisp = search;
-                this.xc = X;
-                this.yc = Y; 
+                this.MapCharacter = mapChar;
+                this.DisplayCharacter = hidden ? ' ' : mapChar;
+                this.SearchRequired = search;
+                this.X = X;
+                this.Y = Y; 
             }
          }
     }
