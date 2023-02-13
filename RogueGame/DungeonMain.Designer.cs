@@ -63,17 +63,19 @@
             this.lblArray.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblArray.Font = new System.Drawing.Font("Consolas", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.lblArray.Location = new System.Drawing.Point(0, 0);
+            this.lblArray.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblArray.Name = "lblArray";
-            this.lblArray.Size = new System.Drawing.Size(998, 643);
+            this.lblArray.Size = new System.Drawing.Size(997, 643);
             this.lblArray.TabIndex = 2;
             this.lblArray.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // btnGenerate
             // 
             this.btnGenerate.ForeColor = System.Drawing.Color.Black;
-            this.btnGenerate.Location = new System.Drawing.Point(885, 608);
+            this.btnGenerate.Location = new System.Drawing.Point(886, 608);
+            this.btnGenerate.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.btnGenerate.Name = "btnGenerate";
-            this.btnGenerate.Size = new System.Drawing.Size(101, 23);
+            this.btnGenerate.Size = new System.Drawing.Size(102, 22);
             this.btnGenerate.TabIndex = 3;
             this.btnGenerate.Text = "Generate";
             this.toolTip1.SetToolTip(this.btnGenerate, "Flip through next 100 maps");
@@ -83,9 +85,10 @@
             // btnNext
             // 
             this.btnNext.ForeColor = System.Drawing.Color.Black;
-            this.btnNext.Location = new System.Drawing.Point(795, 608);
+            this.btnNext.Location = new System.Drawing.Point(794, 608);
+            this.btnNext.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.btnNext.Name = "btnNext";
-            this.btnNext.Size = new System.Drawing.Size(68, 23);
+            this.btnNext.Size = new System.Drawing.Size(68, 22);
             this.btnNext.TabIndex = 4;
             this.btnNext.Text = "Next";
             this.toolTip1.SetToolTip(this.btnNext, "Show next map");
@@ -97,7 +100,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
-            this.ClientSize = new System.Drawing.Size(998, 643);
+            this.ClientSize = new System.Drawing.Size(997, 643);
             this.Controls.Add(this.btnNext);
             this.Controls.Add(this.btnGenerate);
             this.Controls.Add(this.lblStats);
