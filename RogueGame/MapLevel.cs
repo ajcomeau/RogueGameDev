@@ -35,16 +35,16 @@ namespace RogueGame{
         private const char ROOM_DOOR = '╬';
         private const char HALLWAY = '▓';
         private const char EMPTY = ' ';
-        private const byte REGION_WD = 26;           //  Width / height of region holding single room.
-        private const byte REGION_HT = 8;
-        private const byte MAP_WD = 78;              // Max width / height of map display.
-        private const byte MAP_HT = 24;
-        private const byte MAX_ROOM_WT = 24;         // Based on screen width of 80, 78 allowed
-        private const byte MAX_ROOM_HT = 6;          // Based on screen height of 25, 24 allowed
-        private const byte MIN_ROOM_WT = 4;          // Minimum width / height of single room.
-        private const byte MIN_ROOM_HT = 4;
-        private const byte ROOM_CREATE_PCT = 90;       // Probability that room will be created for one region.
-        private const byte ROOM_EXIT_PCT = 90;       // Probability that room wall will contain exit.
+        private const int REGION_WD = 26;           //  Width / height of region holding single room.
+        private const int REGION_HT = 8;
+        private const int MAP_WD = 78;              // Max width / height of map display.
+        private const int MAP_HT = 24;
+        private const int MAX_ROOM_WT = 24;         // Based on screen width of 80, 78 allowed
+        private const int MAX_ROOM_HT = 6;          // Based on screen height of 25, 24 allowed
+        private const int MIN_ROOM_WT = 4;          // Minimum width / height of single room.
+        private const int MIN_ROOM_HT = 4;
+        private const int ROOM_CREATE_PCT = 90;       // Probability that room will be created for one region.
+        private const int ROOM_EXIT_PCT = 90;       // Probability that room wall will contain exit.
 
         // Array to hold map definition.
         private MapSpace[,] levelMap = new MapSpace[80, 25];
@@ -63,9 +63,9 @@ namespace RogueGame{
             // Constructor - generate a new map for this level.
             MapGeneration();
 
-            while(!VerifyMap())
+            while (!VerifyMap())
                 MapGeneration();
-            
+
         }
 
         private bool VerifyMap()
