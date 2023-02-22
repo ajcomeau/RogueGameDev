@@ -30,9 +30,9 @@ namespace RogueGame
 
         }
 
-        private void btnNext_Click(object sender, EventArgs e)
-        {
-            LoadMapLevel();
-        }
+private void btnNext_Click(object sender, EventArgs e)
+{
+    LoadMapLevel();
+}
     }
 }

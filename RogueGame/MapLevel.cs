@@ -16,13 +16,30 @@ namespace RogueGame{
     internal class MapLevel
     {
 
-        private enum Direction {
+        private enum Direction
+        {
             None = 0,
             North = 1,
             East = 2,
             South = -1,
             West = -2
         }
+
+        private enum RoomChars
+        {
+            Horizontal = '═',
+            Vertical = '║',
+        }
+
+        private enum RoomDimensions
+        {
+            RegionWidth = 26,
+            RegionHeight = 8
+        }
+
+        // Dictionary to hold hallway endings during map generation.
+        private Dictionary<MapSpace, Direction> deadEnds = 
+            new Dictionary<MapSpace, Direction>();
 
         // Box drawing constants and other symbols.
         private const char HORIZONTAL = '═';        // Unicode symbols can be copy-pasted from https://www.w3.org/TR/xml-entity-names/025.html.  
@@ -48,8 +65,7 @@ namespace RogueGame{
 
         // Array to hold map definition.
         private MapSpace[,] levelMap = new MapSpace[80, 25];
-        // Dictionary to hold hallway endings during map generation.
-        private Dictionary<MapSpace, Direction> deadEnds = new Dictionary<MapSpace, Direction>();  
+
 
         public MapSpace[,] LevelMap
         {
@@ -123,7 +139,7 @@ namespace RogueGame{
             
             var rand = new Random();
             int roomWidth = 0, roomHeight = 0, roomAnchorX = 0, roomAnchorY = 0;
-
+            int[,,] ints = new int[10, 10, 10];
             // Clear map by creating new array of map spaces.
             levelMap = new MapSpace[80, 25];
 
@@ -150,7 +166,8 @@ namespace RogueGame{
                 }
             }
 
-            // After the rooms are generated, fill in the blanks for the remaining cells.
+            // After the rooms are generated, fill in the
+            // blanks for the remaining cells.
             for (int y = 0; y < 25; y++)
             {
                 for (int x = 0; x < 80; x++)
@@ -170,8 +187,8 @@ namespace RogueGame{
         {
             // Create room on map based on inputs
 
-            int eastWallX = westWallX + roomWidth;          // Calculate room width
-            int southWallY = northWallY + roomHeight;       // Calculate room height
+            int eastWallX = westWallX + roomWidth;          // Calculate room east
+            int southWallY = northWallY + roomHeight;       // Calculate room south
 
             // Regions are defined 1 to 9, L to R, top to bottom.
             int regionNumber = GetRegionNumber(westWallX, northWallY);
@@ -299,20 +316,20 @@ namespace RogueGame{
                         switch (true)
                         {
                             case true when (surroundingChars[hallDirection].MapCharacter == HALLWAY):
-                                Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
-                                    $"{surroundingChars[hallDirection].X}, {surroundingChars[hallDirection].Y}.");
+                                //Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
+                                //    $"{surroundingChars[hallDirection].X}, {surroundingChars[hallDirection].Y}.");
                                 DrawHallway(hallwaySpace, surroundingChars[hallDirection], hallDirection);
                                 deadEnds.Remove(hallwaySpace);
                             break;
                             case true when (surroundingChars[direction90].MapCharacter == HALLWAY):
-                                Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
-                                    $"{surroundingChars[direction90].X}, {surroundingChars[direction90].Y}.");
+                                //Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
+                                //    $"{surroundingChars[direction90].X}, {surroundingChars[direction90].Y}.");
                                 DrawHallway(hallwaySpace, surroundingChars[direction90], direction90);
                                 deadEnds.Remove(hallwaySpace);
                             break;
                             case true when (surroundingChars[direction270].MapCharacter == HALLWAY):
-                                Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
-                                    $"{surroundingChars[direction270].X}, {surroundingChars[direction270].Y}.");
+                                //Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
+                                //    $"{surroundingChars[direction270].X}, {surroundingChars[direction270].Y}.");
                                 DrawHallway(hallwaySpace, surroundingChars[direction270], direction270);
                                 deadEnds.Remove(hallwaySpace);
                             break;
@@ -349,7 +366,7 @@ namespace RogueGame{
                         deadEnds.Remove(hallwaySpace);
                     }
 
-                    Console.Write(MapText());
+                    //Console.Write(MapText());
                 }
             }
 
@@ -507,35 +524,60 @@ namespace RogueGame{
 
             int returnVal;
 
-            int regionX = ((int)RoomAnchorX / 26) + 1;
-            int regionY = ((int)RoomAnchorY / 8) + 1;
+            int regionX = ((int)RoomAnchorX / REGION_WD) + 1;
+            int regionY = ((int)RoomAnchorY / REGION_HT) + 1;
 
             returnVal = (regionX) + ((regionY - 1) * 3);
 
             return returnVal;
         }
 
+        //public string MapText()
+        //{
+        //    //Output the array to text for display.
+
+        //    string retValue = "";
+        //    double runTime;
+        //    DateTime startTime = DateTime.Now;
+
+        //    // Iterate through the two-dimensional array and concatenate the
+        //    // display characters into rows and columns for display.
+        //    for (int y = 0; y <= MAP_HT; y++)
+        //    {
+        //        for (int x = 0; x <= MAP_WD; x++)
+        //            retValue += levelMap[x, y].DisplayCharacter;
+
+        //        retValue += "\n";
+        //    }
+
+        //    // Output the time this took and return the value.
+        //    runTime = (DateTime.Now - startTime).TotalMilliseconds;
+        //    Debug.Write($"Simple concatenation of the array took {runTime} milliseconds.\n");
+        //    return retValue;
+        //}
+
         public string MapText()
         {
             // Output the array to text for display.
-            string lineValue = "", retValue = "";
+            StringBuilder sbReturn = new StringBuilder();
+            double runTime;
+            DateTime startTime = DateTime.Now;
 
+            // Iterate through the two-dimensional array and use StringBuilder to 
+            // concatenate the display characters into rows and columns for display.
             for (int y = 0; y <= MAP_HT; y++)
             {
                 for (int x = 0; x <= MAP_WD; x++)
-                    lineValue += levelMap[x, y].DisplayCharacter;
+                    sbReturn.Append(levelMap[x, y].DisplayCharacter);
 
-                lineValue += "\n";
-
-                // Add new line character.
-                retValue += lineValue;
-                lineValue = "";
+                sbReturn.Append("\n");
             }
-            Debug.Write(retValue);
-            return retValue;
+
+            // Output the time this took and return the value.
+            runTime = (DateTime.Now - startTime).TotalMilliseconds;
+            Debug.Write($"StringBuilder concatenation of the array toook {runTime} milliseconds.\n");
+            return sbReturn.ToString();
         }
-
-
 
 
         internal class MapSpace{
@@ -567,7 +609,7 @@ namespace RogueGame{
             {
                 // Create visible character
                 this.MapCharacter = mapChar;
-                this.DisplayCharacter = false ? ' ' : mapChar;
+                this.DisplayCharacter = mapChar;
                 this.SearchRequired = false;
                 this.X = X;
                 this.Y = Y;
