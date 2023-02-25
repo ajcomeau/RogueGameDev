@@ -430,7 +430,7 @@ namespace RogueGame{
         private Direction GetDirection270(Direction startingDirection)
         {
             // Return direction 270 degrees from original (opposite of 90 degrees) based on forward direction.
-            Direction retValue = (Math.Abs((int)startingDirection) == 1) ? (Direction)1 : (Direction)1;
+            Direction retValue = (Math.Abs((int)startingDirection) == 1) ? (Direction)2 : (Direction)1;
             retValue = (Direction)((int)retValue * -1);
             return retValue;
         }
