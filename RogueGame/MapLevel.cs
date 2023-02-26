@@ -274,7 +274,7 @@ namespace RogueGame{
             Direction hallDirection = Direction.None; Direction direction90; Direction direction270;
             MapSpace hallwaySpace, newSpace;
             Dictionary<Direction, MapSpace> adjacentChars = new Dictionary<Direction, MapSpace>();
-            Dictionary<Direction, MapSpace> surroundingChars = new Dictionary<Direction, MapSpace>();
+            Dictionary<Direction, MapSpace?> surroundingChars = new Dictionary<Direction, MapSpace?>();
             var rand = new Random();
 
             // Iterate through the list of hallway endings (deadends) until all are resolved one way or another.
@@ -315,26 +315,32 @@ namespace RogueGame{
 
                         switch (true)
                         {
-                            case true when (surroundingChars.ContainsKey(hallDirection) && 
-                                surroundingChars[hallDirection].MapCharacter == HALLWAY):
-                                //Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
-                                //    $"{surroundingChars[hallDirection].X}, {surroundingChars[hallDirection].Y}.");
+                            case true when (surroundingChars[hallDirection] != null && 
+                                    surroundingChars[hallDirection].MapCharacter == HALLWAY):
+                                Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
+                                    $"{surroundingChars[hallDirection].X}, {surroundingChars[hallDirection].Y}.");
+
                                 DrawHallway(hallwaySpace, surroundingChars[hallDirection], hallDirection);
-                                deadEnds.Remove(hallwaySpace);
-                            break;
-                            case true when (surroundingChars.ContainsKey(direction90) && 
-                                surroundingChars[direction90].MapCharacter == HALLWAY):
-                                //Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
-                                //    $"{surroundingChars[direction90].X}, {surroundingChars[direction90].Y}.");
+                                    deadEnds.Remove(hallwaySpace);
+
+                                break;
+                            case true when (surroundingChars[direction90] != null && 
+                                    surroundingChars[direction90].MapCharacter == HALLWAY):
+                                Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
+                                    $"{surroundingChars[direction90].X}, {surroundingChars[direction90].Y}.");
+
                                 DrawHallway(hallwaySpace, surroundingChars[direction90], direction90);
-                                deadEnds.Remove(hallwaySpace);
-                            break;
-                            case true when (surroundingChars.ContainsKey(direction270) && 
-                                surroundingChars[direction270].MapCharacter == HALLWAY):
-                                //Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
-                                //    $"{surroundingChars[direction270].X}, {surroundingChars[direction270].Y}.");
+                                    deadEnds.Remove(hallwaySpace);
+
+                                break;
+                            case true when (surroundingChars[direction270] != null && 
+                                    surroundingChars[direction270].MapCharacter == HALLWAY):
+                                Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
+                                    $"{surroundingChars[direction270].X}, {surroundingChars[direction270].Y}.");
+
                                 DrawHallway(hallwaySpace, surroundingChars[direction270], direction270);
-                                deadEnds.Remove(hallwaySpace);
+                                    deadEnds.Remove(hallwaySpace);
+
                             break;
                             default:
                                 // If there's no hallway to connect to, just add another space where possible for the
@@ -473,31 +479,32 @@ namespace RogueGame{
             return retValue;
         }
 
-        private Dictionary<Direction, MapSpace> SearchAllDirections(int currentX, int currentY)
+        private Dictionary<Direction, MapSpace?> SearchAllDirections(int currentX, int currentY)
         {
             // Look in all directions and return a Dictionary of the first non-space characters found.
-            Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
+            Dictionary<Direction, MapSpace?> retValue = new Dictionary<Direction, MapSpace?>();
 
             retValue.Add(Direction.North, SearchDirection(Direction.North, currentX, currentY - 1));
             retValue.Add(Direction.South, SearchDirection(Direction.South, currentX, currentY + 1));
             retValue.Add(Direction.East, SearchDirection(Direction.East, currentX + 1, currentY));
             retValue.Add(Direction.West, SearchDirection(Direction.West, currentX - 1, currentY));
 
-            foreach(KeyValuePair<Direction, MapSpace> kvp in retValue)
-            {
-                if(kvp.Value.MapCharacter == EMPTY)
-                    retValue.Remove(kvp.Key);
-            }
+            //foreach(KeyValuePair<Direction, MapSpace> kvp in retValue)
+            //{
+            //    if(kvp.Value.MapCharacter == EMPTY)
+            //        retValue.Remove(kvp.Key);
+            //}
 
             return retValue;
 
         }
 
-        private MapSpace SearchDirection(Direction direction, int startX, int startY)
+        private MapSpace? SearchDirection(Direction direction, int startX, int startY)
         {
             // Get the next non-space object found in a given direction.
-            // Return the end space even if there's nothing there.
+            // Return null if none is found.
             int currentX = startX, currentY = startY;
+            MapSpace? retValue = null;
 
             currentY = (currentY > MAP_HT) ? MAP_HT : currentY; 
             currentY = (currentY < 0) ? 0 : currentY;
@@ -524,7 +531,11 @@ namespace RogueGame{
                     break;
             }
 
-            return levelMap[currentX, currentY];
+
+            if (levelMap[currentX, currentY].MapCharacter != EMPTY)
+                retValue = levelMap[currentX, currentY];
+
+            return retValue;
         }
 
         private int GetRegionNumber(int RoomAnchorX, int RoomAnchorY)
@@ -585,7 +596,7 @@ namespace RogueGame{
 
             // Output the time this took and return the value.
             runTime = (DateTime.Now - startTime).TotalMilliseconds;
-            Debug.Write($"StringBuilder concatenation of the array toook {runTime} milliseconds.\n");
+            //Debug.Write($"StringBuilder concatenation of the array toook {runTime} milliseconds.\n");
             return sbReturn.ToString();
         }
 
