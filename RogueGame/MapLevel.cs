@@ -28,6 +28,8 @@ namespace RogueGame{
         private Dictionary<MapSpace, Direction> deadEnds = 
             new Dictionary<MapSpace, Direction>();
 
+        // Random generator
+        
         // Box drawing constants and other symbols.
         private const char HORIZONTAL = '═';        // Unicode symbols can be copy-pasted from https://www.w3.org/TR/xml-entity-names/025.html.  
         private const char VERTICAL = '║';
@@ -39,6 +41,7 @@ namespace RogueGame{
         private const char ROOM_DOOR = '╬';
         private const char HALLWAY = '▓';
         private const char STAIRWAY = '≣';
+        private const char GOLD = '*';
         private const char EMPTY = ' ';
         private const int REGION_WD = 26;           //  Width / height of region holding single room.
         private const int REGION_HT = 8;
@@ -50,10 +53,13 @@ namespace RogueGame{
         private const int MIN_ROOM_HT = 4;
         private const int ROOM_CREATE_PCT = 90;       // Probability that room will be created for one region.
         private const int ROOM_EXIT_PCT = 90;       // Probability that room wall will contain exit.
+        private const int ROOM_GOLD_PCT = 50;       // Probability that a room will have gold.
 
         // Array to hold map definition.
         private MapSpace[,] levelMap = new MapSpace[80, 25];
-
+        
+        // Random number generator
+        private static Random rand = new Random();
 
         public MapSpace[,] LevelMap
         {
@@ -123,7 +129,7 @@ namespace RogueGame{
             // Room exterior must be at least four spaces in each direction but not more than the
             // size of its cell region, minus one space, to allow for hallways between rooms.
             
-            var rand = new Random();
+            //var rand = new Random();
             int roomWidth = 0, roomHeight = 0, roomAnchorX = 0, roomAnchorY = 0;
 
             // Clear map by creating new array of map spaces.
@@ -170,7 +176,7 @@ namespace RogueGame{
 
         private void AddStairway()
         {
-            var rand = new Random();
+            //var rand = new Random();
             int x = 1; int y = 1;
 
             // Search the array randomly for an interior room space
@@ -193,9 +199,9 @@ namespace RogueGame{
 
             // Regions are defined 1 to 9, L to R, top to bottom.
             int regionNumber = GetRegionNumber(westWallX, northWallY);
-            int doorway = 0, doorCount = 0;
+            int doorway = 0, doorCount = 0, goldX, goldY;
             
-            var rand = new Random();
+            //var rand = new Random();
 
             // Create horizontal and vertical walls for room.
             for (int y = northWallY; y <= southWallY; y++)
@@ -263,6 +269,22 @@ namespace RogueGame{
             levelMap[eastWallX, northWallY] = new MapSpace(CORNER_NE, false, false, eastWallX, northWallY);
             levelMap[westWallX, southWallY] = new MapSpace(CORNER_SW, false, false, westWallX, southWallY);
             levelMap[eastWallX, southWallY] = new MapSpace(CORNER_SE, false, false, eastWallX, southWallY);
+
+            // Evaluate for a gold stash
+
+            if(rand.Next(1, 101) > ROOM_GOLD_PCT)
+            {
+                goldX = westWallX; goldY = northWallY;
+                // Search the room randomly for an empty interior room space
+                // and mark it as a gold stash.
+                while (levelMap[goldX, goldY].MapCharacter != ROOM_INT)
+                {
+                    goldX = rand.Next(westWallX + 1, eastWallX);
+                    goldY = rand.Next(northWallY + 1, southWallY);
+                }
+
+                levelMap[goldX, goldY] = new MapSpace(GOLD, goldX, goldY);
+            }
         }
 
         private void HallwayGeneration()
@@ -273,7 +295,7 @@ namespace RogueGame{
             MapSpace hallwaySpace, newSpace;
             Dictionary<Direction, MapSpace> adjacentChars = new Dictionary<Direction, MapSpace>();
             Dictionary<Direction, MapSpace> surroundingChars = new Dictionary<Direction, MapSpace>();
-            var rand = new Random();
+            //var rand = new Random();
 
             // Iterate through the list of hallway endings (deadends) until all are resolved one way or another.
             // Count backwards so we can remove processed items.
