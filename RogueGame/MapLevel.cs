@@ -15,7 +15,6 @@ namespace RogueGame{
 
     internal class MapLevel
     {
-
         private enum Direction
         {
             None = 0,
@@ -24,15 +23,6 @@ namespace RogueGame{
             South = -1,
             West = -2
         }
-
-        public enum GameScreens
-        {
-            Title,
-            Victory,
-            Scores
-        }
-
-
 
         // Dictionary to hold hallway endings during map generation.
         private Dictionary<MapSpace, Direction> deadEnds = 
@@ -48,6 +38,7 @@ namespace RogueGame{
         private const char ROOM_INT = '.';
         private const char ROOM_DOOR = '╬';
         private const char HALLWAY = '▓';
+        private const char STAIRWAY = '≣';
         private const char EMPTY = ' ';
         private const int REGION_WD = 26;           //  Width / height of region holding single room.
         private const int REGION_HT = 8;
@@ -83,15 +74,12 @@ namespace RogueGame{
             }
         }
 
-
-
         private bool VerifyMap()
         {
             // Verify that the generate map is free of isolated rooms or sections.
 
             bool retValue = true;
             List<char> dirCheck = new List<char>();
-
 
             // Check horizontal for blank rows which no hallways. Top and bottom might be legitimately blank
             // so just check a portion of the map.
@@ -125,8 +113,6 @@ namespace RogueGame{
                 }
             }
 
-
-
             return retValue;
         }
 
@@ -139,11 +125,9 @@ namespace RogueGame{
             
             var rand = new Random();
             int roomWidth = 0, roomHeight = 0, roomAnchorX = 0, roomAnchorY = 0;
-            int[,,] ints = new int[10, 10, 10];
+
             // Clear map by creating new array of map spaces.
             levelMap = new MapSpace[80, 25];
-            double runTime;
-            DateTime startTime = DateTime.Now;
 
             // Define the map left to right, top to bottom.
             // Increment the count based on a third of the way in each direction.
@@ -179,13 +163,25 @@ namespace RogueGame{
                 }
             }
 
-
-            // Create hallways
+            // Create hallways and add stairway
             HallwayGeneration();
+            AddStairway();
+        }
 
-            runTime = (DateTime.Now - startTime).TotalMilliseconds;
-            Debug.Write($"Map generation took {runTime} milliseconds.\n");
+        private void AddStairway()
+        {
+            var rand = new Random();
+            int x = 1; int y = 1;
 
+            // Search the array randomly for an interior room space
+            // and mark it as a hallway.
+            while (levelMap[x,y].MapCharacter != ROOM_INT)
+            {
+                x = rand.Next(1, MAP_WD);
+                y = rand.Next(1, MAP_HT);
+            }
+
+            levelMap[x,y] = new MapSpace(STAIRWAY, x, y);
         }
 
         private void RoomGeneration(int westWallX, int northWallY, int roomWidth, int roomHeight)
@@ -218,8 +214,6 @@ namespace RogueGame{
                         levelMap[x, y] = new MapSpace(ROOM_INT, false, false, x, y);
                 }
             }
-
-
 
             // Add doorways and initial hallways on room. Room walls facing the edges of the map do not get exits
             // so the ROOM_EXIT_PCT constant needs to be high to ensure that every room gets at least one and we
@@ -270,7 +264,6 @@ namespace RogueGame{
             levelMap[westWallX, southWallY] = new MapSpace(CORNER_SW, false, false, westWallX, southWallY);
             levelMap[eastWallX, southWallY] = new MapSpace(CORNER_SE, false, false, eastWallX, southWallY);
         }
-
 
         private void HallwayGeneration()
         {
@@ -383,10 +376,7 @@ namespace RogueGame{
                     //Console.Write(MapText());
                 }
             }
-
-
-        }           
-    
+        }        
 
         private void DrawHallway(MapSpace start, MapSpace end, Direction hallDirection)
         {
@@ -428,7 +418,6 @@ namespace RogueGame{
                     }
                     break;           
             }
-
         }
 
         private Direction GetDirection90(Direction startingDirection)
@@ -468,7 +457,6 @@ namespace RogueGame{
 
             return retValue;
         }
-
         private Dictionary<Direction, MapSpace> SearchAdjacent(int x, int y)
         {
 
@@ -496,7 +484,6 @@ namespace RogueGame{
 
             return retValue;
         }
-
         private MapSpace SearchDirection(Direction direction, int startX, int startY)
         {
             // Get the next non-space object found in a given direction.
@@ -529,13 +516,11 @@ namespace RogueGame{
                     break;
             }
 
-
             if (levelMap[currentX, currentY].MapCharacter != EMPTY)
                 retValue = levelMap[currentX, currentY];
 
             return retValue;
         }
-
         private int GetRegionNumber(int RoomAnchorX, int RoomAnchorY)
         {
             // The map is divided into a 3 x 3 grid of 9 equal regions.

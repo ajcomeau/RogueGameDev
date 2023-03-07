@@ -20,6 +20,7 @@ namespace RogueGame
             this.CurrentMap = new MapLevel();
             this.CurentPlayer = new Player("Rogue");
             this.CurrentTurn = 0;
+            
         }
     }
 }
