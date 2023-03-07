@@ -2,37 +2,23 @@ namespace RogueGame
 {
     public partial class DungeonMain : Form
     {
+        Game currentGame;
+
         public DungeonMain()
         {
             InitializeComponent();
+            currentGame = new Game();
         }
 
         private void DungeonMain_Load(object sender, EventArgs e)
         {
-            LoadMapLevel();
-
+            lblArray.Text = currentGame.CurrentMap.MapText();
         }
 
-        private void LoadMapLevel()
+
+        private void DungeonMain_KeyDown(object sender, KeyEventArgs e)
         {
-            MapLevel newLevel = new MapLevel();
-
-            lblArray.Text = newLevel.MapText();
-            Application.DoEvents();
+            MessageBox.Show(e.KeyValue.ToString());
         }
-
-        private void btnGenerate_Click(object sender, EventArgs e)
-        {
-            for (int i = 0; i < 101; i++)
-            {
-                LoadMapLevel();
-            }
-
-        }
-
-private void btnNext_Click(object sender, EventArgs e)
-{
-    LoadMapLevel();
-}
     }
 }

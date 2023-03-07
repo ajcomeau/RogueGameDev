@@ -25,17 +25,14 @@ namespace RogueGame{
             West = -2
         }
 
-        private enum RoomChars
+        public enum GameScreens
         {
-            Horizontal = '═',
-            Vertical = '║',
+            Title,
+            Victory,
+            Scores
         }
 
-        private enum RoomDimensions
-        {
-            RegionWidth = 26,
-            RegionHeight = 8
-        }
+
 
         // Dictionary to hold hallway endings during map generation.
         private Dictionary<MapSpace, Direction> deadEnds = 
@@ -80,22 +77,25 @@ namespace RogueGame{
             MapGeneration();
 
             while (!VerifyMap())
+            {
+                Debug.WriteLine(MapText());
                 MapGeneration();
-
+            }
         }
+
+
 
         private bool VerifyMap()
         {
-            // Verify that the generate map is free of isolated rooms or sections and rooms with no exits.
+            // Verify that the generate map is free of isolated rooms or sections.
 
             bool retValue = true;
-            List<int> regionCheck = new List<int>();
             List<char> dirCheck = new List<char>();
 
 
             // Check horizontal for blank rows which no hallways. Top and bottom might be legitimately blank
             // so just check a portion of the map.
-            
+
             for (int y = REGION_HT - MIN_ROOM_HT; y < (REGION_HT * 2) + MIN_ROOM_HT; y++)
             {
                 dirCheck.Clear();
@@ -126,8 +126,8 @@ namespace RogueGame{
             }
 
 
-            return retValue;
 
+            return retValue;
         }
 
         private void MapGeneration()
@@ -142,6 +142,8 @@ namespace RogueGame{
             int[,,] ints = new int[10, 10, 10];
             // Clear map by creating new array of map spaces.
             levelMap = new MapSpace[80, 25];
+            double runTime;
+            DateTime startTime = DateTime.Now;
 
             // Define the map left to right, top to bottom.
             // Increment the count based on a third of the way in each direction.
@@ -180,6 +182,9 @@ namespace RogueGame{
 
             // Create hallways
             HallwayGeneration();
+
+            runTime = (DateTime.Now - startTime).TotalMilliseconds;
+            Debug.Write($"Map generation took {runTime} milliseconds.\n");
 
         }
 
@@ -574,8 +579,6 @@ namespace RogueGame{
         {
             // Output the array to text for display.
             StringBuilder sbReturn = new StringBuilder();
-            double runTime;
-            DateTime startTime = DateTime.Now;
 
             // Iterate through the two-dimensional array and use StringBuilder to 
             // concatenate the display characters into rows and columns for display.
@@ -584,12 +587,9 @@ namespace RogueGame{
                 for (int x = 0; x <= MAP_WD; x++)
                     sbReturn.Append(levelMap[x, y].DisplayCharacter);
 
-                sbReturn.Append("\n");
+                sbReturn.Append("\n");                
             }
 
-            // Output the time this took and return the value.
-            runTime = (DateTime.Now - startTime).TotalMilliseconds;
-            //Debug.Write($"StringBuilder concatenation of the array toook {runTime} milliseconds.\n");
             return sbReturn.ToString();
         }
 
