@@ -33,6 +33,11 @@
             this.lblStats = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.lblArray = new System.Windows.Forms.Label();
+            this.pnlName = new System.Windows.Forms.Panel();
+            this.btnStart = new System.Windows.Forms.Button();
+            this.txtName = new System.Windows.Forms.TextBox();
+            this.lblQuestion = new System.Windows.Forms.Label();
+            this.pnlName.SuspendLayout();
             this.SuspendLayout();
             // 
             // lblStatusMsg
@@ -67,12 +72,52 @@
             this.lblArray.TabIndex = 10;
             this.lblArray.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
+            // pnlName
+            // 
+            this.pnlName.Controls.Add(this.btnStart);
+            this.pnlName.Controls.Add(this.txtName);
+            this.pnlName.Controls.Add(this.lblQuestion);
+            this.pnlName.Location = new System.Drawing.Point(176, 567);
+            this.pnlName.Name = "pnlName";
+            this.pnlName.Size = new System.Drawing.Size(655, 44);
+            this.pnlName.TabIndex = 11;
+            // 
+            // btnStart
+            // 
+            this.btnStart.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.btnStart.Location = new System.Drawing.Point(533, 9);
+            this.btnStart.Name = "btnStart";
+            this.btnStart.Size = new System.Drawing.Size(75, 23);
+            this.btnStart.TabIndex = 2;
+            this.btnStart.Text = "Start";
+            this.btnStart.UseVisualStyleBackColor = false;
+            this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
+            // 
+            // txtName
+            // 
+            this.txtName.BackColor = System.Drawing.SystemColors.ControlText;
+            this.txtName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.txtName.Location = new System.Drawing.Point(239, 10);
+            this.txtName.Name = "txtName";
+            this.txtName.Size = new System.Drawing.Size(277, 23);
+            this.txtName.TabIndex = 1;
+            // 
+            // lblQuestion
+            // 
+            this.lblQuestion.AutoSize = true;
+            this.lblQuestion.Location = new System.Drawing.Point(17, 13);
+            this.lblQuestion.Name = "lblQuestion";
+            this.lblQuestion.Size = new System.Drawing.Size(216, 17);
+            this.lblQuestion.TabIndex = 0;
+            this.lblQuestion.Text = "What is your rogue\'s name?";
+            // 
             // DungeonMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
             this.ClientSize = new System.Drawing.Size(997, 643);
+            this.Controls.Add(this.pnlName);
             this.Controls.Add(this.lblStats);
             this.Controls.Add(this.lblStatusMsg);
             this.Controls.Add(this.lblArray);
@@ -82,8 +127,11 @@
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "DungeonMain";
             this.Text = "Dungeon Map";
-            this.Load += new System.EventHandler(this.DungeonMain_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.DungeonMain_KeyDown);
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.DungeonMain_KeyPress);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.DungeonMain_KeyUp);
+            this.pnlName.ResumeLayout(false);
+            this.pnlName.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -95,5 +143,9 @@
         private Label lblStats;
         private ToolTip toolTip1;
         private Label lblArray;
+        private Panel pnlName;
+        private Button btnStart;
+        private TextBox txtName;
+        private Label lblQuestion;
     }
 }

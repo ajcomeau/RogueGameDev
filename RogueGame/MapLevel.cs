@@ -37,9 +37,9 @@ namespace RogueGame{
         private const char CORNER_SE = '╝';
         private const char CORNER_NE = '╗';
         private const char CORNER_SW = '╚';
-        private const char ROOM_INT = '.';
+        private const char ROOM_INT = '·';
         private const char ROOM_DOOR = '╬';
-        private const char HALLWAY = '▓';
+        private const char HALLWAY = '▒';
         private const char STAIRWAY = '≣';
         private const char GOLD = '*';
         private const char EMPTY = ' ';
@@ -63,8 +63,7 @@ namespace RogueGame{
 
         public MapSpace[,] LevelMap
         {
-            // Read-only - The map is available to other classes but only
-            // the class should be able to edit.
+            // Make map available to other classes.
             get { return levelMap; }
         }
 
@@ -270,13 +269,13 @@ namespace RogueGame{
             levelMap[westWallX, southWallY] = new MapSpace(CORNER_SW, false, false, westWallX, southWallY);
             levelMap[eastWallX, southWallY] = new MapSpace(CORNER_SE, false, false, eastWallX, southWallY);
 
-            // Evaluate for a gold stash
+            // Evaluate for a gold deposit
 
             if(rand.Next(1, 101) > ROOM_GOLD_PCT)
             {
                 goldX = westWallX; goldY = northWallY;
                 // Search the room randomly for an empty interior room space
-                // and mark it as a gold stash.
+                // and mark it as a gold deposit.
                 while (levelMap[goldX, goldY].MapCharacter != ROOM_INT)
                 {
                     goldX = rand.Next(westWallX + 1, eastWallX);
@@ -482,8 +481,7 @@ namespace RogueGame{
         private Dictionary<Direction, MapSpace> SearchAdjacent(int x, int y)
         {
 
-            // Search for specific character in four directions around point for a 
-            // specific character. Return list of directions and characters found.
+            // Search in four directions around point. Return list of directions and characters found.
 
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
             retValue.Add(Direction.North, levelMap[x, y - 1]);
@@ -611,9 +609,9 @@ namespace RogueGame{
             public MapSpace()
             {
                 // Create blank space for map
-                MapCharacter = ' ';
-                DisplayCharacter = ' ';
-                SearchRequired = false;
+                this.MapCharacter = ' ';
+                this.DisplayCharacter = ' ';
+                this.SearchRequired = false;
                 X = 0;
                 Y = 0;
             }
