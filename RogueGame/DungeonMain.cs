@@ -38,9 +38,10 @@ namespace RogueGame
         {
             if(currentGame!= null)
             {
-                currentGame.KeyHandler(e.KeyValue);
+                Debug.WriteLine(e.KeyValue);
+                currentGame.KeyHandler(e.KeyValue, e.Shift);
                 lblArray.Text = currentGame.CurrentMap.MapText();
-                lblStatusMsg.Text = currentGame.StatusMessage;
+                lblStatusMsg.Text = currentGame.StatusMessage;                
             }
         }
     }

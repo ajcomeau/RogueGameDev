@@ -14,6 +14,7 @@ namespace RogueGame
         public const int MAX_FOODVALUE = 1700;
         public const int MIN_FOODVALUE = 900;
         private const int HUNGER_TURNS = 150;
+        public const char CHARACTER = '☺';
 
         public enum HungerLevel
         {
@@ -32,7 +33,7 @@ namespace RogueGame
         public int Experience { get; set; }
         public HungerLevel HungerState { get; set; }
         public int HungerTurn { get; set; }
-
+        public MapSpace? Location { get; set; }
 
         public Player(string PlayerName) {
 
@@ -46,7 +47,7 @@ namespace RogueGame
             this.Gold = 0;
             this.Experience = 1;
             this.HungerState = HungerLevel.Satisfied;
-            this.HungerTurn = rand.Next(MIN_FOODVALUE, MAX_FOODVALUE + 1);            
+            this.HungerTurn = rand.Next(MIN_FOODVALUE, MAX_FOODVALUE + 1);        
         }
     }
 }

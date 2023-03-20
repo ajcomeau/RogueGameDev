@@ -10,12 +10,13 @@ using System.Collections;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 
 namespace RogueGame{
 
     internal class MapLevel
     {
-        private enum Direction
+        public enum Direction
         {
             None = 0,
             North = 1,
@@ -37,11 +38,11 @@ namespace RogueGame{
         private const char CORNER_SE = '╝';
         private const char CORNER_NE = '╗';
         private const char CORNER_SW = '╚';
-        private const char ROOM_INT = '·';
-        private const char ROOM_DOOR = '╬';
-        private const char HALLWAY = '▒';
-        private const char STAIRWAY = '≣';
-        private const char GOLD = '*';
+        public const char ROOM_INT = '·';
+        public const char ROOM_DOOR = '╬';
+        public const char HALLWAY = '▒';
+        public const char STAIRWAY = '≣';
+        public const char GOLD = '*';
         private const char EMPTY = ' ';
         private const int REGION_WD = 26;           //  Width / height of region holding single room.
         private const int REGION_HT = 8;
@@ -282,7 +283,7 @@ namespace RogueGame{
                     goldY = rand.Next(northWallY + 1, southWallY);
                 }
 
-                levelMap[goldX, goldY] = new MapSpace(GOLD, goldX, goldY);
+                levelMap[goldX, goldY].ItemCharacter = GOLD;
             }
         }
 
@@ -334,28 +335,25 @@ namespace RogueGame{
 
                         switch (true)
                         {
+                            // If there's a hallway in the distance in the current hallway direction, connect to it.
                             case true when (surroundingChars[hallDirection] != null && 
                                     surroundingChars[hallDirection].MapCharacter == HALLWAY):
-                                //Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
-                                //    $"{surroundingChars[hallDirection].X}, {surroundingChars[hallDirection].Y}.");
 
                                 DrawHallway(hallwaySpace, surroundingChars[hallDirection], hallDirection);
                                     deadEnds.Remove(hallwaySpace);
 
                                 break;
+                            // Then look to one side for a distant hallway.
                             case true when (surroundingChars[direction90] != null && 
                                     surroundingChars[direction90].MapCharacter == HALLWAY):
-                                //Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
-                                //    $"{surroundingChars[direction90].X}, {surroundingChars[direction90].Y}.");
 
                                 DrawHallway(hallwaySpace, surroundingChars[direction90], direction90);
                                     deadEnds.Remove(hallwaySpace);
 
                                 break;
+                            // Then look to the other.
                             case true when (surroundingChars[direction270] != null && 
                                     surroundingChars[direction270].MapCharacter == HALLWAY):
-                                //Debug.Print($"Drawing hallway from {hallwaySpace.X}, {hallwaySpace.Y} to " +
-                                //    $"{surroundingChars[direction270].X}, {surroundingChars[direction270].Y}.");
 
                                 DrawHallway(hallwaySpace, surroundingChars[direction270], direction270);
                                     deadEnds.Remove(hallwaySpace);
@@ -456,7 +454,7 @@ namespace RogueGame{
             return retValue;
         }
 
-        private Dictionary<Direction, MapSpace> SearchAdjacent(char character, int x, int y)
+        public Dictionary<Direction, MapSpace> SearchAdjacent(char character, int x, int y)
         {
 
             // Search for specific character in four directions around point for a 
@@ -478,9 +476,9 @@ namespace RogueGame{
 
             return retValue;
         }
-        private Dictionary<Direction, MapSpace> SearchAdjacent(int x, int y)
-        {
 
+        public Dictionary<Direction, MapSpace> SearchAdjacent(int x, int y)
+        {
             // Search in four directions around point. Return list of directions and characters found.
 
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
@@ -492,7 +490,7 @@ namespace RogueGame{
             return retValue;
         }
 
-        private Dictionary<Direction, MapSpace> SearchAllDirections(int currentX, int currentY)
+        public Dictionary<Direction, MapSpace> SearchAllDirections(int currentX, int currentY)
         {
             // Look in all directions and return a Dictionary of the first non-space characters found.
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
@@ -504,7 +502,8 @@ namespace RogueGame{
 
             return retValue;
         }
-        private MapSpace SearchDirection(Direction direction, int startX, int startY)
+
+        public MapSpace SearchDirection(Direction direction, int startX, int startY)
         {
             // Get the next non-space object found in a given direction.
             // Return null if none is found.
@@ -541,7 +540,44 @@ namespace RogueGame{
 
             return retValue;
         }
-        private int GetRegionNumber(int RoomAnchorX, int RoomAnchorY)
+
+        public MapSpace PlaceMapCharacter(char MapChar, bool Living)
+        {
+            // Find a random space within one of the rooms that 
+            // hasn't been occupied and return the array reference.
+
+            Random random = new Random();
+            int xPos = 1, yPos = 1;
+
+            while (levelMap[xPos, yPos].MapCharacter != ROOM_INT && 
+                levelMap[xPos, yPos].DisplayCharacter == null &&
+                levelMap[xPos, yPos].ItemCharacter == null)
+            {
+                xPos = rand.Next(1, MAP_WD);
+                yPos = rand.Next(1, MAP_HT);
+            }
+
+            // If the character is for the player or a monster, add
+            // it to the Display character. Otherwise, use the item character.
+            if (Living) 
+                levelMap[xPos, yPos].DisplayCharacter = MapChar;
+            else
+                levelMap[xPos, yPos].ItemCharacter = MapChar;
+
+            return levelMap[xPos, yPos];
+        }
+
+        public MapSpace MoveDisplayItem(MapSpace Start, MapSpace Destination)
+        {
+            // Change the display character for the specified map space
+            // and return the reference as a confirmation.
+            levelMap[Destination.X, Destination.Y].DisplayCharacter = Start.DisplayCharacter;
+            levelMap[Start.X, Start.Y].DisplayCharacter = null;
+
+            return Destination;
+        }
+
+        public int GetRegionNumber(int RoomAnchorX, int RoomAnchorY)
         {
             // The map is divided into a 3 x 3 grid of 9 equal regions.
             // This function returns 1 to 9 to indicate where the region is on the map.
@@ -556,92 +592,92 @@ namespace RogueGame{
             return returnVal;
         }
 
-        //public string MapText()
-        //{
-        //    //Output the array to text for display.
-
-        //    string retValue = "";
-        //    double runTime;
-        //    DateTime startTime = DateTime.Now;
-
-        //    // Iterate through the two-dimensional array and concatenate the
-        //    // display characters into rows and columns for display.
-        //    for (int y = 0; y <= MAP_HT; y++)
-        //    {
-        //        for (int x = 0; x <= MAP_WD; x++)
-        //            retValue += levelMap[x, y].DisplayCharacter;
-
-        //        retValue += "\n";
-        //    }
-
-        //    // Output the time this took and return the value.
-        //    runTime = (DateTime.Now - startTime).TotalMilliseconds;
-        //    Debug.Write($"Simple concatenation of the array took {runTime} milliseconds.\n");
-        //    return retValue;
-        //}
-
         public string MapText()
         {
             // Output the array to text for display.
             StringBuilder sbReturn = new StringBuilder();
 
             // Iterate through the two-dimensional array and use StringBuilder to 
-            // concatenate the display characters into rows and columns for display.
+            // concatenate the proper characters into rows and columns for display.
+
             for (int y = 0; y <= MAP_HT; y++)
             {
                 for (int x = 0; x <= MAP_WD; x++)
-                    sbReturn.Append(levelMap[x, y].DisplayCharacter);
-
-                sbReturn.Append("\n");                
+                    if(levelMap[x, y].Visible)
+                    {
+                        // Prioritize, DisplayCharacter, ItemCharacter and then MapCharacter.
+                        if (levelMap[x, y].DisplayCharacter != null)
+                            sbReturn.Append(levelMap[x, y].DisplayCharacter);
+                        else if (levelMap[x, y].ItemCharacter != null)
+                            sbReturn.Append(levelMap[x, y].ItemCharacter);
+                        else
+                            sbReturn.Append(levelMap[x, y].MapCharacter);
+                    }
+                    else
+                    {
+                        // If space is not set to visible, just insert a blank.
+                        sbReturn.Append(' ');
+                    }
+                sbReturn.Append("\n");     // Start new line.           
             }
 
             return sbReturn.ToString();
         }
+    }
 
 
-        internal class MapSpace{
-            public char MapCharacter { get; set; } // Actual character on map.
-            public bool SearchRequired { get; set; }  // Does the player need to search to reveal?
-            public char DisplayCharacter { get; set; }  // Displayed character - space for hidden object.
-            public int X { get; set; }
-            public int Y { get; set; }
+    internal class MapSpace{
+        public char MapCharacter { get; set; } // Actual character on map (Room interior, hallway, wall, etc..).
+        public char? ItemCharacter { get; set; } // Item sitting on map (potion, scroll, etc..).
+        public char? DisplayCharacter { get; set; }  // Displayed character - override for mimics and hidden.
+        public bool SearchRequired { get; set; }  // Does the player need to search to reveal?
+        public bool Visible { get; set; } // Is space supposed to be visible.
+        public int X { get; set; }
+        public int Y { get; set; }
 
-            public MapSpace()
-            {
-                // Create blank space for map
-                this.MapCharacter = ' ';
-                this.DisplayCharacter = ' ';
-                this.SearchRequired = false;
-                X = 0;
-                Y = 0;
-            }
+        public MapSpace()
+        {
+            // Create blank space for map
+            this.MapCharacter = ' ';
+            this.ItemCharacter = null;
+            this.DisplayCharacter = null;
+            this.SearchRequired = false;
+            this.Visible = true;
+            X = 0;
+            Y = 0;
+        }
 
-            public MapSpace(char mapChar, MapSpace oldSpace)
-            {
-                this.MapCharacter = mapChar;
-                this.DisplayCharacter = mapChar;
-                this.SearchRequired = oldSpace.SearchRequired;
-                this.X = oldSpace.X; this.Y = oldSpace.Y;    
-            }
+        public MapSpace(char mapChar, MapSpace oldSpace)
+        {
+            this.MapCharacter = mapChar;
+            this.ItemCharacter = null;
+            this.DisplayCharacter = null;
+            this.SearchRequired = oldSpace.SearchRequired;
+            this.X = oldSpace.X; this.Y = oldSpace.Y; this.Visible = oldSpace.Visible;   
+        }
 
-            public MapSpace(char mapChar, int X, int Y)
-            {
-                // Create visible character
-                this.MapCharacter = mapChar;
-                this.DisplayCharacter = mapChar;
-                this.SearchRequired = false;
-                this.X = X;
-                this.Y = Y;
-            }
+        public MapSpace(char mapChar, int X, int Y)
+        {
+            // Create visible character
+            this.MapCharacter = mapChar;
+            this.ItemCharacter = null;
+            this.DisplayCharacter = null;
+            this.SearchRequired = false;
+            this.Visible = true;
+            this.X = X;
+            this.Y = Y;
+        }
 
-            public MapSpace(char mapChar, Boolean hidden, Boolean search, int X, int Y)
-            {
-                this.MapCharacter = mapChar;
-                this.DisplayCharacter = hidden ? ' ' : mapChar;
-                this.SearchRequired = search;
-                this.X = X;
-                this.Y = Y; 
-            }
-         }
+        public MapSpace(char mapChar, Boolean hidden, Boolean search, int X, int Y)
+        {
+            this.MapCharacter = mapChar;
+            this.ItemCharacter = null;
+            this.DisplayCharacter = null;
+            this.SearchRequired = search;
+            this.Visible = !hidden;
+            this.X = X;
+            this.Y = Y;
+        }
     }
 }
+

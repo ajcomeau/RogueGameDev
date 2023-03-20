@@ -64,7 +64,7 @@
             // 
             this.lblArray.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblArray.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblArray.Font = new System.Drawing.Font("Consolas", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.lblArray.Font = new System.Drawing.Font("Consolas", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lblArray.Location = new System.Drawing.Point(0, 0);
             this.lblArray.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblArray.Name = "lblArray";
