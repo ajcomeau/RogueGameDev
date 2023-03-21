@@ -548,13 +548,16 @@ namespace RogueGame{
 
             Random random = new Random();
             int xPos = 1, yPos = 1;
+            bool freeSpace = false;
 
-            while (levelMap[xPos, yPos].MapCharacter != ROOM_INT && 
-                levelMap[xPos, yPos].DisplayCharacter == null &&
-                levelMap[xPos, yPos].ItemCharacter == null)
+            while (!freeSpace)
             {
                 xPos = rand.Next(1, MAP_WD);
                 yPos = rand.Next(1, MAP_HT);
+
+                freeSpace = (levelMap[xPos, yPos].MapCharacter == ROOM_INT)
+                    && levelMap[xPos, yPos].DisplayCharacter == null
+                    && levelMap[xPos, yPos].ItemCharacter == null;
             }
 
             // If the character is for the player or a monster, add

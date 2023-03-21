@@ -80,7 +80,7 @@ namespace RogueGame
             // Move character if possible.  This method is in development.
 
             // List of characters a living character can move onto.
-            List<char?> charsAllowed = new List<char?>(){MapLevel.ROOM_INT, MapLevel.STAIRWAY,
+            List<char> charsAllowed = new List<char>(){MapLevel.ROOM_INT, MapLevel.STAIRWAY,
                 MapLevel.ROOM_DOOR, MapLevel.HALLWAY};
 
             // Set surrounding characters
@@ -89,8 +89,11 @@ namespace RogueGame
 
             // If the map character in the chosen direction is habitable and if there's no monster there,
             // move the character there.
-            if (charsAllowed.Contains(surrounding[direct].MapCharacter) && surrounding[direct].DisplayCharacter == null)
-                player.Location = CurrentMap.MoveDisplayItem(player.Location, surrounding[direct]);
+            if (charsAllowed.Contains(surrounding[direct].MapCharacter) && 
+                surrounding[direct].DisplayCharacter == null)
+                    player.Location = CurrentMap.MoveDisplayItem(player.Location, surrounding[direct]);
+
+            cStatus = $"Moving {direct} ...";
         }
 
 
