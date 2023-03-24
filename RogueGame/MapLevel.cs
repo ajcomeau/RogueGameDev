@@ -83,6 +83,7 @@ namespace RogueGame{
         private bool VerifyMap()
         {
             // Verify that the generate map is free of isolated rooms or sections.
+            // Old version - kept for comparison.  See VerifyMapLINQ
 
             bool retValue = true;
             List<char> dirCheck = new List<char>();
@@ -92,14 +93,14 @@ namespace RogueGame{
 
             for (int y = REGION_HT - MIN_ROOM_HT; y < (REGION_HT * 2) + MIN_ROOM_HT; y++)
             {
-                dirCheck.Clear();
-                for (int x = 0; x <= MAP_WD - 1; x++)
-                {
-                    if (!dirCheck.Contains(levelMap[x, y].MapCharacter))
-                        dirCheck.Add(levelMap[x, y].MapCharacter);
-                }
-                retValue = dirCheck.Count > 1;
-                if (!retValue) { break; }
+                    dirCheck.Clear();
+                    for (int x = 0; x <= MAP_WD - 1; x++)
+                    {
+                        if (!dirCheck.Contains(levelMap[x, y].MapCharacter))
+                            dirCheck.Add(levelMap[x, y].MapCharacter);
+                    }
+                    retValue = dirCheck.Count > 1;
+                    if (!retValue) { break; }
             }
 
             // Check vertical.
@@ -138,7 +139,7 @@ namespace RogueGame{
                 dirCheck = (from MapSpace space in levelMap
                                 where space.X <= MAP_WD
                                 && space.Y == y
-                                select space).ToList().Select(c => c.MapCharacter).Distinct().ToList();
+                                select space).Select(c => c.MapCharacter).Distinct().ToList();
 
                 retValue = dirCheck.Count > 1;
                 if (!retValue) { break; }
@@ -170,7 +171,6 @@ namespace RogueGame{
             // Room exterior must be at least four spaces in each direction but not more than the
             // size of its cell region, minus one space, to allow for hallways between rooms.
             
-            //var rand = new Random();
             int roomWidth = 0, roomHeight = 0, roomAnchorX = 0, roomAnchorY = 0;
 
             // Clear map by creating new array of map spaces.
@@ -201,9 +201,9 @@ namespace RogueGame{
 
             // After the rooms are generated, fill in the
             // blanks for the remaining cells.
-            for (int y = 0; y < 25; y++)
+            for (int y = 0; y <= levelMap.GetUpperBound(1); y++)
             {
-                for (int x = 0; x < 80; x++)
+                for (int x = 0; x <= levelMap.GetUpperBound(0); x++)
                 {
                     if (levelMap[x, y] is null)
                         levelMap[x, y] = new MapSpace(' ', false, false, x, y);
@@ -234,8 +234,6 @@ namespace RogueGame{
             // Regions are defined 1 to 9, L to R, top to bottom.
             int regionNumber = GetRegionNumber(westWallX, northWallY);
             int doorway = 0, doorCount = 0, goldX, goldY;
-            
-            //var rand = new Random();
 
             // Create horizontal and vertical walls for room.
             for (int y = northWallY; y <= southWallY; y++)
@@ -329,7 +327,6 @@ namespace RogueGame{
             MapSpace hallwaySpace, newSpace;
             Dictionary<Direction, MapSpace> adjacentChars = new Dictionary<Direction, MapSpace>();
             Dictionary<Direction, MapSpace> surroundingChars = new Dictionary<Direction, MapSpace>();
-            //var rand = new Random();
 
             // Iterate through the list of hallway endings (deadends) until all are resolved one way or another.
             // Count backwards so we can remove processed items.
@@ -511,17 +508,17 @@ namespace RogueGame{
             return retValue;
         }
 
-        public List<MapSpace> GetSurrounding(int x, int y)
-        {
-            // Return a list of all spaces around given space in eight directions.
+    public List<MapSpace> GetSurrounding(int x, int y)
+    {
+        // Return a list of all spaces around given space in eight directions.
 
-            List<MapSpace> surrounding = (from MapSpace space in levelMap
-                                     where Math.Abs(space.X - x) == 1
-                                     && Math.Abs(space.Y - y) == 1
-                                     select space).ToList();
+        List<MapSpace> surrounding = (from MapSpace space in levelMap
+                                    where Math.Abs(space.X - x) <= 1
+                                    && Math.Abs(space.Y - y) <= 1
+                                    select space).ToList();
 
-            return surrounding;
-        }
+        return surrounding;
+    }
 
         public List<MapSpace> FindAllOccupants()
         {
@@ -529,8 +526,8 @@ namespace RogueGame{
             // display character.
 
             List<MapSpace> occupants = (from MapSpace space in levelMap
-                                          where space.DisplayCharacter != null
-                                          select space).ToList();
+                                            where space.DisplayCharacter != null
+                                            select space).ToList();
 
             return occupants;
         }
@@ -541,8 +538,8 @@ namespace RogueGame{
             // item character.
 
             List<MapSpace> items = (from MapSpace space in levelMap
-                                       where space.ItemCharacter != null
-                                       select space).ToList();
+                                        where space.ItemCharacter != null
+                                        select space).ToList();
 
             return items;
         }
@@ -630,9 +627,9 @@ namespace RogueGame{
         {
             // Find a random space within one of the rooms that 
             // hasn't been occupied and return the array reference.
-            // This version searches by poking the map randomly.
+            // This version searches by poking the map randomly. Kept for comparison.
+            // See PlaceMapCharacterLINQ()
 
-            Random random = new Random();
             int xPos = 1, yPos = 1;
             bool freeSpace = false;
 
@@ -662,16 +659,11 @@ namespace RogueGame{
             // hasn't been occupied and return the array reference.
             // This version uses LINQ to get a list of the open spaces.
 
-            Random random = new Random();
-            MapSpace select;            
+            MapSpace select;
+
+            List<MapSpace> spaces = FindOpenSpaces(false);
             
-            List<MapSpace> spaces = (from MapSpace space in levelMap 
-                         where space.MapCharacter == ROOM_INT
-                         && space.ItemCharacter == null
-                         && space.DisplayCharacter == null
-                         select space).ToList();
-            
-            select = spaces[random.Next(0, spaces.Count)];                 
+            select = spaces[rand.Next(0, spaces.Count)];                 
 
             // If the character is for the player or a monster, add
             // it to the Display character. Otherwise, use the item character.
