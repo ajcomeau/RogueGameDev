@@ -540,7 +540,7 @@ namespace RogueGame{
             List<MapSpace> items = (from MapSpace space in levelMap
                                         where space.ItemCharacter != null
                                         select space).ToList();
-
+            
             return items;
         }
 
@@ -548,10 +548,10 @@ namespace RogueGame{
         {
             // Return a list of all open spaces on the map by checking the
             // map character.
-            string charList = hallways ? (HALLWAY + ROOM_INT).ToString() : ROOM_INT.ToString();
+            string charList = hallways ? (HALLWAY.ToString() + ROOM_INT.ToString()) : ROOM_INT.ToString();
 
             List<MapSpace> spaces = (from MapSpace space in levelMap
-                                    where space.MapCharacter == ROOM_INT
+                                    where charList.Contains(space.MapCharacter)
                                     && space.ItemCharacter == null
                                     && space.DisplayCharacter == null
                                     select space).ToList();
