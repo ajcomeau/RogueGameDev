@@ -73,7 +73,7 @@ namespace RogueGame{
             // Constructor - generate a new map for this level.
             MapGeneration();
 
-            while (!VerifyMap())
+            while (!VerifyMapLINQ())
             {
                 Debug.WriteLine(MapText());
                 MapGeneration();
@@ -114,6 +114,47 @@ namespace RogueGame{
                         if (!dirCheck.Contains(levelMap[x, y].MapCharacter))
                             dirCheck.Add(levelMap[x, y].MapCharacter);
                     }
+                    retValue = dirCheck.Count > 1;
+                    if (!retValue) { break; }
+                }
+            }
+
+            return retValue;
+        }
+
+        private bool VerifyMapLINQ()
+        {
+            // Verify that the generate map is free of isolated rooms or sections.
+            // Alternate version using LINQ.
+
+            bool retValue = true;
+            List<char> dirCheck = new List<char>();
+
+            // Check horizontal for blank rows which no hallways. Top and bottom might be legitimately blank
+            // so just check a portion of the map.
+
+            for (int y = REGION_HT - MIN_ROOM_HT; y < (REGION_HT * 2) + MIN_ROOM_HT; y++)
+            {
+                dirCheck = (from MapSpace space in levelMap
+                                where space.X <= MAP_WD
+                                && space.Y == y
+                                select space).ToList().Select(c => c.MapCharacter).Distinct().ToList();
+
+                retValue = dirCheck.Count > 1;
+                if (!retValue) { break; }
+            }
+
+            // Check vertical.
+
+            if (retValue)
+            {
+                for (int x = REGION_WD - MIN_ROOM_WT; x < (REGION_WD * 2) + MIN_ROOM_WT; x++)
+                {
+                    dirCheck = (from MapSpace space in levelMap
+                                where space.Y <= MAP_HT
+                                && space.X == x
+                                select space).ToList().Select(c => c.MapCharacter).Distinct().ToList();
+
                     retValue = dirCheck.Count > 1;
                     if (!retValue) { break; }
                 }
@@ -176,18 +217,11 @@ namespace RogueGame{
 
         private void AddStairway()
         {
-            //var rand = new Random();
-            int x = 1; int y = 1;
-
             // Search the array randomly for an interior room space
             // and mark it as a hallway.
-            while (levelMap[x,y].MapCharacter != ROOM_INT)
-            {
-                x = rand.Next(1, MAP_WD);
-                y = rand.Next(1, MAP_HT);
-            }
-
-            levelMap[x,y] = new MapSpace(STAIRWAY, x, y);
+            List <MapSpace> openSpaces = FindOpenSpaces(false);
+            MapSpace stairway = openSpaces[rand.Next(openSpaces.Count)];
+            levelMap[stairway.X, stairway.Y] = new MapSpace(STAIRWAY, stairway.X, stairway.Y);
         }
 
         private void RoomGeneration(int westWallX, int northWallY, int roomWidth, int roomHeight)
@@ -477,6 +511,57 @@ namespace RogueGame{
             return retValue;
         }
 
+        public List<MapSpace> GetSurrounding(int x, int y)
+        {
+            // Return a list of all spaces around given space in eight directions.
+
+            List<MapSpace> surrounding = (from MapSpace space in levelMap
+                                     where Math.Abs(space.X - x) == 1
+                                     && Math.Abs(space.Y - y) == 1
+                                     select space).ToList();
+
+            return surrounding;
+        }
+
+        public List<MapSpace> FindAllOccupants()
+        {
+            // Return a list of all monsters and the player by checking the
+            // display character.
+
+            List<MapSpace> occupants = (from MapSpace space in levelMap
+                                          where space.DisplayCharacter != null
+                                          select space).ToList();
+
+            return occupants;
+        }
+
+        public List<MapSpace> FindAllItems()
+        {
+            // Return a list of all items on the map by checking the
+            // item character.
+
+            List<MapSpace> items = (from MapSpace space in levelMap
+                                       where space.ItemCharacter != null
+                                       select space).ToList();
+
+            return items;
+        }
+
+        public List<MapSpace> FindOpenSpaces(bool hallways)
+        {
+            // Return a list of all open spaces on the map by checking the
+            // map character.
+            string charList = hallways ? (HALLWAY + ROOM_INT).ToString() : ROOM_INT.ToString();
+
+            List<MapSpace> spaces = (from MapSpace space in levelMap
+                                    where space.MapCharacter == ROOM_INT
+                                    && space.ItemCharacter == null
+                                    && space.DisplayCharacter == null
+                                    select space).ToList();
+
+            return spaces;
+        }
+
         public Dictionary<Direction, MapSpace> SearchAdjacent(int x, int y)
         {
             // Search in four directions around point. Return list of directions and characters found.
@@ -545,6 +630,7 @@ namespace RogueGame{
         {
             // Find a random space within one of the rooms that 
             // hasn't been occupied and return the array reference.
+            // This version searches by poking the map randomly.
 
             Random random = new Random();
             int xPos = 1, yPos = 1;
@@ -568,6 +654,33 @@ namespace RogueGame{
                 levelMap[xPos, yPos].ItemCharacter = MapChar;
 
             return levelMap[xPos, yPos];
+        }
+
+        public MapSpace PlaceMapCharacterLINQ(char MapChar, bool Living)
+        {
+            // Find a random space within one of the rooms that 
+            // hasn't been occupied and return the array reference.
+            // This version uses LINQ to get a list of the open spaces.
+
+            Random random = new Random();
+            MapSpace select;            
+            
+            List<MapSpace> spaces = (from MapSpace space in levelMap 
+                         where space.MapCharacter == ROOM_INT
+                         && space.ItemCharacter == null
+                         && space.DisplayCharacter == null
+                         select space).ToList();
+            
+            select = spaces[random.Next(0, spaces.Count)];                 
+
+            // If the character is for the player or a monster, add
+            // it to the Display character. Otherwise, use the item character.
+            if (Living)
+                select.DisplayCharacter = MapChar;
+            else
+                select.ItemCharacter = MapChar;
+
+            return select;
         }
 
         public MapSpace MoveDisplayItem(MapSpace Start, MapSpace Destination)

@@ -29,13 +29,14 @@ namespace RogueGame
 
 
         public Game(string PlayerName) {
-            
+
             // Setup a new game with a map and a player.
             // Put the player on the map and set the opening status.
+
             this.CurrentLevel = 0;
             this.CurrentMap = new MapLevel();
             this.CurrentPlayer = new Player(PlayerName);
-            this.CurrentPlayer.Location = CurrentMap.PlaceMapCharacter(Player.CHARACTER, true);
+            this.CurrentPlayer.Location = CurrentMap.PlaceMapCharacterLINQ(Player.CHARACTER, true);
             this.CurrentTurn = 0;
             cStatus = $"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ...";         
         }
