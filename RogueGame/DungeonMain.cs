@@ -8,7 +8,7 @@ namespace RogueGame
 
         public DungeonMain()
         {
-            InitializeComponent();           
+            InitializeComponent();
         }
 
         private void btnStart_Click(object sender, EventArgs e)
@@ -21,7 +21,7 @@ namespace RogueGame
                 lblStatusMsg.Text = currentGame.StatusMessage;
             }
             else
-                MessageBox.Show("Please enter a name for your character.");            
+                MessageBox.Show("Please enter a name for your character.");
         }
 
         private void DungeonMain_KeyPress(object sender, KeyPressEventArgs e)
@@ -36,12 +36,13 @@ namespace RogueGame
 
         private void DungeonMain_KeyDown(object sender, KeyEventArgs e)
         {
-            if(currentGame!= null)
+            if (currentGame != null)
             {
                 Debug.WriteLine(e.KeyValue);
                 currentGame.KeyHandler(e.KeyValue, e.Shift);
                 lblArray.Text = currentGame.CurrentMap.MapText();
-                lblStatusMsg.Text = currentGame.StatusMessage;                
+                lblStatusMsg.Text = currentGame.StatusMessage;
+                lblStats.Text = currentGame.StatsDisplay;
             }
         }
     }

@@ -55,6 +55,7 @@ namespace RogueGame{
         private const int ROOM_CREATE_PCT = 90;       // Probability that room will be created for one region.
         private const int ROOM_EXIT_PCT = 90;       // Probability that room wall will contain exit.
         private const int ROOM_GOLD_PCT = 50;       // Probability that a room will have gold.
+        public const int MAX_GOLD_AMT = 125;        // Max gold amount per stash.
 
         // Array to hold map definition.
         private MapSpace[,] levelMap = new MapSpace[80, 25];

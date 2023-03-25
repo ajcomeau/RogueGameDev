@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,9 +23,17 @@ namespace RogueGame
         
         private string cStatus;
 
+        // Random number generator
+        private static Random rand = new Random();
+
         public string StatusMessage
         {
             get { return cStatus; }
+        }
+
+        public string StatsDisplay
+        {
+            get { return $"Level: {CurrentLevel}   Gold: {CurrentPlayer.Gold} "; }
         }
 
 
@@ -33,7 +42,7 @@ namespace RogueGame
             // Setup a new game with a map and a player.
             // Put the player on the map and set the opening status.
 
-            this.CurrentLevel = 0;
+            this.CurrentLevel = 1;
             this.CurrentMap = new MapLevel();
             this.CurrentPlayer = new Player(PlayerName);
             this.CurrentPlayer.Location = CurrentMap.PlaceMapCharacterLINQ(Player.CHARACTER, true);
@@ -94,9 +103,20 @@ namespace RogueGame
                 surrounding[direct].DisplayCharacter == null)
                     player.Location = CurrentMap.MoveDisplayItem(player.Location, surrounding[direct]);
 
-            cStatus = $"Moving {direct} ...";
+            cStatus = "";
+
+            if (player.Location.ItemCharacter == MapLevel.GOLD)
+                PickUpGold(); 
+            
         }
 
+        private void PickUpGold()
+        {
+            int goldAmt = rand.Next(MapLevel.MAX_GOLD_AMT);
+            CurrentPlayer.Gold += goldAmt;
+            CurrentPlayer.Location.ItemCharacter = null;
+            cStatus = $"You picked up {goldAmt} pieces of gold.";
 
+        }
     }
 }

@@ -28,113 +28,113 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.lblStatusMsg = new System.Windows.Forms.Label();
-            this.lblStats = new System.Windows.Forms.Label();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.lblArray = new System.Windows.Forms.Label();
-            this.pnlName = new System.Windows.Forms.Panel();
-            this.btnStart = new System.Windows.Forms.Button();
-            this.txtName = new System.Windows.Forms.TextBox();
-            this.lblQuestion = new System.Windows.Forms.Label();
-            this.pnlName.SuspendLayout();
-            this.SuspendLayout();
+            components = new System.ComponentModel.Container();
+            lblStatusMsg = new Label();
+            lblStats = new Label();
+            toolTip1 = new ToolTip(components);
+            lblArray = new Label();
+            pnlName = new Panel();
+            btnStart = new Button();
+            txtName = new TextBox();
+            lblQuestion = new Label();
+            pnlName.SuspendLayout();
+            SuspendLayout();
             // 
             // lblStatusMsg
             // 
-            this.lblStatusMsg.AutoSize = true;
-            this.lblStatusMsg.Font = new System.Drawing.Font("Consolas", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblStatusMsg.Location = new System.Drawing.Point(13, 9);
-            this.lblStatusMsg.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblStatusMsg.Name = "lblStatusMsg";
-            this.lblStatusMsg.Size = new System.Drawing.Size(0, 22);
-            this.lblStatusMsg.TabIndex = 0;
+            lblStatusMsg.AutoSize = true;
+            lblStatusMsg.Font = new Font("Consolas", 14F, FontStyle.Bold, GraphicsUnit.Point);
+            lblStatusMsg.Location = new Point(13, 9);
+            lblStatusMsg.Margin = new Padding(4, 0, 4, 0);
+            lblStatusMsg.Name = "lblStatusMsg";
+            lblStatusMsg.Size = new Size(0, 22);
+            lblStatusMsg.TabIndex = 0;
             // 
             // lblStats
             // 
-            this.lblStats.AutoSize = true;
-            this.lblStats.Font = new System.Drawing.Font("Consolas", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblStats.Location = new System.Drawing.Point(26, 589);
-            this.lblStats.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblStats.Name = "lblStats";
-            this.lblStats.Size = new System.Drawing.Size(0, 22);
-            this.lblStats.TabIndex = 1;
+            lblStats.AutoSize = true;
+            lblStats.Font = new Font("Consolas", 14F, FontStyle.Bold, GraphicsUnit.Point);
+            lblStats.Location = new Point(13, 624);
+            lblStats.Margin = new Padding(4, 0, 4, 0);
+            lblStats.Name = "lblStats";
+            lblStats.Size = new Size(80, 22);
+            lblStats.TabIndex = 1;
+            lblStats.Text = "       ";
             // 
             // lblArray
             // 
-            this.lblArray.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblArray.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblArray.Font = new System.Drawing.Font("Consolas", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lblArray.Location = new System.Drawing.Point(0, 0);
-            this.lblArray.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblArray.Name = "lblArray";
-            this.lblArray.Size = new System.Drawing.Size(997, 643);
-            this.lblArray.TabIndex = 10;
-            this.lblArray.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            lblArray.BorderStyle = BorderStyle.FixedSingle;
+            lblArray.Dock = DockStyle.Fill;
+            lblArray.Font = new Font("Consolas", 15.75F, FontStyle.Regular, GraphicsUnit.Point);
+            lblArray.Location = new Point(0, 0);
+            lblArray.Margin = new Padding(4, 0, 4, 0);
+            lblArray.Name = "lblArray";
+            lblArray.Size = new Size(997, 655);
+            lblArray.TabIndex = 10;
+            lblArray.TextAlign = ContentAlignment.TopCenter;
             // 
             // pnlName
             // 
-            this.pnlName.Controls.Add(this.btnStart);
-            this.pnlName.Controls.Add(this.txtName);
-            this.pnlName.Controls.Add(this.lblQuestion);
-            this.pnlName.Location = new System.Drawing.Point(176, 567);
-            this.pnlName.Name = "pnlName";
-            this.pnlName.Size = new System.Drawing.Size(655, 44);
-            this.pnlName.TabIndex = 11;
+            pnlName.Controls.Add(btnStart);
+            pnlName.Controls.Add(txtName);
+            pnlName.Controls.Add(lblQuestion);
+            pnlName.Location = new Point(176, 567);
+            pnlName.Name = "pnlName";
+            pnlName.Size = new Size(655, 44);
+            pnlName.TabIndex = 11;
             // 
             // btnStart
             // 
-            this.btnStart.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
-            this.btnStart.Location = new System.Drawing.Point(533, 9);
-            this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(75, 23);
-            this.btnStart.TabIndex = 2;
-            this.btnStart.Text = "Start";
-            this.btnStart.UseVisualStyleBackColor = false;
-            this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
+            btnStart.BackColor = SystemColors.ActiveCaptionText;
+            btnStart.Location = new Point(533, 9);
+            btnStart.Name = "btnStart";
+            btnStart.Size = new Size(75, 23);
+            btnStart.TabIndex = 2;
+            btnStart.Text = "Start";
+            btnStart.UseVisualStyleBackColor = false;
+            btnStart.Click += btnStart_Click;
             // 
             // txtName
             // 
-            this.txtName.BackColor = System.Drawing.SystemColors.ControlText;
-            this.txtName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.txtName.Location = new System.Drawing.Point(239, 10);
-            this.txtName.Name = "txtName";
-            this.txtName.Size = new System.Drawing.Size(277, 23);
-            this.txtName.TabIndex = 1;
+            txtName.BackColor = SystemColors.ControlText;
+            txtName.ForeColor = Color.FromArgb(255, 128, 0);
+            txtName.Location = new Point(239, 10);
+            txtName.Name = "txtName";
+            txtName.Size = new Size(277, 23);
+            txtName.TabIndex = 1;
             // 
             // lblQuestion
             // 
-            this.lblQuestion.AutoSize = true;
-            this.lblQuestion.Location = new System.Drawing.Point(17, 13);
-            this.lblQuestion.Name = "lblQuestion";
-            this.lblQuestion.Size = new System.Drawing.Size(216, 17);
-            this.lblQuestion.TabIndex = 0;
-            this.lblQuestion.Text = "What is your rogue\'s name?";
+            lblQuestion.AutoSize = true;
+            lblQuestion.Location = new Point(17, 13);
+            lblQuestion.Name = "lblQuestion";
+            lblQuestion.Size = new Size(216, 17);
+            lblQuestion.TabIndex = 0;
+            lblQuestion.Text = "What is your rogue's name?";
             // 
             // DungeonMain
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.Black;
-            this.ClientSize = new System.Drawing.Size(997, 643);
-            this.Controls.Add(this.pnlName);
-            this.Controls.Add(this.lblStats);
-            this.Controls.Add(this.lblStatusMsg);
-            this.Controls.Add(this.lblArray);
-            this.Font = new System.Drawing.Font("Consolas", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.KeyPreview = true;
-            this.Margin = new System.Windows.Forms.Padding(4);
-            this.Name = "DungeonMain";
-            this.Text = "Dungeon Map";
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.DungeonMain_KeyDown);
-            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.DungeonMain_KeyPress);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.DungeonMain_KeyUp);
-            this.pnlName.ResumeLayout(false);
-            this.pnlName.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.Black;
+            ClientSize = new Size(997, 655);
+            Controls.Add(pnlName);
+            Controls.Add(lblStats);
+            Controls.Add(lblStatusMsg);
+            Controls.Add(lblArray);
+            Font = new Font("Consolas", 10F, FontStyle.Bold, GraphicsUnit.Point);
+            ForeColor = Color.FromArgb(255, 128, 0);
+            KeyPreview = true;
+            Margin = new Padding(4);
+            Name = "DungeonMain";
+            Text = "Dungeon Map";
+            KeyDown += DungeonMain_KeyDown;
+            KeyPress += DungeonMain_KeyPress;
+            KeyUp += DungeonMain_KeyUp;
+            pnlName.ResumeLayout(false);
+            pnlName.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
