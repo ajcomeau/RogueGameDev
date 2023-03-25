@@ -43,6 +43,7 @@ namespace RogueGame{
         public const char HALLWAY = '▒';
         public const char STAIRWAY = '≣';
         public const char GOLD = '*';
+        public const char AMULET = '♀';
         private const char EMPTY = ' ';
         private const int REGION_WD = 26;           //  Width / height of region holding single room.
         private const int REGION_HT = 8;
@@ -55,6 +56,7 @@ namespace RogueGame{
         private const int ROOM_CREATE_PCT = 90;       // Probability that room will be created for one region.
         private const int ROOM_EXIT_PCT = 90;       // Probability that room wall will contain exit.
         private const int ROOM_GOLD_PCT = 50;       // Probability that a room will have gold.
+        public const int MIN_GOLD_AMT = 10;        // Max gold amount per stash.
         public const int MAX_GOLD_AMT = 125;        // Max gold amount per stash.
 
         // Array to hold map definition.

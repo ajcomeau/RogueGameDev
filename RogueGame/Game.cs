@@ -15,9 +15,12 @@ namespace RogueGame
         private const int KEY_NORTH = 38;
         private const int KEY_EAST = 39;
         private const int KEY_SOUTH = 40;
+        private const int KEY_UPLEVEL = 188;
+        private const int KEY_DOWNLEVEL = 190;
+        private const int MAX_LEVEL = 26;
 
         public MapLevel CurrentMap { get; set; }
-        public int CurrentLevel { get; }
+        public int CurrentLevel { get; set; }
         public Player CurrentPlayer { get; }
         public int CurrentTurn { get; }
         
@@ -74,15 +77,56 @@ namespace RogueGame
             // Shift combinations
             if (Shift)
             {
-
-
+                switch (KeyVal)
+                {
+                    case KEY_DOWNLEVEL:
+                        if (CurrentPlayer.Location!.MapCharacter == MapLevel.STAIRWAY)
+                            ChangeLevel(1);
+                        else
+                            cStatus = "There's no stairway here.";
+                        break;
+                    case KEY_UPLEVEL:
+                        if (CurrentPlayer.Location!.MapCharacter == MapLevel.STAIRWAY)
+                            ChangeLevel(-1);
+                        else
+                            cStatus = "There's no stairway here.";
+                        break;
+                    default:
+                        break;
+                }
             }
             else
             {
 
 
             }
+        }
 
+        private void ChangeLevel(int Change)
+        {
+            bool allowPass = false;
+
+            if (Change < 0)
+            {
+                allowPass = CurrentPlayer.HasAmulet && CurrentLevel > 1;
+                cStatus = allowPass ? "" : "You cannot go that way.";
+            }
+            else if (Change > 0) 
+            {
+                allowPass = CurrentLevel < MAX_LEVEL;
+                cStatus = allowPass ? "" : "You have reached the bottom level. You must go the other way.";            
+            }
+
+            if (allowPass)
+            {
+                CurrentMap = new MapLevel();
+                CurrentLevel += Change;
+                CurrentPlayer.Location = CurrentMap.PlaceMapCharacter(Player.CHARACTER, true);
+                cStatus = "";
+            }
+
+            if (CurrentLevel == MAX_LEVEL && !CurrentPlayer.HasAmulet)
+                CurrentMap.PlaceMapCharacter(MapLevel.AMULET, false);
         }
 
         public void MoveCharacter(Player player, MapLevel.Direction direct)
@@ -106,17 +150,38 @@ namespace RogueGame
             cStatus = "";
 
             if (player.Location.ItemCharacter == MapLevel.GOLD)
-                PickUpGold(); 
+                PickUpGold();
+            else if (player.Location.ItemCharacter != null)
+                cStatus = AddInventory();
             
         }
 
         private void PickUpGold()
         {
-            int goldAmt = rand.Next(MapLevel.MAX_GOLD_AMT);
+            // Add the gold at the current location to the player's purse and remove
+            // it from the map.
+
+            int goldAmt = rand.Next(MapLevel.MIN_GOLD_AMT, MapLevel.MAX_GOLD_AMT);
             CurrentPlayer.Gold += goldAmt;
-            CurrentPlayer.Location.ItemCharacter = null;
+            CurrentPlayer.Location!.ItemCharacter = null;
             cStatus = $"You picked up {goldAmt} pieces of gold.";
 
+        }
+
+        private string AddInventory()
+        {
+            // Inventory management. Currently just handling the Amulet.
+
+            string retValue = "";
+
+            if(CurrentPlayer.Location!.ItemCharacter == MapLevel.AMULET)
+            {
+                CurrentPlayer.HasAmulet = true;
+                CurrentPlayer.Location!.ItemCharacter = null;
+                retValue = "You found the Amulet of Yendor!  It has been added to your inventory.";
+            }
+
+            return retValue;
         }
     }
 }
