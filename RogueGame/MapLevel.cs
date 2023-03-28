@@ -11,6 +11,8 @@ using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
+using System.CodeDom;
+using System.Numerics;
 
 namespace RogueGame{
 
@@ -53,11 +55,15 @@ namespace RogueGame{
         private const int MAX_ROOM_HT = 6;          // Based on screen height of 25, 24 allowed
         private const int MIN_ROOM_WT = 4;          // Minimum width / height of single room.
         private const int MIN_ROOM_HT = 4;
-        private const int ROOM_CREATE_PCT = 90;       // Probability that room will be created for one region.
+        private const int ROOM_CREATE_PCT = 95;       // Probability that room will be created for one region.
         private const int ROOM_EXIT_PCT = 90;       // Probability that room wall will contain exit.
-        private const int ROOM_GOLD_PCT = 50;       // Probability that a room will have gold.
+        private const int ROOM_LIGHTED = 75;        // Probablility that room will be lighted.
+        private const int ROOM_GOLD_PCT = 60;       // Probability that a room will have gold.
         public const int MIN_GOLD_AMT = 10;        // Max gold amount per stash.
         public const int MAX_GOLD_AMT = 125;        // Max gold amount per stash.
+        
+        public List<char> MapDiscovery = new List<char>(){HORIZONTAL, VERTICAL,
+            CORNER_NW, CORNER_SE, CORNER_NE, CORNER_SW, ROOM_DOOR, HALLWAY, STAIRWAY};
 
         // Array to hold map definition.
         private MapSpace[,] levelMap = new MapSpace[80, 25];
@@ -473,6 +479,20 @@ namespace RogueGame{
             }
         }
 
+        public void ShroudMap()
+        {
+            // Raise the fog of war
+            List<MapSpace> mapSpaces = (from MapSpace space in levelMap
+                                            select space).ToList();
+
+            foreach (MapSpace space in mapSpaces)
+            {
+                space.Discovered = false;
+                space.Visible = false;
+            }
+
+        }
+
         private Direction GetDirection90(Direction startingDirection)
         {
             // Return direction 90 degrees from original based on forward direction.
@@ -511,17 +531,28 @@ namespace RogueGame{
             return retValue;
         }
 
-    public List<MapSpace> GetSurrounding(int x, int y)
-    {
-        // Return a list of all spaces around given space in eight directions.
+        public List<MapSpace> GetSurrounding(int x, int y)
+        {
+            // Return a list of all spaces around given space in eight directions.
 
-        List<MapSpace> surrounding = (from MapSpace space in levelMap
-                                    where Math.Abs(space.X - x) <= 1
-                                    && Math.Abs(space.Y - y) <= 1
-                                    select space).ToList();
+            List<MapSpace> surrounding = (from MapSpace space in levelMap
+                                        where Math.Abs(space.X - x) <= 1
+                                        && Math.Abs(space.Y - y) <= 1
+                                        select space).ToList();
 
-        return surrounding;
-    }
+            return surrounding;
+        }
+
+        public MapSpace FindPlayer()
+        {
+            // Return the mapspace containing the player.
+
+            MapSpace playerSpace = (from MapSpace space in levelMap
+                                        where space.DisplayCharacter == Player.CHARACTER
+                                        select space).First();
+
+            return playerSpace;
+        }
 
         public List<MapSpace> FindAllOccupants()
         {
@@ -688,15 +719,73 @@ namespace RogueGame{
             return Destination;
         }
 
-        public int GetRegionNumber(int RoomAnchorX, int RoomAnchorY)
+        public void DiscoverRoom(int xPos, int yPos)
+        {
+            // Get region limits
+            int xTopLeft = (int)((Math.Ceiling((decimal)xPos / REGION_WD)) - 1) * REGION_WD + 1;
+            int yTopLeft = (int)((Math.Ceiling((decimal)yPos / REGION_HT)) - 1) * REGION_HT + 1;
+
+            int xBottomRight = xTopLeft + REGION_WD - 1;
+            int yBottomRight = yTopLeft + REGION_HT - 1;
+
+            // Decide if room is lighted.
+            bool roomLights = (rand.Next(101) <= ROOM_LIGHTED);
+
+            Debug.WriteLine($"Opening room {xTopLeft}, {yTopLeft} to " +
+                $"{xBottomRight}, {yBottomRight} in region " +
+                $"{GetRegionNumber(xTopLeft, yTopLeft)}");
+
+            // For all room spaces in region, set Discovered = True and 
+            // Visible according to probability. Leave HALLWAY spaces alone
+            // and just focus on rooms.
+            for (int y = yTopLeft; y <= yBottomRight; y++)
+            {
+                for (int x = xTopLeft; x <= xBottomRight; x++)
+                {
+                    if (!levelMap[x, y].Discovered)
+                    {
+                        if(levelMap[x, y].MapCharacter != HALLWAY)
+                        {
+                            levelMap[x, y].Discovered = true;
+                            levelMap[x, y].Visible = roomLights;
+                        }
+                    }
+                }
+            }
+        }
+
+        public void DiscoverSurrounding(int xPos, int yPos)
+        {            
+            // Discover new spaces
+
+            foreach (MapSpace space in GetSurrounding(xPos, yPos))
+            {
+                // Mark the space as discovered.
+                if (!space.Discovered)
+                    space.Discovered = true;
+
+                // If this is a wall, stairway or anything else
+                // that should remain visible, mark it as visible.
+                if (!space.Visible)
+                {
+                    if (MapDiscovery.Contains(space.MapCharacter))
+                        space.Visible = true;
+                }
+            }
+        }
+
+        public int GetRegionNumber(int xPos, int yPos)
         {
             // The map is divided into a 3 x 3 grid of 9 equal regions.
             // This function returns 1 to 9 to indicate where the region is on the map.
 
             int returnVal;
 
-            int regionX = ((int)RoomAnchorX / REGION_WD) + 1;
-            int regionY = ((int)RoomAnchorY / REGION_HT) + 1;
+            //int regionX = ((int)RoomAnchorX / REGION_WD) + 1;
+            // Using Ceiling works regardless of where in the region the coords are,
+            // even if they're on the edge.
+            int regionX = (int)(Math.Ceiling((decimal)xPos / REGION_WD));
+            int regionY = (int)(Math.Ceiling((decimal)yPos / REGION_HT));
 
             returnVal = (regionX) + ((regionY - 1) * 3);
 
@@ -707,33 +796,75 @@ namespace RogueGame{
         {
             // Output the array to text for display.
             StringBuilder sbReturn = new StringBuilder();
+            MapSpace playerSpace = FindPlayer();
+            List<MapSpace> surroundingSpaces = GetSurrounding(playerSpace.X, playerSpace.Y);
+            char? priorityChar;
+            bool inRoom = false;    
 
             // Iterate through the two-dimensional array and use StringBuilder to 
             // concatenate the proper characters into rows and columns for display.
 
+
             for (int y = 0; y <= MAP_HT; y++)
             {
                 for (int x = 0; x <= MAP_WD; x++)
-                    if(levelMap[x, y].Visible)
+                {
+                    // Prioritize DisplayCharacter, ItemCharacter and then MapCharacter.
+                    if (levelMap[x, y].DisplayCharacter != null)
+                        priorityChar = levelMap[x, y].DisplayCharacter;
+                    else if (levelMap[x, y].ItemCharacter != null)
+                        priorityChar = levelMap[x, y].ItemCharacter;
+                    else
+                        priorityChar = levelMap[x, y].MapCharacter;
+
+                    // Determine if player is actually in the room.
+                    inRoom = (GetRegionNumber(x, y) == GetRegionNumber(playerSpace.X, playerSpace.Y) &&
+                                (playerSpace.MapCharacter == ROOM_DOOR || playerSpace.MapCharacter == ROOM_INT));
+
+                    // If the space is set to visible
+                    if (levelMap[x, y].Visible)
                     {
-                        // Prioritize, DisplayCharacter, ItemCharacter and then MapCharacter.
-                        if (levelMap[x, y].DisplayCharacter != null)
-                            sbReturn.Append(levelMap[x, y].DisplayCharacter);
-                        else if (levelMap[x, y].ItemCharacter != null)
-                            sbReturn.Append(levelMap[x, y].ItemCharacter);
+                        // If the player is in the room, or the space represents the player,
+                        // show the standard priority character. Otherwise, just show the map character.
+                        if (inRoom || levelMap[x, y] == playerSpace)
+                            sbReturn.Append(priorityChar);
                         else
                             sbReturn.Append(levelMap[x, y].MapCharacter);
                     }
                     else
                     {
-                        // If space is not set to visible, just insert a blank.
-                        sbReturn.Append(' ');
+                        // If the space is not visible but within one space of the character.
+                        // Show standard priority character.  Otherwise show blank space.
+                        if (surroundingSpaces.Contains(levelMap[x, y]))
+                            sbReturn.Append(priorityChar);
+                        else
+                            sbReturn.Append(' ');
                     }
+                }
+
                 sbReturn.Append("\n");     // Start new line.           
             }
 
             return sbReturn.ToString();
         }
+
+        //public string MapText2(int PlayerRegion)
+        //{
+        //    // Accepts the region number the player is currently in
+        //    // and outputs map by following rules:
+
+        //    // All spaces are set to Visible=False until player gets within one space of them.
+        //    // MapCharacters other than EMPTY and ROOM_INT and traps are set to visible by player's proximity.
+        //    // When player enters a room, it randomly becomes lighted in which everything in
+        //    // room is set to Visible.
+
+        //    // If a MapSpace is set to Visible
+        //    //   If it is in same region as player, prioritize DisplayCharacter, ItemCharacter and then MapCharacter.
+        //    //   If it is in different region, show MapCharacter
+        //    // If a MapSpace is not set to Visible
+        //    //   If it is within one space of player, prioritize DisplayCharacter, ItemCharacter and then MapCharacter.
+        //    //   Otherwise, insert blank space.
+        //}
     }
 
 
@@ -742,6 +873,7 @@ namespace RogueGame{
         public char? ItemCharacter { get; set; } // Item sitting on map (potion, scroll, etc..).
         public char? DisplayCharacter { get; set; }  // Displayed character - override for mimics and hidden.
         public bool SearchRequired { get; set; }  // Does the player need to search to reveal?
+        public bool Discovered { get; set; }
         public bool Visible { get; set; } // Is space supposed to be visible.
         public int X { get; set; }
         public int Y { get; set; }
@@ -754,6 +886,7 @@ namespace RogueGame{
             this.DisplayCharacter = null;
             this.SearchRequired = false;
             this.Visible = true;
+            this.Discovered = false;
             X = 0;
             Y = 0;
         }
@@ -764,7 +897,10 @@ namespace RogueGame{
             this.ItemCharacter = null;
             this.DisplayCharacter = null;
             this.SearchRequired = oldSpace.SearchRequired;
-            this.X = oldSpace.X; this.Y = oldSpace.Y; this.Visible = oldSpace.Visible;   
+            this.X = oldSpace.X; 
+            this.Y = oldSpace.Y; 
+            this.Visible = oldSpace.Visible;
+            this.Discovered = oldSpace.Discovered;
         }
 
         public MapSpace(char mapChar, int X, int Y)
@@ -775,6 +911,7 @@ namespace RogueGame{
             this.DisplayCharacter = null;
             this.SearchRequired = false;
             this.Visible = true;
+            this.Discovered = true;
             this.X = X;
             this.Y = Y;
         }
@@ -786,6 +923,7 @@ namespace RogueGame{
             this.DisplayCharacter = null;
             this.SearchRequired = search;
             this.Visible = !hidden;
+            this.Discovered = false;
             this.X = X;
             this.Y = Y;
         }

@@ -46,9 +46,18 @@ namespace RogueGame
             // Put the player on the map and set the opening status.
 
             this.CurrentLevel = 1;
+
+            // Generate the new map and shroud it.
             this.CurrentMap = new MapLevel();
+            this.CurrentMap.ShroudMap();
+            
+            // Put new player on map.
             this.CurrentPlayer = new Player(PlayerName);
             this.CurrentPlayer.Location = CurrentMap.PlaceMapCharacterLINQ(Player.CHARACTER, true);
+            
+            // Activate the player's current room.
+            this.CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
+
             this.CurrentTurn = 0;
             cStatus = $"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ...";         
         }
@@ -120,47 +129,61 @@ namespace RogueGame
             if (allowPass)
             {
                 CurrentMap = new MapLevel();
+                CurrentMap.ShroudMap();
                 CurrentLevel += Change;
                 CurrentPlayer.Location = CurrentMap.PlaceMapCharacter(Player.CHARACTER, true);
+                CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
+                
+                if (CurrentLevel == MAX_LEVEL && !CurrentPlayer.HasAmulet)
+                    CurrentMap.PlaceMapCharacter(MapLevel.AMULET, false);
+                
                 cStatus = "";
             }
 
-            if (CurrentLevel == MAX_LEVEL && !CurrentPlayer.HasAmulet)
-                CurrentMap.PlaceMapCharacter(MapLevel.AMULET, false);
         }
 
         public void MoveCharacter(Player player, MapLevel.Direction direct)
         {
+
             // Move character if possible.  This method is in development.
+            // Clear the status.
+            cStatus = "";
 
             // List of characters a living character can move onto.
             List<char> charsAllowed = new List<char>(){MapLevel.ROOM_INT, MapLevel.STAIRWAY,
                 MapLevel.ROOM_DOOR, MapLevel.HALLWAY};
 
             // Set surrounding characters
-            Dictionary<MapLevel.Direction, MapSpace> surrounding =
-                CurrentMap.SearchAdjacent(player.Location.X, player.Location.Y);
+            Dictionary<MapLevel.Direction, MapSpace> adjacent =
+                CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
             // If the map character in the chosen direction is habitable and if there's no monster there,
             // move the character there.
-            if (charsAllowed.Contains(surrounding[direct].MapCharacter) && 
-                surrounding[direct].DisplayCharacter == null)
-                    player.Location = CurrentMap.MoveDisplayItem(player.Location, surrounding[direct]);
+            if (charsAllowed.Contains(adjacent[direct].MapCharacter) && 
+                adjacent[direct].DisplayCharacter == null)
+                    player.Location = CurrentMap.MoveDisplayItem(player.Location, adjacent[direct]);
 
-            cStatus = "";
+            // If this is a doorway, determine if the room is lighted.
+            if(player.Location.MapCharacter == MapLevel.ROOM_DOOR)
+                CurrentMap.DiscoverRoom(player.Location.X, player.Location.Y);
 
-            if (player.Location.ItemCharacter == MapLevel.GOLD)
-                PickUpGold();
-            else if (player.Location.ItemCharacter != null)
-                cStatus = AddInventory();
-            
+            // Discover the spaces surrounding the player.
+            CurrentMap.DiscoverSurrounding(player.Location.X, player.Location.Y);
+
+            // Respond to items on map.
+            if (player.Location.ItemCharacter != null)
+            {
+                if (player.Location.ItemCharacter == MapLevel.GOLD)
+                    PickUpGold();
+                else if (player.Location.ItemCharacter != null)
+                    cStatus = AddInventory();
+            }
         }
 
         private void PickUpGold()
         {
             // Add the gold at the current location to the player's purse and remove
             // it from the map.
-
             int goldAmt = rand.Next(MapLevel.MIN_GOLD_AMT, MapLevel.MAX_GOLD_AMT);
             CurrentPlayer.Gold += goldAmt;
             CurrentPlayer.Location!.ItemCharacter = null;
