@@ -58,12 +58,16 @@ namespace RogueGame{
         private const int ROOM_CREATE_PCT = 95;       // Probability that room will be created for one region.
         private const int ROOM_EXIT_PCT = 90;       // Probability that room wall will contain exit.
         private const int ROOM_LIGHTED = 75;        // Probablility that room will be lighted.
-        private const int ROOM_GOLD_PCT = 60;       // Probability that a room will have gold.
+        private const int ROOM_GOLD_PCT = 70;       // Probability that a room will have gold.
         public const int MIN_GOLD_AMT = 10;        // Max gold amount per stash.
         public const int MAX_GOLD_AMT = 125;        // Max gold amount per stash.
         
+        // List of characters that will be marked as Visible during map discovery.
         public List<char> MapDiscovery = new List<char>(){HORIZONTAL, VERTICAL,
             CORNER_NW, CORNER_SE, CORNER_NE, CORNER_SW, ROOM_DOOR, HALLWAY, STAIRWAY};
+
+        // List of characters that occur inside a room.
+        public List<char> RoomInterior = new List<char>(){ROOM_DOOR, ROOM_INT, STAIRWAY};
 
         // Array to hold map definition.
         private MapSpace[,] levelMap = new MapSpace[80, 25];
@@ -798,18 +802,18 @@ namespace RogueGame{
             StringBuilder sbReturn = new StringBuilder();
             MapSpace playerSpace = FindPlayer();
             List<MapSpace> surroundingSpaces = GetSurrounding(playerSpace.X, playerSpace.Y);
+            int playerRegion = GetRegionNumber(playerSpace.X, playerSpace.Y);
             char? priorityChar;
             bool inRoom = false;    
 
             // Iterate through the two-dimensional array and use StringBuilder to 
             // concatenate the proper characters into rows and columns for display.
 
-
             for (int y = 0; y <= MAP_HT; y++)
             {
                 for (int x = 0; x <= MAP_WD; x++)
                 {
-                    // Prioritize DisplayCharacter, ItemCharacter and then MapCharacter.
+                    // Standard priority - DisplayCharacter, ItemCharacter and then MapCharacter.
                     if (levelMap[x, y].DisplayCharacter != null)
                         priorityChar = levelMap[x, y].DisplayCharacter;
                     else if (levelMap[x, y].ItemCharacter != null)
@@ -818,8 +822,8 @@ namespace RogueGame{
                         priorityChar = levelMap[x, y].MapCharacter;
 
                     // Determine if player is actually in the room.
-                    inRoom = (GetRegionNumber(x, y) == GetRegionNumber(playerSpace.X, playerSpace.Y) &&
-                                (playerSpace.MapCharacter == ROOM_DOOR || playerSpace.MapCharacter == ROOM_INT));
+                    inRoom = (GetRegionNumber(x, y) == playerRegion &&
+                                (RoomInterior.Contains(playerSpace.MapCharacter)));
 
                     // If the space is set to visible
                     if (levelMap[x, y].Visible)
@@ -847,25 +851,7 @@ namespace RogueGame{
 
             return sbReturn.ToString();
         }
-
-        //public string MapText2(int PlayerRegion)
-        //{
-        //    // Accepts the region number the player is currently in
-        //    // and outputs map by following rules:
-
-        //    // All spaces are set to Visible=False until player gets within one space of them.
-        //    // MapCharacters other than EMPTY and ROOM_INT and traps are set to visible by player's proximity.
-        //    // When player enters a room, it randomly becomes lighted in which everything in
-        //    // room is set to Visible.
-
-        //    // If a MapSpace is set to Visible
-        //    //   If it is in same region as player, prioritize DisplayCharacter, ItemCharacter and then MapCharacter.
-        //    //   If it is in different region, show MapCharacter
-        //    // If a MapSpace is not set to Visible
-        //    //   If it is within one space of player, prioritize DisplayCharacter, ItemCharacter and then MapCharacter.
-        //    //   Otherwise, insert blank space.
-        //}
-    }
+        }
 
 
     internal class MapSpace{
