@@ -1,5 +1,7 @@
 # RogueGameDev
 
+4/1/2023 - All 26 level, the Amulet, fog of war and hidden doors are now online.  See the latest chapter at https://www.comeausoftware.com/c-sharp/rogue-csharp-hidden-doorways/.
+
 3/6/2023 - I've started adding some new code and have some new chapters online. 
 
 2/22/2023 - Still working on the writeup at ComeauSoftware.com.  See the latest video with a demo for the StringBuilder class at https://youtu.be/5eNpECYU1cY.  
