@@ -18,6 +18,8 @@ namespace RogueGame
         private const int KEY_UPLEVEL = 188;
         private const int KEY_DOWNLEVEL = 190;
         private const int MAX_LEVEL = 26;
+        private const int KEY_S = 83;
+        private const int SEARCH_PCT = 20;
 
         public MapLevel CurrentMap { get; set; }
         public int CurrentLevel { get; set; }
@@ -106,9 +108,39 @@ namespace RogueGame
             }
             else
             {
-
+                switch (KeyVal)
+                {
+                    case KEY_S:
+                        SearchForHidden();
+                        break;
+                    default:
+                        break;
+                }
 
             }
+        }
+
+        private void SearchForHidden()
+        {
+            List<MapSpace> spaces;
+
+            if (rand.Next(1, 101) <= SEARCH_PCT)
+            {
+                cStatus = "Searching ...";
+                spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y);
+
+                foreach (MapSpace space in spaces)
+                {
+                    if (space.SearchRequired)
+                    {
+                        space.SearchRequired = false;
+                        space.AltMapCharacter = null;
+                    }
+                }
+
+            }
+            else
+                cStatus = "";
         }
 
         private void ChangeLevel(int Change)
@@ -144,6 +176,7 @@ namespace RogueGame
 
         public void MoveCharacter(Player player, MapLevel.Direction direct)
         {
+            char visibleCharacter;
 
             // Move character if possible.  This method is in development.
             // Clear the status.
@@ -157,9 +190,11 @@ namespace RogueGame
             Dictionary<MapLevel.Direction, MapSpace> adjacent =
                 CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
+            visibleCharacter = adjacent[direct].SearchRequired ? (char)adjacent[direct].AltMapCharacter! : adjacent[direct].MapCharacter;
+
             // If the map character in the chosen direction is habitable and if there's no monster there,
             // move the character there.
-            if (charsAllowed.Contains(adjacent[direct].MapCharacter) && 
+            if (charsAllowed.Contains(visibleCharacter) && 
                 adjacent[direct].DisplayCharacter == null)
                     player.Location = CurrentMap.MoveDisplayItem(player.Location, adjacent[direct]);
 
@@ -184,7 +219,7 @@ namespace RogueGame
         {
             // Add the gold at the current location to the player's purse and remove
             // it from the map.
-            int goldAmt = rand.Next(MapLevel.MIN_GOLD_AMT, MapLevel.MAX_GOLD_AMT);
+            int goldAmt = rand.Next(MapLevel.MIN_GOLD_AMT, MapLevel.MAX_GOLD_AMT + 1);
             CurrentPlayer.Gold += goldAmt;
             CurrentPlayer.Location!.ItemCharacter = null;
             cStatus = $"You picked up {goldAmt} pieces of gold.";

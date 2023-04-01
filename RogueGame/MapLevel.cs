@@ -57,6 +57,7 @@ namespace RogueGame{
         private const int MIN_ROOM_HT = 4;
         private const int ROOM_CREATE_PCT = 95;       // Probability that room will be created for one region.
         private const int ROOM_EXIT_PCT = 90;       // Probability that room wall will contain exit.
+        private const int HIDDEN_EXIT_PCT = 25;     // Probability that doorway will be hidden.
         private const int ROOM_LIGHTED = 75;        // Probablility that room will be lighted.
         private const int ROOM_GOLD_PCT = 70;       // Probability that a room will have gold.
         public const int MIN_GOLD_AMT = 10;        // Max gold amount per stash.
@@ -196,7 +197,7 @@ namespace RogueGame{
             {
                 for (int x = 1; x < 54; x += REGION_WD)
                 {
-                    if (rand.Next(101) <= ROOM_CREATE_PCT)
+                    if (rand.Next(1, 101) <= ROOM_CREATE_PCT)
                     {
                         // Room size
                         roomHeight = rand.Next(MIN_ROOM_HT, MAX_ROOM_HT + 1);
@@ -248,6 +249,8 @@ namespace RogueGame{
             int regionNumber = GetRegionNumber(westWallX, northWallY);
             int doorway = 0, doorCount = 0, goldX, goldY;
 
+            bool searchRequired;
+
             // Create horizontal and vertical walls for room.
             for (int y = northWallY; y <= southWallY; y++)
             {
@@ -271,37 +274,45 @@ namespace RogueGame{
             // still might need to repeat the process anyway.
 
             while (doorCount == 0) { 
-                if (regionNumber >= 4 && rand.Next(101) <= ROOM_EXIT_PCT)  // North doorways
+                if (regionNumber >= 4 && rand.Next(1, 101) <= ROOM_EXIT_PCT)  // North doorways
                 {
                     doorway = rand.Next(westWallX + 1, eastWallX);
-                    levelMap[doorway, northWallY] = new MapSpace(ROOM_DOOR, false, false, doorway, northWallY);
+                    searchRequired = rand.Next(1, 101) <= HIDDEN_EXIT_PCT;
+                    levelMap[doorway, northWallY] = new MapSpace(ROOM_DOOR, false, searchRequired, doorway, northWallY);
+                    levelMap[doorway, northWallY].AltMapCharacter = searchRequired ? HORIZONTAL : null;
                     levelMap[doorway, northWallY - 1] = new MapSpace(HALLWAY, false, false, doorway, northWallY - 1);
                     deadEnds.Add(levelMap[doorway, northWallY - 1], Direction.North);
                     doorCount++;
                 }
 
-                if (regionNumber <= 6 && rand.Next(101) <= ROOM_EXIT_PCT)  // South doorways
+                if (regionNumber <= 6 && rand.Next(1, 101) <= ROOM_EXIT_PCT)  // South doorways
                 {
                     doorway = rand.Next(westWallX + 1, eastWallX);
-                    levelMap[doorway, southWallY] = new MapSpace(ROOM_DOOR, false, false, doorway, southWallY);
+                    searchRequired = rand.Next(1, 101) <= HIDDEN_EXIT_PCT;
+                    levelMap[doorway, southWallY] = new MapSpace(ROOM_DOOR, false, searchRequired, doorway, southWallY);
+                    levelMap[doorway, southWallY].AltMapCharacter = searchRequired ? HORIZONTAL : null;
                     levelMap[doorway, southWallY + 1] = new MapSpace(HALLWAY, false, false, doorway, southWallY + 1);
                     deadEnds.Add(levelMap[doorway, southWallY + 1], Direction.South);
                     doorCount++;
                 }
 
-                if ("147258".Contains(regionNumber.ToString()) && rand.Next(101) <= ROOM_EXIT_PCT)  // East doorways
+                if ("147258".Contains(regionNumber.ToString()) && rand.Next(1, 101) <= ROOM_EXIT_PCT)  // East doorways
                 {
                     doorway = rand.Next(northWallY + 1, southWallY);
-                    levelMap[eastWallX, doorway] = new MapSpace(ROOM_DOOR, false, false, eastWallX, doorway);
+                    searchRequired = rand.Next(1, 101) <= HIDDEN_EXIT_PCT;
+                    levelMap[eastWallX, doorway] = new MapSpace(ROOM_DOOR, false, searchRequired, eastWallX, doorway);
+                    levelMap[eastWallX, doorway].AltMapCharacter = searchRequired ? VERTICAL : null;
                     levelMap[eastWallX + 1, doorway] = new MapSpace(HALLWAY, false, false, eastWallX + 1, doorway);
                     deadEnds.Add(levelMap[eastWallX + 1, doorway], Direction.East);
                     doorCount++;
                 }
 
-                if ("258369".Contains(regionNumber.ToString()) && rand.Next(101) <= ROOM_EXIT_PCT)  // West doorways
+                if ("258369".Contains(regionNumber.ToString()) && rand.Next(1, 101) <= ROOM_EXIT_PCT)  // West doorways
                 {
                     doorway = rand.Next(northWallY + 1, southWallY);
-                    levelMap[westWallX, doorway] = new MapSpace(ROOM_DOOR, false, false, westWallX, doorway);
+                    searchRequired = rand.Next(1, 101) <= HIDDEN_EXIT_PCT;
+                    levelMap[westWallX, doorway] = new MapSpace(ROOM_DOOR, false, searchRequired, westWallX, doorway);
+                    levelMap[westWallX, doorway].AltMapCharacter = searchRequired ? VERTICAL : null;
                     levelMap[westWallX - 1, doorway] = new MapSpace(HALLWAY, false, false, westWallX - 1, doorway);
                     deadEnds.Add(levelMap[westWallX - 1, doorway], Direction.West);
                     doorCount++;
@@ -533,6 +544,7 @@ namespace RogueGame{
                 retValue.Add(Direction.West, levelMap[x - 1, y]);
 
             return retValue;
+
         }
 
         public List<MapSpace> GetSurrounding(int x, int y)
@@ -733,7 +745,7 @@ namespace RogueGame{
             int yBottomRight = yTopLeft + REGION_HT - 1;
 
             // Decide if room is lighted.
-            bool roomLights = (rand.Next(101) <= ROOM_LIGHTED);
+            bool roomLights = (rand.Next(1, 101) <= ROOM_LIGHTED);
 
             Debug.WriteLine($"Opening room {xTopLeft}, {yTopLeft} to " +
                 $"{xBottomRight}, {yBottomRight} in region " +
@@ -813,11 +825,13 @@ namespace RogueGame{
             {
                 for (int x = 0; x <= MAP_WD; x++)
                 {
-                    // Standard priority - DisplayCharacter, ItemCharacter and then MapCharacter.
+                    // Standard priority - DisplayCharacter, ItemCharacter, AltMapCharacter, MapCharacter.
                     if (levelMap[x, y].DisplayCharacter != null)
                         priorityChar = levelMap[x, y].DisplayCharacter;
                     else if (levelMap[x, y].ItemCharacter != null)
                         priorityChar = levelMap[x, y].ItemCharacter;
+                    else if (levelMap[x, y].AltMapCharacter != null)
+                        priorityChar = levelMap[x, y].AltMapCharacter;
                     else
                         priorityChar = levelMap[x, y].MapCharacter;
 
@@ -833,7 +847,12 @@ namespace RogueGame{
                         if (inRoom || levelMap[x, y] == playerSpace)
                             sbReturn.Append(priorityChar);
                         else
-                            sbReturn.Append(levelMap[x, y].MapCharacter);
+                        { 
+                            if(levelMap[x, y].SearchRequired)
+                                sbReturn.Append(levelMap[x, y].AltMapCharacter);
+                            else
+                                sbReturn.Append(levelMap[x, y].MapCharacter);
+                        }
                     }
                     else
                     {
@@ -851,11 +870,12 @@ namespace RogueGame{
 
             return sbReturn.ToString();
         }
-        }
+    }
 
 
     internal class MapSpace{
         public char MapCharacter { get; set; } // Actual character on map (Room interior, hallway, wall, etc..).
+        public char? AltMapCharacter { get; set; } // Map character to display if search is required.
         public char? ItemCharacter { get; set; } // Item sitting on map (potion, scroll, etc..).
         public char? DisplayCharacter { get; set; }  // Displayed character - override for mimics and hidden.
         public bool SearchRequired { get; set; }  // Does the player need to search to reveal?
@@ -868,6 +888,7 @@ namespace RogueGame{
         {
             // Create blank space for map
             this.MapCharacter = ' ';
+            this.AltMapCharacter = null;
             this.ItemCharacter = null;
             this.DisplayCharacter = null;
             this.SearchRequired = false;
@@ -880,9 +901,10 @@ namespace RogueGame{
         public MapSpace(char mapChar, MapSpace oldSpace)
         {
             this.MapCharacter = mapChar;
+            this.AltMapCharacter = null; 
             this.ItemCharacter = null;
             this.DisplayCharacter = null;
-            this.SearchRequired = oldSpace.SearchRequired;
+            this.SearchRequired = false;
             this.X = oldSpace.X; 
             this.Y = oldSpace.Y; 
             this.Visible = oldSpace.Visible;
@@ -893,6 +915,7 @@ namespace RogueGame{
         {
             // Create visible character
             this.MapCharacter = mapChar;
+            this.AltMapCharacter = null;
             this.ItemCharacter = null;
             this.DisplayCharacter = null;
             this.SearchRequired = false;
@@ -905,6 +928,7 @@ namespace RogueGame{
         public MapSpace(char mapChar, Boolean hidden, Boolean search, int X, int Y)
         {
             this.MapCharacter = mapChar;
+            this.AltMapCharacter = null;
             this.ItemCharacter = null;
             this.DisplayCharacter = null;
             this.SearchRequired = search;
