@@ -19,6 +19,7 @@ namespace RogueGame
                 pnlName.Visible = false;
                 lblArray.Text = currentGame.CurrentMap.MapText();
                 lblStatusMsg.Text = currentGame.StatusMessage;
+                lblStats.Text = currentGame.StatsDisplay;
             }
             else
                 MessageBox.Show("Please enter a name for your character.");
@@ -39,8 +40,11 @@ namespace RogueGame
             if (currentGame != null)
             {
                 Debug.WriteLine(e.KeyValue);
-                currentGame.KeyHandler(e.KeyValue, e.Shift);
-                lblArray.Text = currentGame.CurrentMap.MapText();
+                currentGame.KeyHandler(e.KeyValue, e.Shift, e.Control);
+                
+                lblArray.Text = currentGame.DevMode ? 
+                    currentGame.CurrentMap.MapCheck() : currentGame.CurrentMap.MapText();
+                
                 lblStatusMsg.Text = currentGame.StatusMessage;
                 lblStats.Text = currentGame.StatsDisplay;
             }

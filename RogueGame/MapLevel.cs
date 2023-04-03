@@ -89,7 +89,7 @@ namespace RogueGame{
 
             while (!VerifyMapLINQ())
             {
-                Debug.WriteLine(MapText());
+                //Debug.WriteLine(MapText());
                 MapGeneration();
             }
         }
@@ -345,29 +345,33 @@ namespace RogueGame{
 
         private void HallwayGeneration()
         {
-            // After all rooms are generated with exits and initial hallway characters, scan for any possible disconnected
-            // rooms and look for other rooms to connect to.
+            // After all rooms are generated with exits and initial hallway characters, create hallways
+            // between all the existing rooms.
             Direction hallDirection = Direction.None; Direction direction90; Direction direction270;
             MapSpace hallwaySpace, newSpace;
             Dictionary<Direction, MapSpace> adjacentChars = new Dictionary<Direction, MapSpace>();
             Dictionary<Direction, MapSpace> surroundingChars = new Dictionary<Direction, MapSpace>();
+            bool hallwayDug = false;
+
+            // Grab a copy of the deadEnds collection so we can do a final pass at the end.
+            Dictionary<MapSpace, Direction> deadEndsCopy = new Dictionary<MapSpace, Direction>(deadEnds);
 
             // Iterate through the list of hallway endings (deadends) until all are resolved one way or another.
             // Count backwards so we can remove processed items.
 
             // If there are doors on more than one side, the hallway is already connected.
-            for (int i = deadEnds.Count - 1; i >= 0; i--)  
+            for (int i = deadEnds.Count - 1; i >= 0; i--)
             {
                 hallwaySpace = deadEnds.ElementAt(i).Key;
 
                 if (SearchAdjacent(ROOM_DOOR, hallwaySpace.X, hallwaySpace.Y).Count > 1)
                     deadEnds.Remove(hallwaySpace);
             }
-            
+
             while (deadEnds.Count > 0)
             {
                 // If there's a neighboring hallway space, this one is already connected.
-                for (int i = deadEnds.Count - 1; i >= 0; i--)  
+                for (int i = deadEnds.Count - 1; i >= 0; i--)
                 {
                     hallwaySpace = deadEnds.ElementAt(i).Key;
 
@@ -375,72 +379,71 @@ namespace RogueGame{
                         deadEnds.Remove(hallwaySpace);
                 }
 
-                for (int i = deadEnds.Count - 1; i >= 0; i--)  
+                for (int i = deadEnds.Count - 1; i >= 0; i--)
                 {
                     // Establish current space and three directions - forward and to the sides.
                     hallwaySpace = deadEnds.ElementAt(i).Key;
                     hallDirection = deadEnds.ElementAt(i).Value;
                     direction90 = GetDirection90(hallDirection);
                     direction270 = GetDirection270(hallDirection);
-                    
+                    hallwayDug = false;
+
                     // Look for distant hallways in three directions.  If one is found, connect to it.
                     if (hallDirection != Direction.None)
                     {
                         surroundingChars = SearchAllDirections(hallwaySpace.X, hallwaySpace.Y);
 
-                        switch (true)
+                        if ((surroundingChars[hallDirection] != null &&
+                            surroundingChars[hallDirection].MapCharacter == HALLWAY))
                         {
-                            // If there's a hallway in the distance in the current hallway direction, connect to it.
-                            case true when (surroundingChars[hallDirection] != null && 
-                                    surroundingChars[hallDirection].MapCharacter == HALLWAY):
-
-                                DrawHallway(hallwaySpace, surroundingChars[hallDirection], hallDirection);
-                                    deadEnds.Remove(hallwaySpace);
-
-                                break;
-                            // Then look to one side for a distant hallway.
-                            case true when (surroundingChars[direction90] != null && 
-                                    surroundingChars[direction90].MapCharacter == HALLWAY):
-
-                                DrawHallway(hallwaySpace, surroundingChars[direction90], direction90);
-                                    deadEnds.Remove(hallwaySpace);
-
-                                break;
-                            // Then look to the other.
-                            case true when (surroundingChars[direction270] != null && 
-                                    surroundingChars[direction270].MapCharacter == HALLWAY):
-
-                                DrawHallway(hallwaySpace, surroundingChars[direction270], direction270);
-                                    deadEnds.Remove(hallwaySpace);
-
-                            break;
-                            default:
-                                // If there's no hallway to connect to, just add another space where possible for the
-                                // next iteration to pick up on.
-                                adjacentChars = SearchAdjacent(EMPTY, hallwaySpace.X, hallwaySpace.Y);
-                                if (adjacentChars.ContainsKey(hallDirection))
-                                {
-                                    newSpace = new MapSpace(HALLWAY, adjacentChars[hallDirection]);
-                                    levelMap[adjacentChars[hallDirection].X, adjacentChars[hallDirection].Y] = newSpace;
-                                    deadEnds.Remove(hallwaySpace);
-                                    deadEnds.Add(newSpace, hallDirection);
-                                }
-                                else if (adjacentChars.ContainsKey(direction90))
-                                {
-                                    newSpace = new MapSpace(HALLWAY, adjacentChars[direction90]);
-                                    levelMap[adjacentChars[direction90].X, adjacentChars[direction90].Y] = newSpace;
-                                    deadEnds.Remove(hallwaySpace);
-                                    deadEnds.Add(newSpace, direction90);
-                                }                                    
-                                else if (adjacentChars.ContainsKey(direction270))
-                                {
-                                    newSpace = new MapSpace(HALLWAY, adjacentChars[direction270]);
-                                    levelMap[adjacentChars[direction270].X, adjacentChars[direction270].Y] = newSpace;
-                                    deadEnds.Remove(hallwaySpace);
-                                    deadEnds.Add(newSpace, direction270);
-                                }
-                                break;
+                            DrawHallway(hallwaySpace, surroundingChars[hallDirection], hallDirection);
+                            hallwayDug = true;
                         }
+                        
+                        if ((surroundingChars[direction90] != null &&
+                            surroundingChars[direction90].MapCharacter == HALLWAY))
+                        {
+                            DrawHallway(hallwaySpace, surroundingChars[direction90], direction90);
+                            hallwayDug = true;
+                        }
+                        
+                        if ((surroundingChars[direction270] != null &&
+                            surroundingChars[direction270].MapCharacter == HALLWAY))
+                        {
+                            DrawHallway(hallwaySpace, surroundingChars[direction270], direction270);
+                            hallwayDug = true;
+                        }
+
+                        if (!hallwayDug)
+                        {
+                            // If there's no hallway to connect to, just add another space where possible for the
+                            // next iteration to pick up on.
+                            adjacentChars = SearchAdjacent(EMPTY, hallwaySpace.X, hallwaySpace.Y);
+                            if (adjacentChars.ContainsKey(hallDirection))
+                            {
+                                newSpace = new MapSpace(HALLWAY, adjacentChars[hallDirection]);
+                                levelMap[adjacentChars[hallDirection].X, adjacentChars[hallDirection].Y] = newSpace;
+                                deadEnds.Remove(hallwaySpace);
+                                deadEnds.Add(newSpace, hallDirection);
+                            }
+                            else if (adjacentChars.ContainsKey(direction90))
+                            {
+                                newSpace = new MapSpace(HALLWAY, adjacentChars[direction90]);
+                                levelMap[adjacentChars[direction90].X, adjacentChars[direction90].Y] = newSpace;
+                                deadEnds.Remove(hallwaySpace);
+                                deadEnds.Add(newSpace, direction90);
+                            }
+                            else if (adjacentChars.ContainsKey(direction270))
+                            {
+                                newSpace = new MapSpace(HALLWAY, adjacentChars[direction270]);
+                                levelMap[adjacentChars[direction270].X, adjacentChars[direction270].Y] = newSpace;
+                                deadEnds.Remove(hallwaySpace);
+                                deadEnds.Add(newSpace, direction270);
+                            }
+                            break;
+                        }
+
+                        deadEnds.Remove(hallwaySpace);
                     }
                     else
                     {
@@ -450,6 +453,32 @@ namespace RogueGame{
                     //Console.Write(MapText());
                 }
             }
+
+            //// After all the hallways are plotted, do another pass through the 
+            //// copy of the dictionary to add some extra passages and avoid isolated sections.
+            //foreach (var entry in deadEndsCopy)
+            //{
+            //    surroundingChars = SearchAllDirections(entry.Key.X, entry.Key.Y);
+            //    direction90 = GetDirection90(entry.Value);
+            //    direction270 = GetDirection270(entry.Value);
+
+            //    if ((surroundingChars[entry.Value] != null &&
+            //        surroundingChars[entry.Value].MapCharacter == HALLWAY))
+            //    {
+            //        DrawHallway(entry.Key, surroundingChars[entry.Value], entry.Value);
+            //    }
+            //    else if ((surroundingChars[direction90] != null &&
+            //        surroundingChars[direction90].MapCharacter == HALLWAY))
+            //    {
+            //        DrawHallway(entry.Key, surroundingChars[direction90], direction90);
+            //    }
+            //    else if ((surroundingChars[direction270] != null &&
+            //        surroundingChars[direction270].MapCharacter == HALLWAY))
+            //    {
+            //        DrawHallway(entry.Key, surroundingChars[direction270], direction270);
+            //    }
+            //}
+
         }        
 
         private void DrawHallway(MapSpace start, MapSpace end, Direction hallDirection)
@@ -457,6 +486,7 @@ namespace RogueGame{
 
             // Draw a hallway between specified spaces.  Break off if another hallway
             // is discovered to the side.
+
 
             switch (hallDirection) {
                 case Direction.North:
@@ -492,6 +522,7 @@ namespace RogueGame{
                     }
                     break;           
             }
+
         }
 
         public void ShroudMap()
@@ -738,25 +769,21 @@ namespace RogueGame{
         public void DiscoverRoom(int xPos, int yPos)
         {
             // Get region limits
-            int xTopLeft = (int)((Math.Ceiling((decimal)xPos / REGION_WD)) - 1) * REGION_WD + 1;
-            int yTopLeft = (int)((Math.Ceiling((decimal)yPos / REGION_HT)) - 1) * REGION_HT + 1;
-
-            int xBottomRight = xTopLeft + REGION_WD - 1;
-            int yBottomRight = yTopLeft + REGION_HT - 1;
-
+            Tuple<MapSpace, MapSpace> corners = GetRegionLimits(xPos, yPos);
+            
             // Decide if room is lighted.
             bool roomLights = (rand.Next(1, 101) <= ROOM_LIGHTED);
 
-            Debug.WriteLine($"Opening room {xTopLeft}, {yTopLeft} to " +
-                $"{xBottomRight}, {yBottomRight} in region " +
-                $"{GetRegionNumber(xTopLeft, yTopLeft)}");
+            Debug.WriteLine($"Opening room {corners.Item1.X}, {corners.Item1.Y} to " +
+                $"{corners.Item2.X}, {corners.Item2.Y} in region " +
+                $"{GetRegionNumber(corners.Item1.X, corners.Item1.Y)}");
 
             // For all room spaces in region, set Discovered = True and 
             // Visible according to probability. Leave HALLWAY spaces alone
             // and just focus on rooms.
-            for (int y = yTopLeft; y <= yBottomRight; y++)
+            for (int y = corners.Item1.Y; y <= corners.Item2.Y; y++)
             {
-                for (int x = xTopLeft; x <= xBottomRight; x++)
+                for (int x = corners.Item1.X; x <= corners.Item2.X; x++)
                 {
                     if (!levelMap[x, y].Discovered)
                     {
@@ -806,6 +833,64 @@ namespace RogueGame{
             returnVal = (regionX) + ((regionY - 1) * 3);
 
             return returnVal;
+        }
+
+        public Tuple<MapSpace, MapSpace> GetRegionLimits(int xPos, int yPos)
+        {
+            int xTopLeft = (int)((Math.Ceiling((decimal)xPos / REGION_WD)) - 1) * REGION_WD + 1;
+            int yTopLeft = (int)((Math.Ceiling((decimal)yPos / REGION_HT)) - 1) * REGION_HT + 1;
+
+            int xBottomRight = xTopLeft + REGION_WD - 1;
+            int yBottomRight = yTopLeft + REGION_HT - 1;
+
+            return new Tuple<MapSpace, MapSpace>(levelMap[xTopLeft, yTopLeft], levelMap[xBottomRight, yBottomRight]);
+        }
+
+        public Tuple<MapSpace, MapSpace> GetRegionLimits(int RegionNumber)
+        {
+            int gridY = (int)Math.Ceiling((decimal)RegionNumber / 3);
+            int gridX = RegionNumber % 3;
+
+            int xTopLeft = ((gridX - 1) * REGION_WD) + 1;
+            int yTopLeft = ((gridY - 1) * REGION_HT) + 1;
+
+            int xBottomRight = xTopLeft + REGION_WD - 1;
+            int yBottomRight = yTopLeft + REGION_HT - 1;
+
+            return new Tuple<MapSpace, MapSpace>(levelMap[xTopLeft, yTopLeft], levelMap[xBottomRight, yBottomRight]);
+        }
+
+        public string MapCheck()
+        {
+            // Output the array to text for display with no alternate characters.
+            // and everything visible.
+            // This is mainly for debugging.
+
+            StringBuilder sbReturn = new StringBuilder();
+            char? priorityChar;
+
+            // Iterate through the two-dimensional array and use StringBuilder to 
+            // concatenate the proper characters into rows and columns for display.
+
+            for (int y = 0; y <= MAP_HT; y++)
+            {
+                for (int x = 0; x <= MAP_WD; x++)
+                {
+                    // Standard priority - DisplayCharacter, ItemCharacter, MapCharacter.
+                    if (levelMap[x, y].DisplayCharacter != null)
+                        priorityChar = levelMap[x, y].DisplayCharacter;
+                    else if (levelMap[x, y].ItemCharacter != null)
+                        priorityChar = levelMap[x, y].ItemCharacter;
+                    else
+                        priorityChar = levelMap[x, y].MapCharacter;
+
+                    sbReturn.Append(priorityChar);                    
+                }
+
+                sbReturn.Append("\n");     // Start new line.           
+            }
+
+            return sbReturn.ToString();
         }
 
         public string MapText()
