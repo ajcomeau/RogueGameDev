@@ -25,20 +25,20 @@ namespace RogueGame
         }
 
         public string PlayerName { get; set; }
-        public int HP { get; set; }
-        public int HPDamage { get; set; }
-        public int Strength { get; set; }
-        public int StrengthMod { get; set; }
+        public int HP { get; set; } = STARTING_HP;
+        public int HPDamage { get; set; } = 0;
+        public int Strength { get; set; } = STARTING_STRENGTH;
+        public int StrengthMod { get; set; } = 0;
         public int Gold { get; set; }
         public int Experience { get; set; }
-        public HungerLevel HungerState { get; set; }
+        public HungerLevel HungerState { get; set; } = HungerLevel.Satisfied;
         public int HungerTurn { get; set; }
-        public int Confused { get; set; }
-        public int Immobile { get; set; }
-        public int Blind { get; set; }
-        public bool HasAmulet { get; set; }
-        public Inventory? LeftHand { get; set; }
-        public Inventory? RightHand { get; set; }
+        public int Confused { get; set; } = 0;
+        public int Immobile { get; set; } = 0;
+        public int Blind { get; set; } = 0;
+        public bool HasAmulet { get; set; } = false;
+        public Inventory? LeftHand { get; set; } = null;
+        public Inventory? RightHand { get; set; } = null;
         public Inventory? Wielding { get; set; }
 
 
@@ -49,14 +49,8 @@ namespace RogueGame
             // Create a new player object.
             var rand = new Random();
             this.PlayerName = PlayerName;
-            this.HP = STARTING_HP;
-            this.HPDamage = 0;
-            this.Strength = STARTING_STRENGTH;
-            this.StrengthMod = 0;
             this.Gold = 0;
             this.Experience = 1;
-            this.HungerState = HungerLevel.Satisfied;
-            this.HasAmulet = false;
             this.HungerTurn = rand.Next(MIN_FOODVALUE, MAX_FOODVALUE + 1);        
         }
     }

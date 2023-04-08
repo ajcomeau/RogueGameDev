@@ -27,7 +27,7 @@ namespace RogueGame
         public int CurrentLevel { get; set; }
         public Player CurrentPlayer { get; }
         public int CurrentTurn { get; set; }
-        public bool DevMode { get; set; }
+        public bool DevMode { get; set; } = false;
 
         private string cStatus;
 
