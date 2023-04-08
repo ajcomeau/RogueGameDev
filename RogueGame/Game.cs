@@ -65,7 +65,8 @@ namespace RogueGame
             this.CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
 
             this.CurrentTurn = 1;
-            cStatus = $"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ...";         
+            cStatus = $"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ...";
+            
         }
 
         public void KeyHandler(int KeyVal, bool Shift, bool Control)

@@ -33,7 +33,15 @@ namespace RogueGame
         public int Experience { get; set; }
         public HungerLevel HungerState { get; set; }
         public int HungerTurn { get; set; }
+        public int Confused { get; set; }
+        public int Immobile { get; set; }
+        public int Blind { get; set; }
         public bool HasAmulet { get; set; }
+        public Inventory? LeftHand { get; set; }
+        public Inventory? RightHand { get; set; }
+        public Inventory? Wielding { get; set; }
+
+
         public MapSpace? Location { get; set; }
 
         public Player(string PlayerName) {
