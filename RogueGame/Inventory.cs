@@ -25,16 +25,16 @@ namespace RogueGame
         public InventoryType ItemType { get; set; }
         public string? CodeName { get; set; }
         public string RealName { get; set; }
-        public bool IsIdentified { get; set; } = false;
+        public bool IsIdentified { get; set; }
         public bool IsGroupable { get; set; }
-        public bool IsWieldable { get; set; } = false;
-        public bool IsCursed { get; set; } = false;
+        public bool IsWieldable { get; set; }
+        public bool IsCursed { get; set; }
         public int ArmorClass { get; set; } 
-        public int Increment { get; set; } = 0;
-        public int DmgIncrement { get; set; } = 0;
-        public int AccIncrement { get; set; } = 0;
-        public int MinDamage { get; set; } = 0;
-        public int MaxDamage { get; set; } = 0;
+        public int Increment { get; set; }
+        public int DmgIncrement { get; set; }
+        public int AccIncrement { get; set; }
+        public int MinDamage { get; set; }
+        public int MaxDamage { get; set; }
         public Func<MapLevel.Direction, bool>? ThrowFunction { get; set; }
         public Func<MapLevel.Direction, bool>? ZapFunction { get; set; }
         public Func<bool> MainFunction { get; set; }

@@ -26,19 +26,19 @@ namespace RogueGame
 
         public string PlayerName { get; set; }
         public int HP { get; set; } = STARTING_HP;
-        public int HPDamage { get; set; } = 0;
+        public int HPDamage { get; set; }
         public int Strength { get; set; } = STARTING_STRENGTH;
-        public int StrengthMod { get; set; } = 0;
+        public int StrengthMod { get; set; } 
         public int Gold { get; set; }
         public int Experience { get; set; }
         public HungerLevel HungerState { get; set; } = HungerLevel.Satisfied;
         public int HungerTurn { get; set; }
-        public int Confused { get; set; } = 0;
-        public int Immobile { get; set; } = 0;
-        public int Blind { get; set; } = 0;
-        public bool HasAmulet { get; set; } = false;
-        public Inventory? LeftHand { get; set; } = null;
-        public Inventory? RightHand { get; set; } = null;
+        public int Confused { get; set; } 
+        public int Immobile { get; set; }
+        public int Blind { get; set; }
+        public bool HasAmulet { get; set; }
+        public Inventory? LeftHand { get; set; } 
+        public Inventory? RightHand { get; set; }
         public Inventory? Wielding { get; set; }
 
 
