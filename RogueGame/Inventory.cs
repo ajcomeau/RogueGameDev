@@ -29,7 +29,7 @@ namespace RogueGame
         public bool IsGroupable { get; set; }
         public bool IsWieldable { get; set; } = false;
         public bool IsCursed { get; set; } = false;
-        public int ArmorClass { get; set; } = 0;
+        public int ArmorClass { get; set; } 
         public int Increment { get; set; } = 0;
         public int DmgIncrement { get; set; } = 0;
         public int AccIncrement { get; set; } = 0;
