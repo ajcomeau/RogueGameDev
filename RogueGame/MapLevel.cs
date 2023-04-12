@@ -60,6 +60,7 @@ namespace RogueGame{
         private const int HIDDEN_EXIT_PCT = 25;     // Probability that doorway will be hidden.
         private const int ROOM_LIGHTED = 75;        // Probablility that room will be lighted.
         private const int ROOM_GOLD_PCT = 70;       // Probability that a room will have gold.
+        private const int ROOM_FOOD_PCT = 95;       // Probability that a room will have food.
         public const int MIN_GOLD_AMT = 10;        // Max gold amount per stash.
         public const int MAX_GOLD_AMT = 125;        // Max gold amount per stash.
         
@@ -75,7 +76,7 @@ namespace RogueGame{
         
         // Random number generator
         private static Random rand = new Random();
-
+                
         public MapSpace[,] LevelMap
         {
             // Make map available to other classes.
@@ -227,6 +228,21 @@ namespace RogueGame{
             // Create hallways and add stairway
             HallwayGeneration();
             AddStairway();
+            StockMapWithInventory();
+        }
+
+        private void StockMapWithInventory()
+        {
+            // For now, let's just add some food.
+            if(rand.Next(1,101) <= ROOM_FOOD_PCT)
+            {
+                List<MapSpace> openSpaces = FindOpenSpaces(false);
+                MapSpace food = openSpaces[rand.Next(openSpaces.Count)];
+                levelMap[food.X, food.Y].mapLoot = Inventory.GetInventoryItem(Inventory.InventoryType.Food);
+                levelMap[food.X, food.Y].ItemCharacter = levelMap[food.X, food.Y].mapLoot!.DisplayCharacter;
+            }
+
+
         }
 
         private void AddStairway()
@@ -342,6 +358,8 @@ namespace RogueGame{
                 levelMap[goldX, goldY].ItemCharacter = GOLD;
             }
         }
+
+
 
         private void HallwayGeneration()
         {
@@ -963,6 +981,7 @@ namespace RogueGame{
         public char? AltMapCharacter { get; set; } // Map character to display if search is required.
         public char? ItemCharacter { get; set; } // Item sitting on map (potion, scroll, etc..).
         public char? DisplayCharacter { get; set; }  // Displayed character - override for mimics and hidden.
+        public Inventory? mapLoot { get; set; } // Inventory items found on the map.
         public bool SearchRequired { get; set; }  // Does the player need to search to reveal?
         public bool Discovered { get; set; }
         public bool Visible { get; set; } // Is space supposed to be visible.

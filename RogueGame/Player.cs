@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,6 +17,7 @@ namespace RogueGame
         public const int MIN_FOODVALUE = 900;
         private const int HUNGER_TURNS = 150;
         public const char CHARACTER = '☺';
+        public const int INVENTORY_LIMIT = 50;
 
         public enum HungerLevel
         {
@@ -40,7 +43,7 @@ namespace RogueGame
         public Inventory? LeftHand { get; set; } 
         public Inventory? RightHand { get; set; }
         public Inventory? Wielding { get; set; }
-
+        public List<Inventory> PlayerInventory { get; set; }
 
         public MapSpace? Location { get; set; }
 
@@ -49,9 +52,12 @@ namespace RogueGame
             // Create a new player object.
             var rand = new Random();
             this.PlayerName = PlayerName;
+            this.PlayerInventory = new List<Inventory>();
             this.Gold = 0;
             this.Experience = 1;
-            this.HungerTurn = rand.Next(MIN_FOODVALUE, MAX_FOODVALUE + 1);        
+            this.HungerTurn = rand.Next(MIN_FOODVALUE, MAX_FOODVALUE + 1); 
         }
+
+
     }
 }

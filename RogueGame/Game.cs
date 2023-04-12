@@ -21,6 +21,7 @@ namespace RogueGame
         private const int KEY_S = 83;
         private const int KEY_D = 68;
         private const int KEY_N = 78;
+        private const int KEY_E = 69;
         private const int SEARCH_PCT = 20;
 
         public MapLevel CurrentMap { get; set; }
@@ -121,6 +122,10 @@ namespace RogueGame
                     case KEY_S:
                         startTurn = true;
                         SearchForHidden();
+                        break;
+                    case KEY_E:
+                        startTurn = true;
+                        CurrentPlayer.PlayerInventory[0].MainFunction(CurrentPlayer);
                         break;
                     default:
                         break;
@@ -289,15 +294,55 @@ namespace RogueGame
 
         private string AddInventory()
         {
-            // Inventory management. Currently just handling the Amulet.
+            // Inventory management.
+
+            Inventory foundItem;
+
+
+            // TODO: Attach delegates
+            // TODO: Show code name if not identified.
 
             string retValue = "";
 
+            // If the player found the Amulet ...
             if(CurrentPlayer.Location!.ItemCharacter == MapLevel.AMULET)
             {
                 CurrentPlayer.HasAmulet = true;
                 CurrentPlayer.Location!.ItemCharacter = null;
+
+                // Add it to the inventory.
+                if(CurrentPlayer.Location.mapLoot != null)
+                {
+                    CurrentPlayer.PlayerInventory.Add(CurrentPlayer.Location.mapLoot);
+                    CurrentPlayer.Location.mapLoot = null;
+                }
+                
                 retValue = "You found the Amulet of Yendor!  It has been added to your inventory.";
+            }
+            else if (CurrentPlayer.Location!.ItemCharacter != null)
+            {
+                // For everything else, pick it up if it can fit in inventory.
+                if(CurrentPlayer.PlayerInventory.Count < Player.INVENTORY_LIMIT)
+                {
+                    CurrentPlayer.Location!.ItemCharacter = null;                    
+                    
+                    if (CurrentPlayer.Location.mapLoot != null)
+                    {
+                        foundItem = CurrentPlayer.Location.mapLoot;
+
+                        retValue = $"You picked up {foundItem.CodeName}.";
+                        
+                        
+                        
+                        CurrentPlayer.PlayerInventory.Add(foundItem);
+                        CurrentPlayer.Location.mapLoot = null;
+                    } 
+                }
+                else
+                {
+                    // Notify the player if inventory is full.
+                    retValue = "You cannot pick it up. Your inventory is full.";
+                }
             }
 
             return retValue;

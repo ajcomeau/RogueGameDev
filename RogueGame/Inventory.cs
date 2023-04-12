@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.ObjectModel;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace RogueGame
 {
@@ -22,9 +26,21 @@ namespace RogueGame
             Amulet = 9
         }
 
+        // Random number generator
+        private static Random rand = new Random();
+
+        private static List<Inventory> invItems = new List<Inventory>()
+        {
+            new Inventory(InventoryType.Food, "some food", "some food", "rations of food", '♣', ConsumeFood),
+            new Inventory(InventoryType.Food, "a mango", "a mango", "mangoes", '♣', ConsumeFood)
+        };
+
+        public static ReadOnlyCollection<Inventory> InventoryItems = new ReadOnlyCollection<Inventory>(invItems);
+
         public InventoryType ItemType { get; set; }
         public string? CodeName { get; set; }
         public string RealName { get; set; }
+        public string PluralName { get; set; }
         public bool IsIdentified { get; set; }
         public bool IsGroupable { get; set; }
         public bool IsWieldable { get; set; }
@@ -35,10 +51,80 @@ namespace RogueGame
         public int AccIncrement { get; set; }
         public int MinDamage { get; set; }
         public int MaxDamage { get; set; }
-        public Func<MapLevel.Direction, bool>? ThrowFunction { get; set; }
-        public Func<MapLevel.Direction, bool>? ZapFunction { get; set; }
-        public Func<bool> MainFunction { get; set; }
+        public char DisplayCharacter { get; set; }
+        public Func<Player, MapLevel.Direction, bool>? ThrowFunction { get; set; }
+        public Func<Player, MapLevel.Direction, bool>? ZapFunction { get; set; }
+        public Func<Player, bool>? MainFunction { get; set; }
+
+        public Inventory(InventoryType InvType, string CodeName, string RealName, string PluralName, bool Identified,
+            bool Groupable, bool Wieldable, bool Cursed, int ArmorClass, int Increment, int DamageInc, int AccuracyInc,
+            int MinDamage, int MaxDamage, char DisplayChar)
+        {
+            // Apply parameters
+            this.ItemType = InvType; 
+            this.CodeName = CodeName; 
+            this.RealName = RealName;
+            this.PluralName = PluralName;
+            this.IsIdentified = Identified;
+            this.IsGroupable = Groupable;
+            this.IsWieldable = Wieldable;
+            this.IsCursed = Cursed;
+            this.ArmorClass = ArmorClass;
+            this.Increment = Increment;
+            this.DmgIncrement = DamageInc;
+            this.AccIncrement = AccuracyInc;
+            this.MinDamage = MinDamage;
+            this.MaxDamage = MaxDamage;
+            this.DisplayCharacter = DisplayChar;            
+        }
+
+        public Inventory(InventoryType InvType, string CodeName, string RealName, string PluralName, char DisplayChar, Func<Player, bool> mainFunction)
+        {
+            // Apply parameters and most common settings
+            this.ItemType = InvType;
+            this.CodeName = CodeName;
+            this.RealName = RealName;
+            this.PluralName = PluralName;
+            this.DisplayCharacter = DisplayChar;
+            this.IsGroupable = true;
+
+            // If it's a weapon, it's wieldable.
+            this.IsWieldable = (InvType == InventoryType.Weapon);
+
+            // If the two names are the same, it's identified.
+            this.IsIdentified = (this.RealName == this.CodeName);
+
+            this.MainFunction = mainFunction;
+        }
+
+        public Inventory()
+        {
+            this.RealName = "";
+            this.DisplayCharacter = '0';
+        }
 
 
+        public static Inventory GetInventoryItem(InventoryType InvType)
+        {
+            // Get a random item from a specific inventory type.
+            List<Inventory> invSelect = (from Inventory item in InventoryItems
+                                         where item.ItemType == InvType
+                                         select item).ToList();
+            
+            return invSelect[rand.Next(invSelect.Count)]; 
+        }
+
+        public static Inventory GetInventoryItem()
+        {
+            // Get a random item from the inventory types.
+            return InventoryItems[rand.Next(InventoryItems.Count)];
+        }
+
+
+        public static bool ConsumeFood(Player currentPlayer)
+        {
+            Debug.WriteLine("Chow down, " + currentPlayer.PlayerName + "!");
+            return true;
+        }
     }
 }
