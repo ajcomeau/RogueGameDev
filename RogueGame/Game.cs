@@ -125,7 +125,7 @@ namespace RogueGame
                         break;
                     case KEY_E:
                         startTurn = true;
-                        CurrentPlayer.PlayerInventory[0].MainFunction(CurrentPlayer);
+
                         break;
                     default:
                         break;

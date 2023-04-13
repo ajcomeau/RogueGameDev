@@ -60,7 +60,6 @@ namespace RogueGame{
         private const int HIDDEN_EXIT_PCT = 25;     // Probability that doorway will be hidden.
         private const int ROOM_LIGHTED = 75;        // Probablility that room will be lighted.
         private const int ROOM_GOLD_PCT = 70;       // Probability that a room will have gold.
-        private const int ROOM_FOOD_PCT = 95;       // Probability that a room will have food.
         public const int MIN_GOLD_AMT = 10;        // Max gold amount per stash.
         public const int MAX_GOLD_AMT = 125;        // Max gold amount per stash.
         
@@ -234,13 +233,10 @@ namespace RogueGame{
         private void StockMapWithInventory()
         {
             // For now, let's just add some food.
-            if(rand.Next(1,101) <= ROOM_FOOD_PCT)
-            {
                 List<MapSpace> openSpaces = FindOpenSpaces(false);
                 MapSpace food = openSpaces[rand.Next(openSpaces.Count)];
                 levelMap[food.X, food.Y].mapLoot = Inventory.GetInventoryItem(Inventory.InventoryType.Food);
                 levelMap[food.X, food.Y].ItemCharacter = levelMap[food.X, food.Y].mapLoot!.DisplayCharacter;
-            }
 
 
         }
