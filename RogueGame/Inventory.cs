@@ -49,18 +49,18 @@ namespace RogueGame
         public int ArmorClass { get; set; } 
         public int Increment { get; set; }
         public int DmgIncrement { get; set; }
-        public int AccIncrement { get; private set; }
+        public int AccIncrement { get; set; }
         public int MinDamage { get; set; }
         public int MaxDamage { get; set; }
         public int AppearancePct { get; set; }
         public char DisplayCharacter { get; set; }
         public Func<Player, MapLevel.Direction, bool>? ThrowFunction { get; set; }
         public Func<Player, MapLevel.Direction, bool>? ZapFunction { get; set; }
-        public Func<Player, bool> MainFunction { get; set; }
+        public Func<Player, Inventory?, bool>? MainFunction { get; set; }
 
         public Inventory(InventoryType InvType, string CodeName, string RealName, string PluralName, bool Identified,
             bool Groupable, bool Wieldable, bool Cursed, int ArmorClass, int Increment, int DamageInc, int AccuracyInc,
-            int MinDamage, int MaxDamage, int AppearancePct, char DisplayChar, Func<Player, bool> mainFunction, 
+            int MinDamage, int MaxDamage, int AppearancePct, char DisplayChar, Func<Player, Inventory?, bool>? mainFunction, 
             Func<Player, MapLevel.Direction, bool>? Throw = null, Func<Player, MapLevel.Direction, bool>? Zap = null)
         {
             // Apply parameters
@@ -86,7 +86,7 @@ namespace RogueGame
         }
 
         public Inventory(InventoryType InvType, string CodeName, string RealName, string PluralName, char DisplayChar, 
-            int AppearancePct, Func<Player, bool> mainFunction, Func<Player, MapLevel.Direction, bool>? Throw = null, 
+            int AppearancePct, Func<Player, Inventory?, bool> mainFunction, Func<Player, MapLevel.Direction, bool>? Throw = null, 
             Func<Player, MapLevel.Direction, bool>? Zap = null)
         {
             // Apply parameters and most common settings
@@ -133,7 +133,7 @@ namespace RogueGame
         }
 
 
-        public static bool ConsumeFood(Player currentPlayer)
+        public static bool ConsumeFood(Player currentPlayer, Inventory? inventoryItem = null)
         {
             Debug.WriteLine("Chow down, " + currentPlayer.PlayerName + "!");
             currentPlayer.PlayerInventory[0].AccIncrement  = 0;

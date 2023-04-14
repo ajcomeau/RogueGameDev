@@ -17,7 +17,7 @@ namespace RogueGame
             {
                 currentGame = new Game(txtName.Text);
                 pnlName.Visible = false;
-                lblArray.Text = currentGame.CurrentMap.MapText();
+                lblArray.Text = currentGame.ScreenDisplay;
                 lblStatusMsg.Text = currentGame.StatusMessage;
                 lblStats.Text = currentGame.StatsDisplay;
             }

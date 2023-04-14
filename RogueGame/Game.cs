@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
+using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,13 +24,17 @@ namespace RogueGame
         private const int KEY_D = 68;
         private const int KEY_N = 78;
         private const int KEY_E = 69;
+        private const int KEY_I = 73;
+        private const int KEY_ESC = 27;
         private const int SEARCH_PCT = 20;
 
         public MapLevel CurrentMap { get; set; }
         public int CurrentLevel { get; set; }
         public Player CurrentPlayer { get; }
         public int CurrentTurn { get; set; }
+        public string ScreenDisplay { get; set; }
         public bool DevMode { get; set; }
+        public bool InvDisplay { get; set; }
 
         private string cStatus;
 
@@ -67,7 +73,8 @@ namespace RogueGame
 
             this.CurrentTurn = 1;
             cStatus = $"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ...";
-            
+
+            this.ScreenDisplay = this.CurrentMap.MapText();
         }
 
         public void KeyHandler(int KeyVal, bool Shift, bool Control)
@@ -125,7 +132,10 @@ namespace RogueGame
                         break;
                     case KEY_E:
                         startTurn = true;
-
+                        
+                        break;
+                    case KEY_I:
+                            
                         break;
                     default:
                         break;
@@ -161,8 +171,8 @@ namespace RogueGame
                 CurrentTurn++;
             }
 
-            
 
+            ScreenDisplay = CurrentMap.MapText();
 
         }
 
@@ -341,5 +351,54 @@ namespace RogueGame
 
             return retValue;
         }
+
+        private string InventoryDisplay()
+        {
+            string retValue = "";
+            List<InventoryLine> lines = new List<InventoryLine>();
+
+            // Get groupable identified inventory.
+            var groupedInventory =
+                (from invEntry in CurrentPlayer.PlayerInventory
+                 where invEntry.IsGroupable && invEntry.IsIdentified
+                 group invEntry by invEntry.RealName into itemGroup
+                 select itemGroup).ToList();
+
+            // Add groupable non-identified inventory.
+            groupedInventory.Concat(
+                from invEntry in CurrentPlayer.PlayerInventory
+                where invEntry.IsGroupable && !invEntry.IsIdentified
+                group invEntry by invEntry.CodeName into itemGroup
+                select itemGroup).ToList();
+
+            // Get non-groupable identified
+            var individualItems =
+                (from invEntry in CurrentPlayer.PlayerInventory
+                 where !invEntry.IsGroupable
+                 select invEntry).ToList();
+
+            foreach( var itemGroup in groupedInventory)
+            {
+                lines.Add(new InventoryLine { Count = itemGroup.Count(), ItemType = itemGroup.First().ItemType, DisplayName = itemGroup.Key });
+            }
+
+            lines = lines.OrderBy(x => x.ItemType).ToList();
+
+            foreach( InventoryLine line in lines )
+            {
+                retValue += $"{line.Count} {line.DisplayName}\n";
+            }
+
+
+            return retValue;
+        }
+
+        internal class InventoryLine
+        {
+            public int Count;
+            public Inventory.InventoryType ItemType;
+            public string DisplayName;
+        }
+
     }
 }
