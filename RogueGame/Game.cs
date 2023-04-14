@@ -278,7 +278,6 @@ namespace RogueGame
 
             return retValue;
 
-
         }
 
         private void PickUpGold()
@@ -298,10 +297,6 @@ namespace RogueGame
 
             Inventory foundItem;
 
-
-            // TODO: Attach delegates
-            // TODO: Show code name if not identified.
-
             string retValue = "";
 
             // If the player found the Amulet ...
@@ -311,10 +306,10 @@ namespace RogueGame
                 CurrentPlayer.Location!.ItemCharacter = null;
 
                 // Add it to the inventory.
-                if(CurrentPlayer.Location.mapLoot != null)
+                if(CurrentPlayer.Location.MapInventory != null)
                 {
-                    CurrentPlayer.PlayerInventory.Add(CurrentPlayer.Location.mapLoot);
-                    CurrentPlayer.Location.mapLoot = null;
+                    CurrentPlayer.PlayerInventory.Add(CurrentPlayer.Location.MapInventory);
+                    CurrentPlayer.Location.MapInventory = null;
                 }
                 
                 retValue = "You found the Amulet of Yendor!  It has been added to your inventory.";
@@ -326,16 +321,15 @@ namespace RogueGame
                 {
                     CurrentPlayer.Location!.ItemCharacter = null;                    
                     
-                    if (CurrentPlayer.Location.mapLoot != null)
+                    if (CurrentPlayer.Location.MapInventory != null)
                     {
-                        foundItem = CurrentPlayer.Location.mapLoot;
+                        foundItem = CurrentPlayer.Location.MapInventory;
 
-                        retValue = $"You picked up {foundItem.CodeName}.";
+                        retValue = $"You picked up {foundItem.CodeName}.";                        
                         
-                        
-                        
+                        // Move the Inventory reference to the player's inventory.
                         CurrentPlayer.PlayerInventory.Add(foundItem);
-                        CurrentPlayer.Location.mapLoot = null;
+                        CurrentPlayer.Location.MapInventory = null;
                     } 
                 }
                 else

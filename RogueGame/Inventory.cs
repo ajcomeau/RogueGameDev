@@ -120,8 +120,8 @@ namespace RogueGame
         {
             // Get a random item from a specific inventory type.
             List<Inventory> invSelect = (from Inventory item in InventoryItems
-                                         where item.ItemType == InvType
-                                         select item).ToList();
+                                            where item.ItemType == InvType
+                                            select item).ToList();
             
             return invSelect[rand.Next(invSelect.Count)]; 
         }

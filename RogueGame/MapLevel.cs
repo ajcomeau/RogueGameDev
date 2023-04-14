@@ -60,6 +60,7 @@ namespace RogueGame{
         private const int HIDDEN_EXIT_PCT = 25;     // Probability that doorway will be hidden.
         private const int ROOM_LIGHTED = 75;        // Probablility that room will be lighted.
         private const int ROOM_GOLD_PCT = 70;       // Probability that a room will have gold.
+        private const int MAX_INVENTORY = 3;       // Maximum inventory in a room.
         public const int MIN_GOLD_AMT = 10;        // Max gold amount per stash.
         public const int MAX_GOLD_AMT = 125;        // Max gold amount per stash.
         
@@ -227,19 +228,9 @@ namespace RogueGame{
             // Create hallways and add stairway
             HallwayGeneration();
             AddStairway();
-            StockMapWithInventory();
         }
 
-        private void StockMapWithInventory()
-        {
-            // For now, let's just add some food.
-                List<MapSpace> openSpaces = FindOpenSpaces(false);
-                MapSpace food = openSpaces[rand.Next(openSpaces.Count)];
-                levelMap[food.X, food.Y].mapLoot = Inventory.GetInventoryItem(Inventory.InventoryType.Food);
-                levelMap[food.X, food.Y].ItemCharacter = levelMap[food.X, food.Y].mapLoot!.DisplayCharacter;
 
-
-        }
 
         private void AddStairway()
         {
@@ -247,21 +238,28 @@ namespace RogueGame{
             // and mark it as a hallway.
             List <MapSpace> openSpaces = FindOpenSpaces(false);
             MapSpace stairway = openSpaces[rand.Next(openSpaces.Count)];
+
             levelMap[stairway.X, stairway.Y] = new MapSpace(STAIRWAY, stairway.X, stairway.Y);
         }
+
 
         private void RoomGeneration(int westWallX, int northWallY, int roomWidth, int roomHeight)
         {
             // Create room on map based on inputs
-
             int eastWallX = westWallX + roomWidth;          // Calculate room east
             int southWallY = northWallY + roomHeight;       // Calculate room south
 
             // Regions are defined 1 to 9, L to R, top to bottom.
             int regionNumber = GetRegionNumber(westWallX, northWallY);
-            int doorway = 0, doorCount = 0, goldX, goldY;
+            int doorway = 0, doorCount = 0, goldX, goldY, invX, invY;
 
             bool searchRequired;
+
+            // Inventory variables.
+            int maxInventoryItems = rand.Next(1, MAX_INVENTORY + 1);
+            int mapInventory = 0;
+            Inventory invItem;
+            MapSpace itemSpace;
 
             // Create horizontal and vertical walls for room.
             for (int y = northWallY; y <= southWallY; y++)
@@ -353,7 +351,37 @@ namespace RogueGame{
 
                 levelMap[goldX, goldY].ItemCharacter = GOLD;
             }
+
+            // Add up to the number of specified inventory items.
+            while (mapInventory < maxInventoryItems)
+            {
+                invItem = Inventory.GetInventoryItem();
+
+                // Place the inventory according to its chances of showing up.
+                if (rand.Next(1, 101) <= invItem.AppearancePct)
+                {
+                    invX = westWallX; invY = northWallY;
+                    itemSpace = levelMap[invX, invY];
+
+                    // Look for an interior space that hasn't been used by gold.
+                    while (itemSpace.MapCharacter != ROOM_INT || itemSpace.ItemCharacter != null)
+                    {
+                        invX = rand.Next(westWallX + 1, eastWallX);
+                        invY = rand.Next(northWallY + 1, southWallY);
+                        itemSpace = levelMap[invX, invY];
+                    }
+                    
+                    // Update the space and increment the count.
+                    itemSpace.MapInventory = invItem;
+                    itemSpace.ItemCharacter = itemSpace.MapInventory!.DisplayCharacter;
+
+                    mapInventory++;
+                }
+            }
         }
+
+
+
 
 
 
@@ -977,7 +1005,7 @@ namespace RogueGame{
         public char? AltMapCharacter { get; set; } // Map character to display if search is required.
         public char? ItemCharacter { get; set; } // Item sitting on map (potion, scroll, etc..).
         public char? DisplayCharacter { get; set; }  // Displayed character - override for mimics and hidden.
-        public Inventory? mapLoot { get; set; } // Inventory items found on the map.
+        public Inventory? MapInventory { get; set; } // Inventory items found on the map.
         public bool SearchRequired { get; set; }  // Does the player need to search to reveal?
         public bool Discovered { get; set; }
         public bool Visible { get; set; } // Is space supposed to be visible.
