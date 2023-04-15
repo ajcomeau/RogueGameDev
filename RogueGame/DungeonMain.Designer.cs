@@ -71,7 +71,6 @@
             lblArray.Name = "lblArray";
             lblArray.Size = new Size(997, 655);
             lblArray.TabIndex = 10;
-            lblArray.TextAlign = ContentAlignment.TopCenter;
             // 
             // pnlName
             // 

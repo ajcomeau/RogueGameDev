@@ -74,7 +74,7 @@ namespace RogueGame
             this.CurrentTurn = 1;
             cStatus = $"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ...";
 
-            this.ScreenDisplay = this.CurrentMap.MapText();
+            this.ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText();
         }
 
         public void KeyHandler(int KeyVal, bool Shift, bool Control)
@@ -135,7 +135,12 @@ namespace RogueGame
                         
                         break;
                     case KEY_I:
-                            
+                        DisplayInventory();
+                        cStatus = "Here are the current contents of your inventory.";
+                        break;
+                    case KEY_ESC:
+                        RestoreMap();
+                        cStatus = "";
                         break;
                     default:
                         break;
@@ -171,9 +176,32 @@ namespace RogueGame
                 CurrentTurn++;
             }
 
+            // If the inventory display hasn't been activated, display the appropriate map mode.
+            if(!InvDisplay)
+                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText();
 
-            ScreenDisplay = CurrentMap.MapText();
+        }
 
+        private void DisplayInventory()
+        {
+            // Switch the screen to the player's inventory.
+
+            InvDisplay = true;
+            ScreenDisplay = "\n\n";
+
+            foreach(InventoryLine line in Inventory.InventoryDisplay(CurrentPlayer))
+                ScreenDisplay += line.Description + "\n";
+
+        }
+
+        private void RestoreMap()
+        {
+            // Restore the map display.
+            if (InvDisplay)
+            {
+                InvDisplay = false;
+                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText();
+            }
         }
 
         private void SearchForHidden()
@@ -350,54 +378,6 @@ namespace RogueGame
             }
 
             return retValue;
-        }
-
-        private string InventoryDisplay()
-        {
-            string retValue = "";
-            List<InventoryLine> lines = new List<InventoryLine>();
-
-            // Get groupable identified inventory.
-            var groupedInventory =
-                (from invEntry in CurrentPlayer.PlayerInventory
-                 where invEntry.IsGroupable && invEntry.IsIdentified
-                 group invEntry by invEntry.RealName into itemGroup
-                 select itemGroup).ToList();
-
-            // Add groupable non-identified inventory.
-            groupedInventory.Concat(
-                from invEntry in CurrentPlayer.PlayerInventory
-                where invEntry.IsGroupable && !invEntry.IsIdentified
-                group invEntry by invEntry.CodeName into itemGroup
-                select itemGroup).ToList();
-
-            // Get non-groupable identified
-            var individualItems =
-                (from invEntry in CurrentPlayer.PlayerInventory
-                 where !invEntry.IsGroupable
-                 select invEntry).ToList();
-
-            foreach( var itemGroup in groupedInventory)
-            {
-                lines.Add(new InventoryLine { Count = itemGroup.Count(), ItemType = itemGroup.First().ItemType, DisplayName = itemGroup.Key });
-            }
-
-            lines = lines.OrderBy(x => x.ItemType).ToList();
-
-            foreach( InventoryLine line in lines )
-            {
-                retValue += $"{line.Count} {line.DisplayName}\n";
-            }
-
-
-            return retValue;
-        }
-
-        internal class InventoryLine
-        {
-            public int Count;
-            public Inventory.InventoryType ItemType;
-            public string DisplayName;
         }
 
     }

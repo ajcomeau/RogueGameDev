@@ -41,10 +41,9 @@ namespace RogueGame
             {
                 Debug.WriteLine(e.KeyValue);
                 currentGame.KeyHandler(e.KeyValue, e.Shift, e.Control);
-                
-                lblArray.Text = currentGame.DevMode ? 
-                    currentGame.CurrentMap.MapCheck() : currentGame.CurrentMap.MapText();
-                
+
+                lblArray.Text = currentGame.ScreenDisplay;
+
                 lblStatusMsg.Text = currentGame.StatusMessage;
                 lblStats.Text = currentGame.StatsDisplay;
             }
