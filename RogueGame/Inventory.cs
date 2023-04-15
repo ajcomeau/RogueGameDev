@@ -35,7 +35,7 @@ namespace RogueGame
         private static List<Inventory> invItems = new List<Inventory>()
         {
             new Inventory(InventoryType.Food, 1, "some food", "some food", "rations of food", '♣', 95, ConsumeFood),
-            new Inventory(InventoryType.Food, 2, "a mango", "a mango", "mangoes", '♣', 95, ConsumeFood)
+            new Inventory(InventoryType.Food, 2, "mango", "mango", "mangoes", '♣', 95, ConsumeFood)
         };
 
         public static ReadOnlyCollection<Inventory> InventoryItems => invItems.AsReadOnly();
@@ -148,9 +148,13 @@ namespace RogueGame
                  where !invEntry.IsGroupable
                  select invEntry).ToList();
 
-            // Create a list of exmaple items and count of each.
+            // Create a unique list of grouped items and count of each.
             foreach (var itemGroup in groupedInventory)
                 lines.Add(new InventoryLine { Count = itemGroup.Count(), InvItem = itemGroup.First() });
+
+            // Add non-grouped items.
+            foreach (var invEntry in individualItems)
+                lines.Add(new InventoryLine { Count = 1, InvItem = invEntry });
 
             // Order new list by item category.
             lines = lines.OrderBy(x => x.InvItem.ItemType).ToList();

@@ -74,6 +74,7 @@ namespace RogueGame
             this.CurrentTurn = 1;
             cStatus = $"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ...";
 
+            // Set the current screen display.
             this.ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText();
         }
 
@@ -82,7 +83,7 @@ namespace RogueGame
             // Process whatever key is sent by the form.
             bool startTurn = false;
 
-            // Basics
+            // Basics - movement.
             switch (KeyVal)
             {
                 case KEY_WEST:
