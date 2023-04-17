@@ -35,6 +35,7 @@ namespace RogueGame
         public string ScreenDisplay { get; set; }
         public bool DevMode { get; set; }
         public bool InvDisplay { get; set; }
+        public Func<char?, bool>? ReturnFunction { get; set; }
 
         private string cStatus;
 
@@ -81,37 +82,40 @@ namespace RogueGame
         public void KeyHandler(int KeyVal, bool Shift, bool Control)
         {
             // Process whatever key is sent by the form.
-            bool startTurn = false;
+            // Putting a break point in this function to test causes it to lose keystrokes
+            // following CTRL and SHIFT so they're not being sent here on their own anymore.
 
-            // Basics - movement.
-            switch (KeyVal)
+            bool startTurn = false, keyHandled = false;
+            char lowerCase = char.ToLower((char)KeyVal);
+
+            if (InvDisplay)
             {
-                case KEY_WEST:
-                    startTurn = MoveCharacter(CurrentPlayer, MapLevel.Direction.West);
-                    break;
-                case KEY_NORTH:
-                    startTurn = MoveCharacter(CurrentPlayer, MapLevel.Direction.North);
-                    break;
-                case KEY_EAST:
-                    startTurn = MoveCharacter(CurrentPlayer, MapLevel.Direction.East);
-                    break;
-                case KEY_SOUTH:
-                    startTurn = MoveCharacter(CurrentPlayer, MapLevel.Direction.South);
-                    break;
+                if (lowerCase >= 'a' && lowerCase <= 'z')
+                {
+                    if (ReturnFunction != null)
+                        ReturnFunction(lowerCase);
+                }
+                else if (KeyVal == KEY_ESC)
+                {
+                    ReturnFunction = null;
+                    RestoreMap();
+                    cStatus = "";
+                }
+                keyHandled = true;
             }
 
             // Shift combinations
-            if (Shift)
+            if (Shift & !keyHandled)
             {
                 switch (KeyVal)
                 {
-                case KEY_DOWNLEVEL:
-                    startTurn = true;
-                    if (CurrentPlayer.Location!.MapCharacter == MapLevel.STAIRWAY)
-                        ChangeLevel(1);
-                    else
-                        cStatus = "There's no stairway here.";
-                    break;
+                    case KEY_DOWNLEVEL:
+                        startTurn = true;
+                        if (CurrentPlayer.Location!.MapCharacter == MapLevel.STAIRWAY)
+                            ChangeLevel(1);
+                        else
+                            cStatus = "There's no stairway here.";
+                        break;
                     case KEY_UPLEVEL:
                         startTurn = true;
                         if (CurrentPlayer.Location!.MapCharacter == MapLevel.STAIRWAY)
@@ -122,44 +126,62 @@ namespace RogueGame
                     default:
                         break;
                 }
+                keyHandled = true;
             }
-            else
+
+            if (Control & !keyHandled)
             {
                 switch (KeyVal)
                 {
+                    case KEY_D:
+                        DevMode = !DevMode;
+                        cStatus = DevMode ? "Developer Mode ON" : "Developer Mode OFF";
+                        break;
+                    case KEY_N:
+                        if (DevMode)
+                            ReplaceMap();
+                        break;
+                    default:
+                        break;
+                }
+                keyHandled = true;
+            }
+
+            // Basics 
+            if (!keyHandled)
+            {
+                switch (KeyVal)
+                {
+                    case KEY_WEST:
+                        startTurn = MoveCharacter(CurrentPlayer, MapLevel.Direction.West);
+                        break;
+                    case KEY_NORTH:
+                        startTurn = MoveCharacter(CurrentPlayer, MapLevel.Direction.North);
+                        break;
+                    case KEY_EAST:
+                        startTurn = MoveCharacter(CurrentPlayer, MapLevel.Direction.East);
+                        break;
+                    case KEY_SOUTH:
+                        startTurn = MoveCharacter(CurrentPlayer, MapLevel.Direction.South);
+                        break;
                     case KEY_S:
                         startTurn = true;
                         SearchForHidden();
                         break;
                     case KEY_E:
                         startTurn = true;
-                        
+
                         break;
                     case KEY_I:
                         DisplayInventory();
-                        cStatus = "Here are the current contents of your inventory.";
+                        cStatus = "Here are the current contents of your inventory. Press ESC to exit.";
                         break;
                     case KEY_ESC:
                         RestoreMap();
                         cStatus = "";
                         break;
-                    default:
-                        break;
-                }
-
-            }
-
-            if (Control)
-            {
-                switch (KeyVal)
-                {
                     case KEY_D:
-                        DevMode = !DevMode;
-                            cStatus = DevMode ? "Developer Mode ON" : "Developer Mode OFF";
-                        break;
-                    case KEY_N:
-                        if (DevMode)
-                            ReplaceMap();
+                        DropInventory(null);
                         break;
                     default:
                         break;
@@ -178,7 +200,7 @@ namespace RogueGame
             }
 
             // If the inventory display hasn't been activated, display the appropriate map mode.
-            if(!InvDisplay)
+            if (!InvDisplay)
                 ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText();
 
         }
@@ -190,9 +212,8 @@ namespace RogueGame
             InvDisplay = true;
             ScreenDisplay = "\n\n";
 
-            foreach(InventoryLine line in Inventory.InventoryDisplay(CurrentPlayer))
+            foreach(InventoryLine line in Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory))
                 ScreenDisplay += line.Description + "\n";
-
         }
 
         private void RestoreMap()
@@ -330,6 +351,56 @@ namespace RogueGame
 
         }
 
+        private bool DropInventory(char? ListItem)
+        {
+            bool retValue = false;
+            List<Inventory> items;
+
+            if (!InvDisplay)
+            {
+                DisplayInventory();
+                cStatus = "Please select an item to drop.";
+                this.ReturnFunction = DropInventory;
+            }
+            else
+            {
+                items = (from InventoryLine in Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
+                    where InventoryLine.ID == ListItem
+                    select InventoryLine.InvItem).ToList();
+                
+                if (items.Count > 0)
+                {
+                    if(CurrentPlayer.Location!.MapInventory == null)
+                    {
+                        CurrentPlayer.Location.MapInventory = items[0];
+                        CurrentPlayer.Location.ItemCharacter = 
+                            CurrentPlayer.Location.MapInventory.DisplayCharacter;
+                        CurrentPlayer.PlayerInventory.Remove(items[0]);
+                        RestoreMap();
+                        retValue = true;
+                        cStatus = $"The item has been removed from inventory.";
+                    }
+                    else
+                    {
+                        cStatus = "There is already an item there.";
+                        retValue = false;
+                    }
+                }
+                else
+                {
+                    cStatus = "Please select an inventory item to drop.";
+                    RestoreMap();
+                    retValue = false;
+                }
+
+            }
+
+            if (!InvDisplay)
+                this.ReturnFunction = null;
+
+            return retValue;
+        }
+
         private string AddInventory()
         {
             // Inventory management.
@@ -374,7 +445,7 @@ namespace RogueGame
                 else
                 {
                     // Notify the player if inventory is full.
-                    retValue = "You cannot pick it up. Your inventory is full.";
+                    retValue = "You can't pick that up; your inventory is full.";
                 }
             }
 

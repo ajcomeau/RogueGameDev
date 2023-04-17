@@ -35,7 +35,7 @@ namespace RogueGame
         private static List<Inventory> invItems = new List<Inventory>()
         {
             new Inventory(InventoryType.Food, 1, "some food", "some food", "rations of food", '♣', 95, ConsumeFood),
-            new Inventory(InventoryType.Food, 2, "mango", "mango", "mangoes", '♣', 95, ConsumeFood)
+            new Inventory(InventoryType.Food, 2, "a mango", "a mango", "mangoes", '♣', 95, ConsumeFood)
         };
 
         public static ReadOnlyCollection<Inventory> InventoryItems => invItems.AsReadOnly();
@@ -120,7 +120,7 @@ namespace RogueGame
         }
 
 
-        public static List<InventoryLine> InventoryDisplay(Player CurrentPlayer)
+        public static List<InventoryLine> InventoryDisplay(List<Inventory> PlayerInventory)
         {
             char charID = 'a';
 
@@ -130,23 +130,23 @@ namespace RogueGame
 
             // Get groupable identified inventory.
             var groupedInventory =
-                (from invEntry in CurrentPlayer.PlayerInventory
-                 where invEntry.IsGroupable && invEntry.IsIdentified
-                 group invEntry by invEntry.RealName into itemGroup
-                 select itemGroup).ToList();
+                (from invEntry in PlayerInventory
+                    where invEntry.IsGroupable && invEntry.IsIdentified
+                    group invEntry by invEntry.RealName into itemGroup
+                    select itemGroup).ToList();
 
             // Add groupable non-identified inventory.
             groupedInventory.Concat(
-                from invEntry in CurrentPlayer.PlayerInventory
+                from invEntry in PlayerInventory
                 where invEntry.IsGroupable && !invEntry.IsIdentified
                 group invEntry by invEntry.CodeName into itemGroup
                 select itemGroup).ToList();
 
             // Get non-groupable identified
             var individualItems =
-                (from invEntry in CurrentPlayer.PlayerInventory
-                 where !invEntry.IsGroupable
-                 select invEntry).ToList();
+                (from invEntry in PlayerInventory
+                    where !invEntry.IsGroupable
+                    select invEntry).ToList();
 
             // Create a unique list of grouped items and count of each.
             foreach (var itemGroup in groupedInventory)
@@ -179,6 +179,16 @@ namespace RogueGame
             switch (Item.ItemType)
             {
                 case InventoryType.Food:
+                    if (Number == 1)
+                    {
+                        if (Item.RealName == "some food")
+                            retValue = Item.RealName;
+                        else
+                            retValue = "1 " + Item.RealName;
+                    }
+                    else
+                        retValue = Number.ToString() + " " + Item.PluralName;
+                    break;
                 case InventoryType.Ammunition:
                     retValue = Number == 1 ? "1 " + Item.RealName : Number.ToString() + " " + Item.PluralName;
                     break;

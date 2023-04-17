@@ -37,7 +37,9 @@ namespace RogueGame
 
         private void DungeonMain_KeyDown(object sender, KeyEventArgs e)
         {
-            if (currentGame != null)
+            // Don't send keys until the game has been instantiated
+            // and then don't send CTRL / SHIFT / ALT.
+            if (currentGame != null && e.KeyValue > 18)
             {
                 Debug.WriteLine(e.KeyValue);
                 currentGame.KeyHandler(e.KeyValue, e.Shift, e.Control);
