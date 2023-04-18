@@ -73,7 +73,7 @@ namespace RogueGame
             
             // Put new player on map.
             this.CurrentPlayer = new Player(PlayerName);
-            this.CurrentPlayer.Location = CurrentMap.PlaceMapCharacterLINQ(Player.CHARACTER, true);
+            this.CurrentPlayer.Location = CurrentMap.AddCharacterToMap(Player.CHARACTER);
             
             // Activate the player's current room.
             this.CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
@@ -282,14 +282,15 @@ namespace RogueGame
                 CurrentMap = new MapLevel();
                 CurrentMap.ShroudMap();
                 CurrentLevel += Change;
-                CurrentPlayer.Location = CurrentMap.PlaceMapCharacter(Player.CHARACTER, true);
+                CurrentPlayer.Location = CurrentMap.AddCharacterToMap(Player.CHARACTER);
                 CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
-                
-                if (CurrentLevel == MAX_LEVEL && !CurrentPlayer.HasAmulet)
-                    CurrentMap.PlaceMapCharacter(MapLevel.AMULET, false);
-                
+                                
                 cStatus = "";
             }
+
+            // Place Amulet on last level.
+            if(CurrentLevel == MAX_LEVEL)
+                CurrentMap.AddAmuletToMap();
 
         }
 
@@ -297,7 +298,7 @@ namespace RogueGame
         {
             // Dev mode only - replace the map for testing.
             CurrentMap = new MapLevel();
-            CurrentPlayer.Location = CurrentMap.PlaceMapCharacter(Player.CHARACTER, true);
+            CurrentPlayer.Location = CurrentMap.AddCharacterToMap(Player.CHARACTER);
         }
 
         public bool MoveCharacter(Player player, MapLevel.Direction direct)
@@ -340,11 +341,11 @@ namespace RogueGame
                 CurrentMap.DiscoverSurrounding(player.Location.X, player.Location.Y);
 
                 // Respond to items on map.
-                if (player.Location.ItemCharacter != null)
+                if (player.Location.Occupied())
                 {
                     if (player.Location.ItemCharacter == MapLevel.GOLD)
                         PickUpGold();
-                    else if (player.Location.ItemCharacter != null)
+                    else if (player.Location.MapInventory != null)
                         cStatus = AddInventory();
                 }
             }
@@ -386,8 +387,6 @@ namespace RogueGame
                     if(CurrentPlayer.Location!.MapInventory == null)
                     {
                         CurrentPlayer.Location.MapInventory = items[0];
-                        CurrentPlayer.Location.ItemCharacter = 
-                            CurrentPlayer.Location.MapInventory.DisplayCharacter;
                         CurrentPlayer.PlayerInventory.Remove(items[0]);
                         RestoreMap();
                         retValue = true;
@@ -423,6 +422,7 @@ namespace RogueGame
             string retValue = "";
 
             // If the player found the Amulet ...
+            // TODO: Change this after the Amulet has been added as an inventory item. 
             if(CurrentPlayer.Location!.ItemCharacter == MapLevel.AMULET)
             {
                 CurrentPlayer.HasAmulet = true;
@@ -437,7 +437,7 @@ namespace RogueGame
                 
                 retValue = "You found the Amulet of Yendor!  It has been added to your inventory.";
             }
-            else if (CurrentPlayer.Location!.ItemCharacter != null)
+            else if (CurrentPlayer.Location!.MapInventory != null)
             {
                 // For everything else, pick it up if it can fit in inventory.
                 if(CurrentPlayer.PlayerInventory.Count < Player.INVENTORY_LIMIT)
@@ -448,6 +448,7 @@ namespace RogueGame
                     {
                         foundItem = CurrentPlayer.Location.MapInventory;
 
+                        //TODO:  This will need to be changed based on item ident status.
                         retValue = $"You picked up {foundItem.CodeName}.";                        
                         
                         // Move the Inventory reference to the player's inventory.

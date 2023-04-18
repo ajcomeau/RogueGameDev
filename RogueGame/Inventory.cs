@@ -235,6 +235,7 @@ namespace RogueGame
 
         public static Inventory GetInventoryItem()
         {
+            // TODO:  Omit amulet from this list when it's implemented. It will be added separately.
             // Get a random item from the inventory templates.
             return InventoryItems[rand.Next(InventoryItems.Count)];
         }

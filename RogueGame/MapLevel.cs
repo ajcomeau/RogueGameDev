@@ -335,7 +335,7 @@ namespace RogueGame{
             levelMap[eastWallX, southWallY] = new MapSpace(CORNER_SE, false, false, eastWallX, southWallY);
 
             // Evaluate room for a gold deposit
-            if(rand.Next(1, 101) > ROOM_GOLD_PCT)
+            if(rand.Next(1, 101) < ROOM_GOLD_PCT)
             {
                 goldX = westWallX; goldY = northWallY;
                 // Search the room randomly for an empty interior room space
@@ -370,17 +370,11 @@ namespace RogueGame{
                     
                     // Update the space and increment the count.
                     itemSpace.MapInventory = invItem;
-                    itemSpace.ItemCharacter = itemSpace.MapInventory!.DisplayCharacter;
 
                     mapInventory++;
                 }
             }
         }
-
-
-
-
-
 
         private void HallwayGeneration()
         {
@@ -542,6 +536,8 @@ namespace RogueGame{
 
         }
 
+        
+
         public void ShroudMap()
         {
             // Raise the fog of war and hide the map.
@@ -697,7 +693,7 @@ namespace RogueGame{
             // Return a list of all items on the map by checking the
             // item character.
             List<MapSpace> items = (from MapSpace space in levelMap
-                                        where space.ItemCharacter != null
+                                        where space.ItemCharacter != null || space.MapInventory != null
                                         select space).ToList();
             
             return items;
@@ -710,49 +706,19 @@ namespace RogueGame{
             string charList = hallways ? (HALLWAY.ToString() + ROOM_INT.ToString()) : ROOM_INT.ToString();
 
             List<MapSpace> spaces = (from MapSpace space in levelMap
-                                    where charList.Contains(space.MapCharacter)
-                                    && space.ItemCharacter == null
-                                    && space.DisplayCharacter == null
-                                    select space).ToList();
+                                     where charList.Contains(space.MapCharacter)
+                                     && space.ItemCharacter == null
+                                     && space.DisplayCharacter == null
+                                     && space.MapInventory == null
+                                     select space).ToList();
 
             return spaces;
         }
 
-
-        public MapSpace PlaceMapCharacter(char MapChar, bool Living)
+        public MapSpace AddCharacterToMap(char MapChar)
         {
             // Find a random space within one of the rooms that 
-            // hasn't been occupied and return the array reference.
-            // This version searches by poking the map randomly. Kept for comparison.
-            // See PlaceMapCharacterLINQ()
-
-            int xPos = 1, yPos = 1;
-            bool freeSpace = false;
-
-            while (!freeSpace)
-            {
-                xPos = rand.Next(1, MAP_WD);
-                yPos = rand.Next(1, MAP_HT);
-
-                freeSpace = (levelMap[xPos, yPos].MapCharacter == ROOM_INT)
-                    && levelMap[xPos, yPos].DisplayCharacter == null
-                    && levelMap[xPos, yPos].ItemCharacter == null;
-            }
-
-            // If the character is for the player or a monster, add
-            // it to the Display character. Otherwise, use the item character.
-            if (Living) 
-                levelMap[xPos, yPos].DisplayCharacter = MapChar;
-            else
-                levelMap[xPos, yPos].ItemCharacter = MapChar;
-
-            return levelMap[xPos, yPos];
-        }
-
-        public MapSpace PlaceMapCharacterLINQ(char MapChar, bool Living)
-        {
-            // Find a random space within one of the rooms that 
-            // hasn't been occupied and return the array reference.
+            // hasn't been occupied add the player or monster.
             // This version uses LINQ to get a list of the open spaces.
 
             MapSpace select;
@@ -763,11 +729,20 @@ namespace RogueGame{
 
             // If the character is for the player or a monster, add
             // it to the Display character. Otherwise, use the item character.
-            if (Living)
-                select.DisplayCharacter = MapChar;
-            else
-                select.ItemCharacter = MapChar;
+            select.DisplayCharacter = MapChar;
 
+            return select;
+        }
+
+        public MapSpace AddAmuletToMap()
+        {
+            // Add amulet to the map.
+            MapSpace select;
+
+            List<MapSpace> spaces = FindOpenSpaces(false);
+            select = spaces[rand.Next(0, spaces.Count)];
+            //TODO: This will be changed when the amulet is made an inventory item.
+            select.ItemCharacter = AMULET;
             return select;
         }
 
@@ -895,7 +870,7 @@ namespace RogueGame{
             {
                 for (int x = 0; x <= MAP_WD; x++)
                 {
-                    // Standard priority - DisplayCharacter, ItemCharacter, MapCharacter.
+                    // Priority - DisplayCharacter, ItemCharacter, MapCharacter.
                     if (levelMap[x, y].DisplayCharacter != null)
                         priorityChar = levelMap[x, y].DisplayCharacter;
                     else if (levelMap[x, y].ItemCharacter != null)
@@ -931,17 +906,8 @@ namespace RogueGame{
             {
                 for (int x = 0; x <= MAP_WD; x++)
                 {
-                    // Standard priority - DisplayCharacter, ItemCharacter, AltMapCharacter, MapCharacter.
-                    if (levelMap[x, y].DisplayCharacter != null)
-                        priorityChar = levelMap[x, y].DisplayCharacter;
-                    else if (levelMap[x, y].ItemCharacter != null)
-                        priorityChar = levelMap[x, y].ItemCharacter;
-                    else if (levelMap[x, y].MapInventory != null)
-                        priorityChar = levelMap[x, y].MapInventory.DisplayCharacter;
-                    else if (levelMap[x, y].AltMapCharacter != null)
-                        priorityChar = levelMap[x, y].AltMapCharacter;
-                    else
-                        priorityChar = levelMap[x, y].MapCharacter;
+                    // Get priority character
+                    priorityChar = levelMap[x, y].PriorityChar();
 
                     // Determine if player is actually in the room.
                     inRoom = (GetRegionNumber(x, y) == playerRegion &&
@@ -985,7 +951,7 @@ namespace RogueGame{
         public char MapCharacter { get; set; } // Actual character on map (Room interior, hallway, wall, etc..).
         public char? AltMapCharacter { get; set; } // Map character to display if search is required.
         public char? ItemCharacter { get; set; } // Item sitting on map (potion, scroll, etc..).
-        public char? DisplayCharacter { get; set; }  // Displayed character - override for mimics and hidden.
+        public char? DisplayCharacter { get; set; }  // Player and monsters.
         public Inventory? MapInventory { get; set; } // Inventory items found on the map.
         public bool SearchRequired { get; set; }  // Does the player need to search to reveal?
         public bool Discovered { get; set; }
@@ -1048,6 +1014,36 @@ namespace RogueGame{
             this.X = X;
             this.Y = Y;
         }
+
+        public char? PriorityChar()
+        {
+            char? retValue;
+
+            // Standard priority - DisplayCharacter, ItemCharacter, MapInventory.DisplayCharacter
+            // AltMapCharacter, MapCharacter.
+            if (this.DisplayCharacter != null)
+                retValue = this.DisplayCharacter;
+            else if (this.ItemCharacter != null)
+                retValue = this.ItemCharacter;
+            else if (this.MapInventory != null)
+                retValue = this.MapInventory.DisplayCharacter;
+            else if (this.AltMapCharacter != null)
+                retValue = this.AltMapCharacter;
+            else
+                retValue = this.MapCharacter;
+
+            return retValue;
+        }
+
+        public bool Occupied()
+        { 
+            // Determine if there's something in the space.
+            return (this.ItemCharacter != null ||
+                this.DisplayCharacter != null ||
+                this.MapInventory != null);
+        }
+
+        
     }
 }
 
