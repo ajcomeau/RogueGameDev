@@ -13,31 +13,36 @@ namespace RogueGame
 {    
     internal class Game
     {
+        // Movement keys
         private const int KEY_WEST = 37;
         private const int KEY_NORTH = 38;
         private const int KEY_EAST = 39;
         private const int KEY_SOUTH = 40;
+        // Stairway keys
         private const int KEY_UPLEVEL = 188;
         private const int KEY_DOWNLEVEL = 190;
-        private const int MAX_LEVEL = 26;
+        // Command keys
         private const int KEY_S = 83;
         private const int KEY_D = 68;
         private const int KEY_N = 78;
         private const int KEY_E = 69;
         private const int KEY_I = 73;
         private const int KEY_ESC = 27;
-        private const int SEARCH_PCT = 20;
+        
+        private const int SEARCH_PCT = 20;  // Probability of search revealing hidden doors, etc..
+        private const int MAX_LEVEL = 26;   // Maximum dungeon level
 
-        public MapLevel CurrentMap { get; set; }
+        public MapLevel CurrentMap { get; set; }                    
         public int CurrentLevel { get; set; }
         public Player CurrentPlayer { get; }
         public int CurrentTurn { get; set; }
-        public string ScreenDisplay { get; set; }
-        public bool DevMode { get; set; }
-        public bool InvDisplay { get; set; }
-        public Func<char?, bool>? ReturnFunction { get; set; }
+        public string ScreenDisplay { get; set; }  // Current contents of the screen.
+        public bool DevMode { get; set; }   // Dev mode shows entire map and allows map to be changed out.
+        public bool InvDisplay { get; set; }  // Activated when inventory is being displayed.
+        public Func<char?, bool>? ReturnFunction { get; set; }  // Function to be run after inventory selection.
 
-        private string cStatus;
+        // Status message for top of screen.
+        private string cStatus;  
 
         // Random number generator
         private static Random rand = new Random();
@@ -47,6 +52,7 @@ namespace RogueGame
             get { return cStatus; }
         }
 
+        // Stats readout for bottom of screen.
         public string StatsDisplay
         {
             get { return $"Level: {CurrentLevel}   Gold: {CurrentPlayer.Gold}   " +
@@ -72,11 +78,12 @@ namespace RogueGame
             // Activate the player's current room.
             this.CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
 
+            // Set starting turn and show welcome message.
             this.CurrentTurn = 1;
             cStatus = $"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ...";
 
             // Set the current screen display.
-            this.ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText();
+            this.ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
         }
 
         public void KeyHandler(int KeyVal, bool Shift, bool Control)
@@ -90,6 +97,7 @@ namespace RogueGame
 
             if (InvDisplay)
             {
+                // For letters, call the current return function.
                 if (lowerCase >= 'a' && lowerCase <= 'z')
                 {
                     if (ReturnFunction != null)
@@ -97,6 +105,7 @@ namespace RogueGame
                 }
                 else if (KeyVal == KEY_ESC)
                 {
+                    // For ESC, clear the return function and restore the game map.
                     ReturnFunction = null;
                     RestoreMap();
                     cStatus = "";
@@ -109,14 +118,14 @@ namespace RogueGame
             {
                 switch (KeyVal)
                 {
-                    case KEY_DOWNLEVEL:
+                    case KEY_DOWNLEVEL:     // Going downstairs.
                         startTurn = true;
                         if (CurrentPlayer.Location!.MapCharacter == MapLevel.STAIRWAY)
                             ChangeLevel(1);
                         else
                             cStatus = "There's no stairway here.";
                         break;
-                    case KEY_UPLEVEL:
+                    case KEY_UPLEVEL:       // Going upstairs.
                         startTurn = true;
                         if (CurrentPlayer.Location!.MapCharacter == MapLevel.STAIRWAY)
                             ChangeLevel(-1);
@@ -133,11 +142,11 @@ namespace RogueGame
             {
                 switch (KeyVal)
                 {
-                    case KEY_D:
+                    case KEY_D:         // Dev mode ON / OFF
                         DevMode = !DevMode;
                         cStatus = DevMode ? "Developer Mode ON" : "Developer Mode OFF";
                         break;
-                    case KEY_N:
+                    case KEY_N:         // New map
                         if (DevMode)
                             ReplaceMap();
                         break;
@@ -152,6 +161,7 @@ namespace RogueGame
             {
                 switch (KeyVal)
                 {
+                    // Movement keys
                     case KEY_WEST:
                         startTurn = MoveCharacter(CurrentPlayer, MapLevel.Direction.West);
                         break;
@@ -164,23 +174,23 @@ namespace RogueGame
                     case KEY_SOUTH:
                         startTurn = MoveCharacter(CurrentPlayer, MapLevel.Direction.South);
                         break;
-                    case KEY_S:
+                    case KEY_S:     // Search
                         startTurn = true;
                         SearchForHidden();
                         break;
-                    case KEY_E:
+                    case KEY_E:     // Eat
                         startTurn = true;
 
                         break;
-                    case KEY_I:
+                    case KEY_I:     // Show inventory
                         DisplayInventory();
                         cStatus = "Here are the current contents of your inventory. Press ESC to exit.";
                         break;
-                    case KEY_ESC:
+                    case KEY_ESC:  // Restore map
                         RestoreMap();
                         cStatus = "";
                         break;
-                    case KEY_D:
+                    case KEY_D:     // Drop item
                         DropInventory(null);
                         break;
                     default:
@@ -201,7 +211,7 @@ namespace RogueGame
 
             // If the inventory display hasn't been activated, display the appropriate map mode.
             if (!InvDisplay)
-                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText();
+                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
 
         }
 
@@ -222,14 +232,17 @@ namespace RogueGame
             if (InvDisplay)
             {
                 InvDisplay = false;
-                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText();
+                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
             }
         }
 
         private void SearchForHidden()
         {
+            // Search for hiden items and reveal them if found.
+            // TODO: This could be made dependent on player stats.
             List<MapSpace> spaces;
 
+            // Search if we roll within probability constant.
             if (rand.Next(1, 101) <= SEARCH_PCT)
             {
                 cStatus = "Searching ...";
@@ -360,7 +373,7 @@ namespace RogueGame
             {
                 DisplayInventory();
                 cStatus = "Please select an item to drop.";
-                this.ReturnFunction = DropInventory;
+                ReturnFunction = DropInventory;
             }
             else
             {

@@ -12,7 +12,7 @@ namespace RogueGame
 {
     internal class Inventory
     {
-        public enum InventoryType
+        public enum InvCategory
         {
             Food = 0,
             Ring = 1,
@@ -34,41 +34,44 @@ namespace RogueGame
         // items in the inventory listing.
         private static List<Inventory> invItems = new List<Inventory>()
         {
-            new Inventory(InventoryType.Food, 1, "some food", "some food", "rations of food", '♣', 95, ConsumeFood),
-            new Inventory(InventoryType.Food, 2, "a mango", "a mango", "mangoes", '♣', 95, ConsumeFood)
+            new Inventory(InvCategory.Food, 1, "some food", "some food", "rations of food", '♣', 95, ConsumeFood),
+            new Inventory(InvCategory.Food, 2, "a mango", "a mango", "mangoes", '♣', 95, ConsumeFood)
         };
 
         public static ReadOnlyCollection<Inventory> InventoryItems => invItems.AsReadOnly();
 
+        public const int MAX_FOODVALUE = 1700;      // Maximum turns gained from food ration.
+        public const int MIN_FOODVALUE = 900;       // Minimum turns gained from food ration.
 
-        public InventoryType ItemType { get; set; }
-        public int PriorityId { get; set; }
-        public string? CodeName { get; set; }
-        public string RealName { get; set; }
-        public string PluralName { get; set; }
+
+        public InvCategory ItemCategory { get; set; }
+        public int PriorityId { get; set; }     // Unique ID used for ordering.
+        public string? CodeName { get; set; }   // Name if unidentified.
+        public string RealName { get; set; }    // Identified name.
+        public string PluralName { get; set; }  // Plural of RealName
         public bool IsIdentified { get; set; }
-        public bool IsGroupable { get; set; }
-        public bool IsWieldable { get; set; }
-        public bool IsCursed { get; set; }
+        public bool IsGroupable { get; set; }   // Can more than one of these fit in an inventory slot?
+        public bool IsWieldable { get; set; }   // Can it be used as a weapon?
+        public bool IsCursed { get; set; }  
         public int ArmorClass { get; set; } 
-        public int Increment { get; set; }
-        public int DmgIncrement { get; set; }
-        public int AccIncrement { get; set; }
-        public int MinDamage { get; set; }
-        public int MaxDamage { get; set; }
-        public int AppearancePct { get; set; }
-        public char DisplayCharacter { get; set; }
-        public Func<Player, MapLevel.Direction, bool>? ThrowFunction { get; set; }
-        public Func<Player, MapLevel.Direction, bool>? ZapFunction { get; set; }
-        public Func<Player, Inventory?, bool>? MainFunction { get; set; }
+        public int Increment { get; set; }      // Effectiveness bonus
+        public int DmgIncrement { get; set; }   // Damage bonus
+        public int AccIncrement { get; set; }   // Accuracy bonus
+        public int MinDamage { get; set; }      // Minimum damaage for weapon
+        public int MaxDamage { get; set; }      // Maximum damage for weapon
+        public int AppearancePct { get; set; }  // Probability of item being generated when selected randomly.
+        public char DisplayCharacter { get; set; }  // Symbol to be displayed.
+        public Func<Player, MapLevel.Direction, bool>? ThrowFunction { get; set; }  // Delegate function for throwing item.
+        public Func<Player, MapLevel.Direction, bool>? ZapFunction { get; set; } // Delegate function if item can be used to zap.
+        public Func<Player, Inventory?, bool>? MainFunction { get; set; }  // Default delegate function.
 
-        public Inventory(InventoryType InvType, int PriorityID, string CodeName, string RealName, string PluralName, bool Identified,
+        public Inventory(InvCategory InvType, int PriorityID, string CodeName, string RealName, string PluralName, bool Identified,
             bool Groupable, bool Wieldable, bool Cursed, int ArmorClass, int Increment, int DamageInc, int AccuracyInc,
             int MinDamage, int MaxDamage, int AppearancePct, char DisplayChar, Func<Player, Inventory?, bool>? mainFunction, 
             Func<Player, MapLevel.Direction, bool>? Throw = null, Func<Player, MapLevel.Direction, bool>? Zap = null)
         {
             // Apply parameters
-            this.ItemType = InvType; 
+            this.ItemCategory = InvType; 
             this.CodeName = CodeName; 
             this.RealName = RealName;
             this.PluralName = PluralName;
@@ -89,12 +92,12 @@ namespace RogueGame
             this.ZapFunction = (Zap != null) ? Zap : null;
         }
 
-        public Inventory(InventoryType InvType, int PriorityID, string CodeName, string RealName, string PluralName, char DisplayChar, 
+        public Inventory(InvCategory InvType, int PriorityID, string CodeName, string RealName, string PluralName, char DisplayChar, 
             int AppearancePct, Func<Player, Inventory?, bool> mainFunction, Func<Player, MapLevel.Direction, bool>? Throw = null, 
             Func<Player, MapLevel.Direction, bool>? Zap = null)
         {
             // Apply parameters and most common settings
-            this.ItemType = InvType;
+            this.ItemCategory = InvType;
             this.CodeName = CodeName;
             this.RealName = RealName;
             this.PluralName = PluralName;
@@ -103,11 +106,12 @@ namespace RogueGame
             this.AppearancePct = AppearancePct;
 
             // If it's a weapon, it's wieldable.
-            this.IsWieldable = (InvType == InventoryType.Weapon);
+            this.IsWieldable = (InvType == InvCategory.Weapon);
 
             // If the two names are the same or the type is greater than 6, it's identified.
-            this.IsIdentified = (this.RealName == this.CodeName || (int)this.ItemType > 5);
+            this.IsIdentified = (this.RealName == this.CodeName || (int)this.ItemCategory > 5);
 
+            // Delegates
             this.MainFunction = mainFunction;
             this.ThrowFunction = (Throw != null) ? Throw : null;
             this.ZapFunction = (Zap != null) ? Zap : null;
@@ -115,6 +119,7 @@ namespace RogueGame
 
         public Inventory()
         {
+            // Contructor for blank item.
             this.RealName = "";
             this.DisplayCharacter = '0';
         }
@@ -157,7 +162,7 @@ namespace RogueGame
                 lines.Add(new InventoryLine { Count = 1, InvItem = invEntry });
 
             // Order new list by item category.
-            lines = lines.OrderBy(x => x.InvItem.ItemType).ToList();
+            lines = lines.OrderBy(x => x.InvItem.ItemCategory).ToList();
 
             // Call the ListingDescription function to get a finished description.
             foreach (InventoryLine line in lines)
@@ -173,12 +178,15 @@ namespace RogueGame
 
         public static string ListingDescription(int Number, Inventory Item)
         {
-            // Signle function to create inventory listing description for item.
+            // Signle function to create inventory listing description for item and 
+            // handle all the grammatical adjustments.
+
             string retValue = "";
 
-            switch (Item.ItemType)
+            switch (Item.ItemCategory)
             {
-                case InventoryType.Food:
+                // Make adjustments by inventory category.
+                case InvCategory.Food:
                     if (Number == 1)
                     {
                         if (Item.RealName == "some food")
@@ -189,20 +197,20 @@ namespace RogueGame
                     else
                         retValue = Number.ToString() + " " + Item.PluralName;
                     break;
-                case InventoryType.Ammunition:
+                case InvCategory.Ammunition:
                     retValue = Number == 1 ? "1 " + Item.RealName : Number.ToString() + " " + Item.PluralName;
                     break;
-                case InventoryType.Ring:
-                case InventoryType.Scroll:
-                case InventoryType.Wand:
-                case InventoryType.Staff:
-                case InventoryType.Potion:
+                case InvCategory.Ring:
+                case InvCategory.Scroll:
+                case InvCategory.Wand:
+                case InvCategory.Staff:
+                case InvCategory.Potion:
                     if (Item.IsIdentified)
-                        retValue = Number == 1 ? "1 " + " " + Item.ItemType.ToString() + " of " + Item.RealName 
-                            : Number.ToString() + " " + Item.ItemType.ToString() + "s of " + Item.RealName;
+                        retValue = Number == 1 ? "1 " + " " + Item.ItemCategory.ToString() + " of " + Item.RealName 
+                            : Number.ToString() + " " + Item.ItemCategory.ToString() + "s of " + Item.RealName;
                     else
-                        retValue = Number == 1 ? "1 " + " " + Item.ItemType.ToString() + " called " + Item.CodeName
-                            : Number.ToString() + " " + Item.ItemType.ToString() + "s called " + Item.CodeName;
+                        retValue = Number == 1 ? "1 " + " " + Item.ItemCategory.ToString() + " called " + Item.CodeName
+                            : Number.ToString() + " " + Item.ItemCategory.ToString() + "s called " + Item.CodeName;
                     break;
 
                 default:
@@ -215,11 +223,11 @@ namespace RogueGame
         }
 
 
-        public static Inventory GetInventoryItem(InventoryType InvType)
+        public static Inventory GetInventoryItem(InvCategory InvType)
         {
-            // Get a random item from a specific inventory type.
+            // Get a random item from a specific inventory category.
             List<Inventory> invSelect = (from Inventory item in InventoryItems
-                                            where item.ItemType == InvType
+                                            where item.ItemCategory == InvType
                                             select item).ToList();
             
             return invSelect[rand.Next(invSelect.Count)]; 
@@ -227,13 +235,15 @@ namespace RogueGame
 
         public static Inventory GetInventoryItem()
         {
-            // Get a random item from the inventory types.
+            // Get a random item from the inventory templates.
             return InventoryItems[rand.Next(InventoryItems.Count)];
         }
 
 
         public static bool ConsumeFood(Player currentPlayer, Inventory? inventoryItem = null)
         {
+            // Delegate for consuming food
+            //TODO: In development.
             Debug.WriteLine("Chow down, " + currentPlayer.PlayerName + "!");
             currentPlayer.PlayerInventory[0].AccIncrement  = 0;
             return true;
@@ -242,6 +252,7 @@ namespace RogueGame
 
     internal class InventoryLine
     {
+        // InventoryLine class for formatting inventory display.
         public char ID;
         public int Count;
         public Inventory InvItem;

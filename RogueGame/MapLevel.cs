@@ -18,6 +18,7 @@ namespace RogueGame{
 
     internal class MapLevel
     {
+        // Used to establish relative directions.
         public enum Direction
         {
             None = 0,
@@ -31,8 +32,6 @@ namespace RogueGame{
         private Dictionary<MapSpace, Direction> deadEnds = 
             new Dictionary<MapSpace, Direction>();
 
-        // Random generator
-        
         // Box drawing constants and other symbols.
         private const char HORIZONTAL = '═';        // Unicode symbols can be copy-pasted from https://www.w3.org/TR/xml-entity-names/025.html.  
         private const char VERTICAL = '║';
@@ -286,13 +285,13 @@ namespace RogueGame{
             while (doorCount == 0) { 
                 if (regionNumber >= 4 && rand.Next(1, 101) <= ROOM_EXIT_PCT)  // North doorways
                 {
-                    doorway = rand.Next(westWallX + 1, eastWallX);
-                    searchRequired = rand.Next(1, 101) <= HIDDEN_EXIT_PCT;
+                    doorway = rand.Next(westWallX + 1, eastWallX);  // Random point on wall.
+                    searchRequired = rand.Next(1, 101) <= HIDDEN_EXIT_PCT;  // Is the doorway hidden?
                     levelMap[doorway, northWallY] = new MapSpace(ROOM_DOOR, false, searchRequired, doorway, northWallY);
                     levelMap[doorway, northWallY].AltMapCharacter = searchRequired ? HORIZONTAL : null;
                     levelMap[doorway, northWallY - 1] = new MapSpace(HALLWAY, false, false, doorway, northWallY - 1);
-                    deadEnds.Add(levelMap[doorway, northWallY - 1], Direction.North);
-                    doorCount++;
+                    deadEnds.Add(levelMap[doorway, northWallY - 1], Direction.North);  // Add to dead ends list.
+                    doorCount++;  // Increment the count of doors created.
                 }
 
                 if (regionNumber <= 6 && rand.Next(1, 101) <= ROOM_EXIT_PCT)  // South doorways
@@ -330,14 +329,12 @@ namespace RogueGame{
             }
 
             // Set the room corners.
-
             levelMap[westWallX, northWallY] = new MapSpace(CORNER_NW, false, false, westWallX, northWallY);
             levelMap[eastWallX, northWallY] = new MapSpace(CORNER_NE, false, false, eastWallX, northWallY);
             levelMap[westWallX, southWallY] = new MapSpace(CORNER_SW, false, false, westWallX, southWallY);
             levelMap[eastWallX, southWallY] = new MapSpace(CORNER_SE, false, false, eastWallX, southWallY);
 
-            // Evaluate for a gold deposit
-
+            // Evaluate room for a gold deposit
             if(rand.Next(1, 101) > ROOM_GOLD_PCT)
             {
                 goldX = westWallX; goldY = northWallY;
@@ -435,6 +432,7 @@ namespace RogueGame{
                     {
                         surroundingChars = SearchAllDirections(hallwaySpace.X, hallwaySpace.Y);
 
+                        // Forward ...
                         if ((surroundingChars[hallDirection] != null &&
                             surroundingChars[hallDirection].MapCharacter == HALLWAY))
                         {
@@ -442,6 +440,7 @@ namespace RogueGame{
                             hallwayDug = true;
                         }
                         
+                        // To one side ... 
                         if ((surroundingChars[direction90] != null &&
                             surroundingChars[direction90].MapCharacter == HALLWAY))
                         {
@@ -449,6 +448,7 @@ namespace RogueGame{
                             hallwayDug = true;
                         }
                         
+                        // To the other side.
                         if ((surroundingChars[direction270] != null &&
                             surroundingChars[direction270].MapCharacter == HALLWAY))
                         {
@@ -463,6 +463,7 @@ namespace RogueGame{
                             adjacentChars = SearchAdjacent(EMPTY, hallwaySpace.X, hallwaySpace.Y);
                             if (adjacentChars.ContainsKey(hallDirection))
                             {
+                                // Forward ...
                                 newSpace = new MapSpace(HALLWAY, adjacentChars[hallDirection]);
                                 levelMap[adjacentChars[hallDirection].X, adjacentChars[hallDirection].Y] = newSpace;
                                 deadEnds.Remove(hallwaySpace);
@@ -470,6 +471,7 @@ namespace RogueGame{
                             }
                             else if (adjacentChars.ContainsKey(direction90))
                             {
+                                // To one side ...
                                 newSpace = new MapSpace(HALLWAY, adjacentChars[direction90]);
                                 levelMap[adjacentChars[direction90].X, adjacentChars[direction90].Y] = newSpace;
                                 deadEnds.Remove(hallwaySpace);
@@ -477,6 +479,7 @@ namespace RogueGame{
                             }
                             else if (adjacentChars.ContainsKey(direction270))
                             {
+                                // Then the other side.
                                 newSpace = new MapSpace(HALLWAY, adjacentChars[direction270]);
                                 levelMap[adjacentChars[direction270].X, adjacentChars[direction270].Y] = newSpace;
                                 deadEnds.Remove(hallwaySpace);
@@ -495,32 +498,6 @@ namespace RogueGame{
                     //Console.Write(MapText());
                 }
             }
-
-            //// After all the hallways are plotted, do another pass through the 
-            //// copy of the dictionary to add some extra passages and avoid isolated sections.
-            //foreach (var entry in deadEndsCopy)
-            //{
-            //    surroundingChars = SearchAllDirections(entry.Key.X, entry.Key.Y);
-            //    direction90 = GetDirection90(entry.Value);
-            //    direction270 = GetDirection270(entry.Value);
-
-            //    if ((surroundingChars[entry.Value] != null &&
-            //        surroundingChars[entry.Value].MapCharacter == HALLWAY))
-            //    {
-            //        DrawHallway(entry.Key, surroundingChars[entry.Value], entry.Value);
-            //    }
-            //    else if ((surroundingChars[direction90] != null &&
-            //        surroundingChars[direction90].MapCharacter == HALLWAY))
-            //    {
-            //        DrawHallway(entry.Key, surroundingChars[direction90], direction90);
-            //    }
-            //    else if ((surroundingChars[direction270] != null &&
-            //        surroundingChars[direction270].MapCharacter == HALLWAY))
-            //    {
-            //        DrawHallway(entry.Key, surroundingChars[direction270], direction270);
-            //    }
-            //}
-
         }        
 
         private void DrawHallway(MapSpace start, MapSpace end, Direction hallDirection)
@@ -528,8 +505,6 @@ namespace RogueGame{
 
             // Draw a hallway between specified spaces.  Break off if another hallway
             // is discovered to the side.
-
-
             switch (hallDirection) {
                 case Direction.North:
                     for (int y = start.Y; y >= end.Y; y--)
@@ -569,10 +544,11 @@ namespace RogueGame{
 
         public void ShroudMap()
         {
-            // Raise the fog of war
+            // Raise the fog of war and hide the map.
             List<MapSpace> mapSpaces = (from MapSpace space in levelMap
                                             select space).ToList();
 
+            // Iterate through MapSpaces
             foreach (MapSpace space in mapSpaces)
             {
                 space.Discovered = false;
@@ -601,7 +577,6 @@ namespace RogueGame{
 
             // Search for specific character in four directions around point for a 
             // specific character. Return list of directions and characters found.
-
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
 
             if (y - 1 >= 0 && levelMap[x, y - 1].MapCharacter == character)  // North
@@ -620,72 +595,9 @@ namespace RogueGame{
 
         }
 
-        public List<MapSpace> GetSurrounding(int x, int y)
-        {
-            // Return a list of all spaces around given space in eight directions.
-
-            List<MapSpace> surrounding = (from MapSpace space in levelMap
-                                        where Math.Abs(space.X - x) <= 1
-                                        && Math.Abs(space.Y - y) <= 1
-                                        select space).ToList();
-
-            return surrounding;
-        }
-
-        public MapSpace FindPlayer()
-        {
-            // Return the mapspace containing the player.
-
-            MapSpace playerSpace = (from MapSpace space in levelMap
-                                        where space.DisplayCharacter == Player.CHARACTER
-                                        select space).First();
-
-            return playerSpace;
-        }
-
-        public List<MapSpace> FindAllOccupants()
-        {
-            // Return a list of all monsters and the player by checking the
-            // display character.
-
-            List<MapSpace> occupants = (from MapSpace space in levelMap
-                                            where space.DisplayCharacter != null
-                                            select space).ToList();
-
-            return occupants;
-        }
-
-        public List<MapSpace> FindAllItems()
-        {
-            // Return a list of all items on the map by checking the
-            // item character.
-
-            List<MapSpace> items = (from MapSpace space in levelMap
-                                        where space.ItemCharacter != null
-                                        select space).ToList();
-            
-            return items;
-        }
-
-        public List<MapSpace> FindOpenSpaces(bool hallways)
-        {
-            // Return a list of all open spaces on the map by checking the
-            // map character.
-            string charList = hallways ? (HALLWAY.ToString() + ROOM_INT.ToString()) : ROOM_INT.ToString();
-
-            List<MapSpace> spaces = (from MapSpace space in levelMap
-                                    where charList.Contains(space.MapCharacter)
-                                    && space.ItemCharacter == null
-                                    && space.DisplayCharacter == null
-                                    select space).ToList();
-
-            return spaces;
-        }
-
         public Dictionary<Direction, MapSpace> SearchAdjacent(int x, int y)
         {
             // Search in four directions around point. Return list of directions and characters found.
-
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
             retValue.Add(Direction.North, levelMap[x, y - 1]);
             retValue.Add(Direction.East, levelMap[x + 1, y]);
@@ -715,28 +627,28 @@ namespace RogueGame{
             int currentX = startX, currentY = startY;
             MapSpace? retValue = null;
 
-            currentY = (currentY > MAP_HT) ? MAP_HT : currentY; 
+            currentY = (currentY > MAP_HT) ? MAP_HT : currentY;
             currentY = (currentY < 0) ? 0 : currentY;
-            currentX = (currentX > MAP_WD) ? MAP_WD : currentX; 
+            currentX = (currentX > MAP_WD) ? MAP_WD : currentX;
             currentX = (currentX < 0) ? 0 : currentX;
 
             switch (direction)
             {
                 case Direction.North:
                     while (levelMap[currentX, currentY].MapCharacter == EMPTY && currentY > 0)
-                        currentY--;                    
+                        currentY--;
                     break;
                 case Direction.East:
                     while (levelMap[currentX, currentY].MapCharacter == EMPTY && currentX < MAP_WD)
-                        currentX++;                    
+                        currentX++;
                     break;
                 case Direction.South:
                     while (levelMap[currentX, currentY].MapCharacter == EMPTY && currentY < MAP_HT)
-                        currentY++;                    
+                        currentY++;
                     break;
                 case Direction.West:
                     while (levelMap[currentX, currentY].MapCharacter == EMPTY && currentX > 0)
-                        currentX--;                    
+                        currentX--;
                     break;
             }
 
@@ -745,6 +657,67 @@ namespace RogueGame{
 
             return retValue;
         }
+
+
+
+        public List<MapSpace> GetSurrounding(int x, int y)
+        {
+            // Return a list of all spaces around given space in eight directions.
+            List<MapSpace> surrounding = (from MapSpace space in levelMap
+                                        where Math.Abs(space.X - x) <= 1
+                                        && Math.Abs(space.Y - y) <= 1
+                                        select space).ToList();
+
+            return surrounding;
+        }
+
+        public MapSpace FindPlayer()
+        {
+            // Return the mapspace containing the player.
+            MapSpace playerSpace = (from MapSpace space in levelMap
+                                        where space.DisplayCharacter == Player.CHARACTER
+                                        select space).First();
+
+            return playerSpace;
+        }
+
+        public List<MapSpace> FindAllOccupants()
+        {
+            // Return a list of all monsters and the player by checking the
+            // display character.
+            List<MapSpace> occupants = (from MapSpace space in levelMap
+                                            where space.DisplayCharacter != null
+                                            select space).ToList();
+
+            return occupants;
+        }
+
+        public List<MapSpace> FindAllItems()
+        {
+            // Return a list of all items on the map by checking the
+            // item character.
+            List<MapSpace> items = (from MapSpace space in levelMap
+                                        where space.ItemCharacter != null
+                                        select space).ToList();
+            
+            return items;
+        }
+
+        public List<MapSpace> FindOpenSpaces(bool hallways)
+        {
+            // Return a list of all open spaces on the map by checking the
+            // map character.
+            string charList = hallways ? (HALLWAY.ToString() + ROOM_INT.ToString()) : ROOM_INT.ToString();
+
+            List<MapSpace> spaces = (from MapSpace space in levelMap
+                                    where charList.Contains(space.MapCharacter)
+                                    && space.ItemCharacter == null
+                                    && space.DisplayCharacter == null
+                                    select space).ToList();
+
+            return spaces;
+        }
+
 
         public MapSpace PlaceMapCharacter(char MapChar, bool Living)
         {
@@ -879,6 +852,8 @@ namespace RogueGame{
 
         public Tuple<MapSpace, MapSpace> GetRegionLimits(int xPos, int yPos)
         {
+            // Get a pair of MapSpaces defining the limits of the region based
+            // on an internal x and y coordinate.
             int xTopLeft = (int)((Math.Ceiling((decimal)xPos / REGION_WD)) - 1) * REGION_WD + 1;
             int yTopLeft = (int)((Math.Ceiling((decimal)yPos / REGION_HT)) - 1) * REGION_HT + 1;
 
@@ -890,6 +865,8 @@ namespace RogueGame{
 
         public Tuple<MapSpace, MapSpace> GetRegionLimits(int RegionNumber)
         {
+            // Get a pair of MapSpaces defining the limits of the region based
+            // on the region number from the 3 x 3 grid of regions.
             int gridY = (int)Math.Ceiling((decimal)RegionNumber / 3);
             int gridX = RegionNumber % 3;
 
@@ -906,7 +883,7 @@ namespace RogueGame{
         {
             // Output the array to text for display with no alternate characters.
             // and everything visible.
-            // This is mainly for debugging.
+            // This is used in Dev Mode.
 
             StringBuilder sbReturn = new StringBuilder();
             char? priorityChar;
@@ -923,6 +900,8 @@ namespace RogueGame{
                         priorityChar = levelMap[x, y].DisplayCharacter;
                     else if (levelMap[x, y].ItemCharacter != null)
                         priorityChar = levelMap[x, y].ItemCharacter;
+                    else if (levelMap[x, y].MapInventory != null)
+                        priorityChar = levelMap[x, y].MapInventory.DisplayCharacter;
                     else
                         priorityChar = levelMap[x, y].MapCharacter;
 
@@ -935,11 +914,11 @@ namespace RogueGame{
             return sbReturn.ToString();
         }
 
-        public string MapText()
+        public string MapText(MapSpace PlayerLocation)
         {
             // Output the array to text for display.
             StringBuilder sbReturn = new StringBuilder();
-            MapSpace playerSpace = FindPlayer();
+            MapSpace playerSpace = PlayerLocation;
             List<MapSpace> surroundingSpaces = GetSurrounding(playerSpace.X, playerSpace.Y);
             int playerRegion = GetRegionNumber(playerSpace.X, playerSpace.Y);
             char? priorityChar;
@@ -957,6 +936,8 @@ namespace RogueGame{
                         priorityChar = levelMap[x, y].DisplayCharacter;
                     else if (levelMap[x, y].ItemCharacter != null)
                         priorityChar = levelMap[x, y].ItemCharacter;
+                    else if (levelMap[x, y].MapInventory != null)
+                        priorityChar = levelMap[x, y].MapInventory.DisplayCharacter;
                     else if (levelMap[x, y].AltMapCharacter != null)
                         priorityChar = levelMap[x, y].AltMapCharacter;
                     else
@@ -1028,6 +1009,8 @@ namespace RogueGame{
 
         public MapSpace(char mapChar, MapSpace oldSpace)
         {
+            // Create new MapSpace, reusing settings from
+            // the previous one.
             this.MapCharacter = mapChar;
             this.AltMapCharacter = null; 
             this.ItemCharacter = null;
