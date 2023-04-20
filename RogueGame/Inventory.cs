@@ -34,8 +34,8 @@ namespace RogueGame
         // items in the inventory listing.
         private static List<Inventory> invItems = new List<Inventory>()
         {
-            new Inventory(InvCategory.Food, 1, "some food", "some food", "rations of food", '♣', 95, ConsumeFood),
-            new Inventory(InvCategory.Food, 2, "a mango", "a mango", "mangoes", '♣', 95, ConsumeFood)
+            new Inventory(InvCategory.Food, 1, "some food", "some food", "rations of food", '♣', 95, null),
+            new Inventory(InvCategory.Food, 2, "a mango", "a mango", "mangoes", '♣', 95, null)
         };
 
         public static ReadOnlyCollection<Inventory> InventoryItems => invItems.AsReadOnly();
@@ -72,6 +72,7 @@ namespace RogueGame
         {
             // Apply parameters
             this.ItemCategory = InvType; 
+            this.PriorityId = PriorityID;
             this.CodeName = CodeName; 
             this.RealName = RealName;
             this.PluralName = PluralName;
@@ -93,11 +94,12 @@ namespace RogueGame
         }
 
         public Inventory(InvCategory InvType, int PriorityID, string CodeName, string RealName, string PluralName, char DisplayChar, 
-            int AppearancePct, Func<Player, Inventory?, bool> mainFunction, Func<Player, MapLevel.Direction, bool>? Throw = null, 
+            int AppearancePct, Func<Player, Inventory?, bool>? mainFunction, Func<Player, MapLevel.Direction, bool>? Throw = null, 
             Func<Player, MapLevel.Direction, bool>? Zap = null)
         {
             // Apply parameters and most common settings
             this.ItemCategory = InvType;
+            this.PriorityId = PriorityID;
             this.CodeName = CodeName;
             this.RealName = RealName;
             this.PluralName = PluralName;
@@ -112,7 +114,7 @@ namespace RogueGame
             this.IsIdentified = (this.RealName == this.CodeName || (int)this.ItemCategory > 5);
 
             // Delegates
-            this.MainFunction = mainFunction;
+            this.MainFunction = (mainFunction != null) ? mainFunction : null;
             this.ThrowFunction = (Throw != null) ? Throw : null;
             this.ZapFunction = (Zap != null) ? Zap : null;
         }
@@ -240,15 +242,6 @@ namespace RogueGame
             return InventoryItems[rand.Next(InventoryItems.Count)];
         }
 
-
-        public static bool ConsumeFood(Player currentPlayer, Inventory? inventoryItem = null)
-        {
-            // Delegate for consuming food
-            //TODO: In development.
-            Debug.WriteLine("Chow down, " + currentPlayer.PlayerName + "!");
-            currentPlayer.PlayerInventory[0].AccIncrement  = 0;
-            return true;
-        }
     }
 
     internal class InventoryLine

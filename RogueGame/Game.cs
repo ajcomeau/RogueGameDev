@@ -45,18 +45,26 @@ namespace RogueGame
         private string cStatus;  
 
         // Random number generator
-        private static Random rand = new Random();
+        public static Random rand = new Random();
 
         public string StatusMessage
         {
             get { return cStatus; }
         }
 
-        // Stats readout for bottom of screen.
-        public string StatsDisplay
+        public string StatsDisplay()
         {
-            get { return $"Level: {CurrentLevel}   Gold: {CurrentPlayer.Gold}   " +
-                    $"Turn: {CurrentTurn} "; }
+            string retValue = "";
+
+            // Assemble stats dipslay for the bottom of the screen.
+            retValue = $"Level: {CurrentLevel}   ";
+            retValue += $"Gold: {CurrentPlayer.Gold}   ";
+            retValue += $"Turn: {CurrentTurn}       ";
+
+            if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied)
+                retValue += $"{CurrentPlayer.HungerState}     ";
+
+            return retValue;
         }
 
 
@@ -180,11 +188,11 @@ namespace RogueGame
                         break;
                     case KEY_E:     // Eat
                         startTurn = true;
-
+                        Eat(null);
                         break;
                     case KEY_I:     // Show inventory
                         DisplayInventory();
-                        cStatus = "Here are the current contents of your inventory. Press ESC to exit.";
+                        cStatus = "Here is your current inventory. Press ESC to exit.";
                         break;
                     case KEY_ESC:  // Restore map
                         RestoreMap();
@@ -198,12 +206,11 @@ namespace RogueGame
                 }
             }
 
-
             if (startTurn)
             {
                 // Perform whatever actions needed to complete turn
                 // (i.e. monster moves)
-
+                ProcessHunger();
 
                 // Increment current turn number
                 CurrentTurn++;
@@ -213,6 +220,24 @@ namespace RogueGame
             if (!InvDisplay)
                 ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
 
+        }
+
+        private void ProcessHunger()
+        {
+            // If the player's scheduled to get hungry on the current turn, update the properties.
+            if(CurrentPlayer.HungerTurn == CurrentTurn)
+            { 
+                CurrentPlayer.HungerState = CurrentPlayer.HungerState > 0 
+                    ? CurrentPlayer.HungerState-- : 0;
+
+                // If the player is now hungry, weak or faint, add some turns.
+                if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied 
+                    && CurrentPlayer.HungerState > Player.HungerLevel.Dead)
+                {
+                    CurrentPlayer.HungerTurn += Player.HUNGER_TURNS;
+                    cStatus = $"You are starting to feel {CurrentPlayer.HungerState.ToString()}";
+                }
+            }
         }
 
         private void DisplayInventory()
@@ -363,6 +388,64 @@ namespace RogueGame
             CurrentPlayer.Location!.ItemCharacter = null;
             cStatus = $"You picked up {goldAmt} pieces of gold.";
 
+        }
+
+
+        private bool Eat(char? ListItem)
+        {
+            bool retValue = false;
+            List<Inventory> items;
+            int foodValue = 0;
+
+            if (!InvDisplay)
+            {
+                // Verify the player has something they can eat.
+                items = (from inv in CurrentPlayer.PlayerInventory
+                            where inv.ItemCategory == Inventory.InvCategory.Food
+                            select inv).ToList();
+
+                if (items.Count > 0)
+                {
+                    // If there's something edible, show the inventory
+                    // and let the player select it.  Set to return and exit.
+                    DisplayInventory();
+                    cStatus = "Please select something to eat.";
+                    ReturnFunction = Eat;
+                }
+                else
+                    // Otherwise, they'll be hungry for awhile.
+                    cStatus = "You don't have anything to eat.";
+            }
+            else
+            {
+                // Get the selected item.
+                items = (from InventoryLine in Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
+                            where InventoryLine.ID == ListItem
+                            select InventoryLine.InvItem).ToList();
+
+                if (items.Count > 0)
+                {
+                    // Call the appropriate delegate and remove the item
+                    // from inventory.
+                    // TODO: In this case, it makes more sense to complete this here than in a delegate function. Continue to evaluate as other inventory is implemented.
+                    foodValue = rand.Next(Inventory.MIN_FOODVALUE, Inventory.MAX_FOODVALUE + 1);
+                    CurrentPlayer.HungerTurn = CurrentTurn + foodValue;
+                    CurrentPlayer.HungerState = Player.HungerLevel.Satisfied;
+                    CurrentPlayer.PlayerInventory.Remove(items[0]);
+                    RestoreMap();
+                    retValue = true;
+                }
+                else
+                {
+                    // Process non-existent option.
+                    cStatus = "Please select something to eat.";
+                    RestoreMap();
+                    retValue = false;
+                }
+
+            }
+
+            return retValue;
         }
 
         private bool DropInventory(char? ListItem)

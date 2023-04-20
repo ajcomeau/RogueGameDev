@@ -19,7 +19,7 @@ namespace RogueGame
                 pnlName.Visible = false;
                 lblArray.Text = currentGame.ScreenDisplay;
                 lblStatusMsg.Text = currentGame.StatusMessage;
-                lblStats.Text = currentGame.StatsDisplay;
+                lblStats.Text = currentGame.StatsDisplay();
             }
             else
                 MessageBox.Show("Please enter a name for your character.");
@@ -47,7 +47,7 @@ namespace RogueGame
                 lblArray.Text = currentGame.ScreenDisplay;
 
                 lblStatusMsg.Text = currentGame.StatusMessage;
-                lblStats.Text = currentGame.StatsDisplay;
+                lblStats.Text = currentGame.StatsDisplay();
             }
         }
     }

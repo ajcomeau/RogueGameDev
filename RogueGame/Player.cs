@@ -13,13 +13,14 @@ namespace RogueGame
     {
         private const int STARTING_HP = 12;         // Starting hit points
         private const int STARTING_STRENGTH = 16;   // Starting strength points
-        private const int HUNGER_TURNS = 150;       // Turns between hunger states
+        public const int HUNGER_TURNS = 150;       // Turns between hunger states
         public const char CHARACTER = '☺';          // Display character
         public const int INVENTORY_LIMIT = 50;      // Maximum items in inventory
 
         public enum HungerLevel
-        {
-            Satisfied = 3,
+        {            
+            Satisfied = 4,
+            Hungry = 3,
             Weak = 2,
             Faint = 1,
             Dead = 0
@@ -54,6 +55,19 @@ namespace RogueGame
             this.Gold = 0;
             this.Experience = 1;
             this.HungerTurn = rand.Next(Inventory.MIN_FOODVALUE, Inventory.MAX_FOODVALUE + 1); 
+        }
+
+        public static bool ConsumeFood(Player currentPlayer, Inventory? inventoryItem = null)
+        {
+            // Delegate for consuming food
+            bool retValue = false;
+
+            if (inventoryItem != null) {
+
+                currentPlayer.HungerState = HungerLevel.Satisfied;
+            }
+
+            return true;
         }
 
 
