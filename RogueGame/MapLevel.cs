@@ -85,13 +85,12 @@ namespace RogueGame{
         public MapLevel()
         {
             // Constructor - generate a new map for this level.
-            MapGeneration();
 
-            while (!VerifyMapLINQ())
+            do
             {
-                //Debug.WriteLine(MapText());
                 MapGeneration();
-            }
+            } while (!VerifyMapLINQ());
+
         }
 
         private bool VerifyMap()

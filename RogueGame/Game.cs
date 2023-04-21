@@ -34,13 +34,23 @@ namespace RogueGame
         private const int FAINT_PCT = 33;   // Probability of fainting at any given point when FAINT
         private const int MAX_TURN_LOSS = 5;  // Maximum turns to lose when fainting, etc..
 
+        public enum DisplayMode {
+            DevMode = 0,
+            Titles = 1,
+            Primary = 2,
+            Inventory = 3,
+            GameOver = 4,
+            Scoreboard = 5,
+            Victory = 6,        
+        }
+
+
         public MapLevel CurrentMap { get; set; }                    
         public int CurrentLevel { get; set; }
         public Player CurrentPlayer { get; }
         public int CurrentTurn { get; set; }
         public string ScreenDisplay { get; set; }  // Current contents of the screen.
-        public bool DevMode { get; set; }   // Dev mode shows entire map and allows map to be changed out.
-        public bool InvDisplay { get; set; }  // Activated when inventory is being displayed.
+        public DisplayMode GameMode { get; set; }
         public Func<char?, bool>? ReturnFunction { get; set; }  // Function to be run after inventory selection.
 
         // Status message for top of screen.
@@ -58,13 +68,18 @@ namespace RogueGame
         {
             string retValue = "";
 
-            // Assemble stats dipslay for the bottom of the screen.
-            retValue = $"Level: {CurrentLevel}   ";
-            retValue += $"Gold: {CurrentPlayer.Gold}   ";
-            retValue += $"Turn: {CurrentTurn}       ";
+            if (GameMode == DisplayMode.Primary)
+            {
+                // Assemble stats display for the bottom of the screen.
+                retValue = $"Level: {CurrentLevel}   ";
+                retValue += $"Gold: {CurrentPlayer.Gold}   ";
+                retValue += $"Turn: {CurrentTurn}       ";
 
-            if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied)
-                retValue += $"{CurrentPlayer.HungerState}     ";
+                if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied)
+                    retValue += $"{CurrentPlayer.HungerState}     ";
+            }
+            else
+                retValue = "";
 
             return retValue;
         }
@@ -90,10 +105,11 @@ namespace RogueGame
 
             // Set starting turn and show welcome message.
             this.CurrentTurn = 1;
+            this.GameMode = DisplayMode.Primary;
             cStatus = $"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ...";
 
             // Set the current screen display.
-            this.ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
+            this.ScreenDisplay = (GameMode == DisplayMode.DevMode) ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
         }
 
         public void KeyHandler(int KeyVal, bool Shift, bool Control)
@@ -105,7 +121,7 @@ namespace RogueGame
             bool startTurn = false, keyHandled = false;
             char lowerCase = char.ToLower((char)KeyVal);
 
-            if (InvDisplay)
+            if (GameMode == DisplayMode.Inventory)
             {
                 // For letters, call the current return function.
                 if (lowerCase >= 'a' && lowerCase <= 'z')
@@ -153,11 +169,11 @@ namespace RogueGame
                 switch (KeyVal)
                 {
                     case KEY_D:         // Dev mode ON / OFF
-                        DevMode = !DevMode;
-                        cStatus = DevMode ? "Developer Mode ON" : "Developer Mode OFF";
+                        GameMode = (GameMode == DisplayMode.DevMode) ? DisplayMode.Primary : DisplayMode.DevMode;
+                        cStatus = (GameMode == DisplayMode.DevMode) ? "Developer Mode ON" : "Developer Mode OFF";
                         break;
                     case KEY_N:         // New map
-                        if (DevMode)
+                        if (GameMode == DisplayMode.DevMode)
                             ReplaceMap();
                         break;
                     default:
@@ -210,12 +226,12 @@ namespace RogueGame
 
             if (startTurn)
             {
-                ProcessHunger();
                 do
                 {
+                    ProcessHunger();
+
                     // Perform whatever actions needed to complete turn
                     // (i.e. monster moves)
-
 
                     // Increment current turn number
                     CurrentTurn++;
@@ -228,9 +244,78 @@ namespace RogueGame
                 } while (CurrentPlayer.Immobile > CurrentTurn);
             }
 
-            // If the inventory display hasn't been activated, display the appropriate map mode.
-            if (!InvDisplay)
-                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
+            // Display the appropriate map mode.
+
+            switch (GameMode)
+            {
+                case DisplayMode.DevMode:
+                    ScreenDisplay = this.CurrentMap.MapCheck();
+                    break;
+                case DisplayMode.Primary:
+                    ScreenDisplay = this.CurrentMap.MapText(CurrentPlayer.Location);
+                    break;
+                case DisplayMode.GameOver:
+                    ScreenDisplay = RIPScreen();
+                    break;
+                default:
+                    break;
+            }
+
+        }
+
+        private string CenterString(string Text, int Spaces)
+        {
+            // Center the string provided within the specified
+            // number of spaces.
+
+            string retValue = "";
+            
+            // If the string is longer than the number, just pass it back.
+            if (Text.Length >= Spaces)
+                retValue = Text;
+            else
+            // Otherwise, use PadLeft / PadRight
+            {
+                retValue = Text.PadLeft(Spaces / 2 + Text.Length / 2).PadRight(Spaces);
+            }
+
+            // If it's still short, keep adding a space.
+            while (retValue.Length < Spaces)
+                retValue = retValue.PadLeft(1);
+
+            return retValue;
+        }
+
+        
+        private string RIPScreen()
+        {
+            string endingCause = "";
+            string screen;
+
+            // If the player died from starvation, put that in the variable
+            if (CurrentPlayer.HungerState == Player.HungerLevel.Dead)
+                endingCause = "starvation";
+
+            // Assemble the ASCII graphic and return it.
+            screen = "\n\n\n\n\n\n\n\n" +
+            "\n                   ╔═════════════════════════════╗" +
+            "\n                   ║                             ║" +
+            "\n                   ║                             ║" +
+            "\n                   ║                             ║" +
+            "\n                   ║        REST IN PEACE        ║" +
+            "\n                   ║                             ║" +
+            $"\n                   ║{CenterString(CurrentPlayer.PlayerName, 29)}║" +
+            "\n                   ║          Killed by          ║" +
+            $"\n                   ║{CenterString(endingCause,29)}║" +
+            "\n                   ║                             ║" +
+            $"\n                   ║{CenterString(CurrentPlayer.Gold.ToString() + " Au", 29)}║" +
+            $"\n                   ║           {DateTime.Now.Year + " "}             ║" +
+            "\n                   ║                             ║" +
+            "\n                   ║                             ║" +
+            "\n                 __\\/ (\\//(\\/ \\(//)\\)\\/(//)\\)//(\\__" +
+            "\n";
+
+            return screen;
 
         }
 
@@ -239,7 +324,7 @@ namespace RogueGame
             // If the player's scheduled to get hungry on the current turn, update the properties.
             if (CurrentPlayer.HungerTurn == CurrentTurn)
             {
-                CurrentPlayer.HungerState = CurrentPlayer.HungerState > 0
+                CurrentPlayer.HungerState = (CurrentPlayer.HungerState > 0)
                     ? --CurrentPlayer.HungerState : 0;
 
                 // If the player is now hungry, weak or faint, add some turns.
@@ -251,14 +336,18 @@ namespace RogueGame
                 }
             }
 
-            if (CurrentPlayer.HungerState == Player.HungerLevel.Faint)
+            // If the player is FAINT, decide if they should faint on this move.
+            if (CurrentPlayer.HungerState == Player.HungerLevel.Faint && CurrentPlayer.Immobile == 0)
             {
-                if(rand.Next(1,101) < FAINT_PCT)
+                if (rand.Next(1, 101) < FAINT_PCT)
                 {
-                    CurrentPlayer.Immobile = CurrentTurn + rand.Next(1, MAX_TURN_LOSS);
+                    CurrentPlayer.Immobile = CurrentTurn + rand.Next(1, MAX_TURN_LOSS + 1);
                     cStatus = "You fainted from lack of food.";
                 }
             }
+            // If the player is now dead, signal the game over.
+            else if (CurrentPlayer.HungerState == Player.HungerLevel.Dead)
+                GameMode = DisplayMode.GameOver;
 
         }
 
@@ -266,7 +355,7 @@ namespace RogueGame
         {
             // Switch the screen to the player's inventory.
 
-            InvDisplay = true;
+            GameMode = DisplayMode.Inventory;
             ScreenDisplay = "\n\n";
 
             foreach(InventoryLine line in Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory))
@@ -276,10 +365,10 @@ namespace RogueGame
         private void RestoreMap()
         {
             // Restore the map display.
-            if (InvDisplay)
+            if (GameMode == DisplayMode.Inventory)
             {
-                InvDisplay = false;
-                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
+                GameMode = DisplayMode.Primary;
+                ScreenDisplay = (GameMode == DisplayMode.DevMode) ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
             }
         }
 
@@ -419,7 +508,7 @@ namespace RogueGame
             List<Inventory> items;
             int foodValue = 0;
 
-            if (!InvDisplay)
+            if (GameMode != DisplayMode.Inventory)
             {
                 // Verify the player has something they can eat.
                 items = (from inv in CurrentPlayer.PlayerInventory
@@ -475,7 +564,7 @@ namespace RogueGame
             bool retValue = false;
             List<Inventory> items;
 
-            if (!InvDisplay)
+            if (GameMode != DisplayMode.Inventory)
             {
                 DisplayInventory();
                 cStatus = "Please select an item to drop.";
@@ -512,7 +601,7 @@ namespace RogueGame
 
             }
 
-            if (!InvDisplay)
+            if (GameMode != DisplayMode.Inventory)
                 this.ReturnFunction = null;
 
             return retValue;
