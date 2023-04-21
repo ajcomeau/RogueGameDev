@@ -31,6 +31,8 @@ namespace RogueGame
         
         private const int SEARCH_PCT = 20;  // Probability of search revealing hidden doors, etc..
         private const int MAX_LEVEL = 26;   // Maximum dungeon level
+        private const int FAINT_PCT = 33;   // Probability of fainting at any given point when FAINT
+        private const int MAX_TURN_LOSS = 5;  // Maximum turns to lose when fainting, etc..
 
         public MapLevel CurrentMap { get; set; }                    
         public int CurrentLevel { get; set; }
@@ -208,12 +210,22 @@ namespace RogueGame
 
             if (startTurn)
             {
-                // Perform whatever actions needed to complete turn
-                // (i.e. monster moves)
                 ProcessHunger();
+                do
+                {
+                    // Perform whatever actions needed to complete turn
+                    // (i.e. monster moves)
 
-                // Increment current turn number
-                CurrentTurn++;
+
+                    // Increment current turn number
+                    CurrentTurn++;
+
+
+                    if (CurrentPlayer.Immobile > 0) {
+                        CurrentPlayer.Immobile = CurrentPlayer.Immobile <= CurrentTurn ? 0 : CurrentPlayer.Immobile;
+                        if (CurrentPlayer.Immobile == 0) cStatus =  cStatus + " You can move again.";
+                    }
+                } while (CurrentPlayer.Immobile > CurrentTurn);
             }
 
             // If the inventory display hasn't been activated, display the appropriate map mode.
@@ -225,19 +237,29 @@ namespace RogueGame
         private void ProcessHunger()
         {
             // If the player's scheduled to get hungry on the current turn, update the properties.
-            if(CurrentPlayer.HungerTurn == CurrentTurn)
-            { 
-                CurrentPlayer.HungerState = CurrentPlayer.HungerState > 0 
-                    ? CurrentPlayer.HungerState-- : 0;
+            if (CurrentPlayer.HungerTurn == CurrentTurn)
+            {
+                CurrentPlayer.HungerState = CurrentPlayer.HungerState > 0
+                    ? --CurrentPlayer.HungerState : 0;
 
                 // If the player is now hungry, weak or faint, add some turns.
-                if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied 
+                if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied
                     && CurrentPlayer.HungerState > Player.HungerLevel.Dead)
                 {
                     CurrentPlayer.HungerTurn += Player.HUNGER_TURNS;
-                    cStatus = $"You are starting to feel {CurrentPlayer.HungerState.ToString()}";
+                    cStatus = $"You are starting to feel {CurrentPlayer.HungerState.ToString().ToLower()}";
                 }
             }
+
+            if (CurrentPlayer.HungerState == Player.HungerLevel.Faint)
+            {
+                if(rand.Next(1,101) < FAINT_PCT)
+                {
+                    CurrentPlayer.Immobile = CurrentTurn + rand.Next(1, MAX_TURN_LOSS);
+                    cStatus = "You fainted from lack of food.";
+                }
+            }
+
         }
 
         private void DisplayInventory()
