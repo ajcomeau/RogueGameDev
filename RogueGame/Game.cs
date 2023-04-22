@@ -552,6 +552,7 @@ namespace RogueGame
                         CurrentPlayer.HungerState = Player.HungerLevel.Satisfied;
                         CurrentPlayer.PlayerInventory.Remove(items[0]);
                         RestoreMap();
+                        cStatus = "Mmmm, that hit the spot.";
                         retValue = true;
                     }
                 }
