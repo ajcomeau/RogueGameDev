@@ -28,6 +28,7 @@ namespace RogueGame
         private const int KEY_E = 69;
         private const int KEY_I = 73;
         private const int KEY_ESC = 27;
+        private const int KEY_HELP = 191;
         
         private const int SEARCH_PCT = 20;  // Probability of search revealing hidden doors, etc..
         private const int MAX_LEVEL = 26;   // Maximum dungeon level
@@ -35,13 +36,14 @@ namespace RogueGame
         private const int MAX_TURN_LOSS = 5;  // Maximum turns to lose when fainting, etc..
 
         public enum DisplayMode {
-            DevMode = 0,
+            //DevMode = 0,
             Titles = 1,
             Primary = 2,
             Inventory = 3,
-            GameOver = 4,
-            Scoreboard = 5,
-            Victory = 6,        
+            Help = 4,
+            GameOver = 5,
+            Scoreboard = 6,
+            Victory = 7,        
         }
 
 
@@ -51,6 +53,7 @@ namespace RogueGame
         public int CurrentTurn { get; set; }
         public string ScreenDisplay { get; set; }  // Current contents of the screen.
         public DisplayMode GameMode { get; set; }
+        public bool DevMode { get; set; }
         public Func<char?, bool>? ReturnFunction { get; set; }  // Function to be run after inventory selection.
 
         // Status message for top of screen.
@@ -106,10 +109,10 @@ namespace RogueGame
             // Set starting turn and show welcome message.
             this.CurrentTurn = 1;
             this.GameMode = DisplayMode.Primary;
-            cStatus = $"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ...";
+            cStatus = $"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ... (Press ? for list of commands.)";
 
             // Set the current screen display.
-            this.ScreenDisplay = (GameMode == DisplayMode.DevMode) ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
+            this.ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
         }
 
         public void KeyHandler(int KeyVal, bool Shift, bool Control)
@@ -158,6 +161,11 @@ namespace RogueGame
                         else
                             cStatus = "There's no stairway here.";
                         break;
+                    case KEY_HELP:  // Show help screen
+                        GameMode = DisplayMode.Help;
+                        ScreenDisplay = HelpScreen();
+                        cStatus = "Here is a list of commands you can use.";
+                        break;
                     default:
                         break;
                 }
@@ -169,11 +177,11 @@ namespace RogueGame
                 switch (KeyVal)
                 {
                     case KEY_D:         // Dev mode ON / OFF
-                        GameMode = (GameMode == DisplayMode.DevMode) ? DisplayMode.Primary : DisplayMode.DevMode;
-                        cStatus = (GameMode == DisplayMode.DevMode) ? "Developer Mode ON" : "Developer Mode OFF";
+                        DevMode = !DevMode;
+                        cStatus = DevMode ? "Developer Mode ON" : "Developer Mode OFF";
                         break;
                     case KEY_N:         // New map
-                        if (GameMode == DisplayMode.DevMode)
+                        if (DevMode)
                             ReplaceMap();
                         break;
                     default:
@@ -246,15 +254,11 @@ namespace RogueGame
             }
 
             // Display the appropriate map mode.
+            if (GameMode == DisplayMode.Primary)
+                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
 
             switch (GameMode)
             {
-                case DisplayMode.DevMode:
-                    ScreenDisplay = this.CurrentMap.MapCheck();
-                    break;
-                case DisplayMode.Primary:
-                    ScreenDisplay = this.CurrentMap.MapText(CurrentPlayer.Location);
-                    break;
                 case DisplayMode.GameOver:
                     ScreenDisplay = RIPScreen();
                     break;
@@ -287,6 +291,17 @@ namespace RogueGame
             return retValue;
         }
 
+        private string HelpScreen()
+        {            
+            return "\n\nArrows - movement\n\n" +
+                "d - drop inventory\n\n" +
+                "e - eat\n\n" +
+                "s - search for hidden doorways\n\n" +
+                "i - show inventory\n\n" +
+                "> - go down a staircase\n\n" +
+                "< - go up a staircase(requires Amulet from level 26\n\n" +
+                "ESC - return to map.";
+        }
         
         private string RIPScreen()
         {
@@ -366,10 +381,10 @@ namespace RogueGame
         private void RestoreMap()
         {
             // Restore the map display.
-            if (GameMode == DisplayMode.Inventory)
+            if (GameMode == DisplayMode.Inventory || GameMode == DisplayMode.Help)
             {
                 GameMode = DisplayMode.Primary;
-                ScreenDisplay = (GameMode == DisplayMode.DevMode) ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
+                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
             }
         }
 
