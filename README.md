@@ -1,5 +1,17 @@
 # RogueGameDev
 
+4/22/2023 - Food collection and hunger now works.  Eating is necessary for survival and the game includes an R.I.P. screen.  The following keys now work and I'll be adding a help screen this week.
+Arrows - movement
+d - drop inventory
+e - eat
+s - search for hidden doorways
+i - show inventory
+> - go down a staircase
+< - go up a staircase (requires Amulet from level 26
+ESC - return to map from inventory screen.
+
+CTRL-D will enter a developer mode that shows the entire map.  After this, CTRL-N will switch out a map for a new one.
+
 4/1/2023 - All 26 levels, the Amulet, fog of war and hidden doors are now online.  See the latest chapter at https://www.comeausoftware.com/c-sharp/rogue-csharp-hidden-doorways/.
 
 3/6/2023 - I've started adding some new code and have some new chapters online. 
