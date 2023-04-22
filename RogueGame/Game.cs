@@ -228,11 +228,12 @@ namespace RogueGame
             {
                 do
                 {
-                    ProcessHunger();
-
                     // Perform whatever actions needed to complete turn
                     // (i.e. monster moves)
 
+
+                    // Then, evaluate the player's current condition.
+                    EvaluatePlayer();
                     // Increment current turn number
                     CurrentTurn++;
 
@@ -319,7 +320,7 @@ namespace RogueGame
 
         }
 
-        private void ProcessHunger()
+        private void EvaluatePlayer()
         {
             // If the player's scheduled to get hungry on the current turn, update the properties.
             if (CurrentPlayer.HungerTurn == CurrentTurn)
@@ -539,12 +540,20 @@ namespace RogueGame
                     // Call the appropriate delegate and remove the item
                     // from inventory.
                     // TODO: In this case, it makes more sense to complete this here than in a delegate function. Continue to evaluate as other inventory is implemented.
-                    foodValue = rand.Next(Inventory.MIN_FOODVALUE, Inventory.MAX_FOODVALUE + 1);
-                    CurrentPlayer.HungerTurn = CurrentTurn + foodValue;
-                    CurrentPlayer.HungerState = Player.HungerLevel.Satisfied;
-                    CurrentPlayer.PlayerInventory.Remove(items[0]);
-                    RestoreMap();
-                    retValue = true;
+                    if (items[0].ItemCategory != Inventory.InvCategory.Food)
+                    { 
+                        cStatus = "You can't eat THAT!";
+                        retValue = false;
+                    }
+                    else
+                    { 
+                        foodValue = rand.Next(Inventory.MIN_FOODVALUE, Inventory.MAX_FOODVALUE + 1);
+                        CurrentPlayer.HungerTurn += foodValue;
+                        CurrentPlayer.HungerState = Player.HungerLevel.Satisfied;
+                        CurrentPlayer.PlayerInventory.Remove(items[0]);
+                        RestoreMap();
+                        retValue = true;
+                    }
                 }
                 else
                 {
