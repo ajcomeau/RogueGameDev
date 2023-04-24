@@ -465,7 +465,9 @@ namespace RogueGame
         public void MoveCharacter(Player player, MapLevel.Direction direct)
         {
             char visibleCharacter;
-            bool canMove, autoMove;
+            bool canMove, foundItem = false;
+            Dictionary<MapLevel.Direction, MapSpace> adjacent =
+                CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
             // Move character if possible.
             // Clear the status.
@@ -473,34 +475,29 @@ namespace RogueGame
 
             do
             {
-                // Get surrounding characters
-                Dictionary<MapLevel.Direction, MapSpace> adjacent =
-                    CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
-
+                // Inspect target character
                 visibleCharacter = adjacent[direct].PriorityChar();
 
                 // The player can move if the visible character is within a room or a hallway and there's no monster there.
                 canMove = (MapLevel.SpacesAllowed.Contains(visibleCharacter) || adjacent[direct].ContainsItem()) &&
                     adjacent[direct].DisplayCharacter == null;
 
-                autoMove = FastPlay && adjacent[direct].FastMove() &&
-                    CurrentMap.SearchAdjacent(MapLevel.HALLWAY, adjacent[direct].X, adjacent[direct].Y).Count < 3;
-
                 if (canMove)
                 {
+                    // Move the character.
                     player.Location = CurrentMap.MoveDisplayItem(player.Location, adjacent[direct]);
-                    // If the character has moved.
 
                     // If this is a doorway, determine if the room is lighted.
                     if (player.Location.MapCharacter == MapLevel.ROOM_DOOR)
                         CurrentMap.DiscoverRoom(player.Location.X, player.Location.Y);
 
-                    // Discover the spaces surrounding the player.
-                    CurrentMap.DiscoverSurrounding(player.Location.X, player.Location.Y);
+                    // Discover the spaces surrounding the player and note if something is found.
+                    foundItem = CurrentMap.DiscoverSurrounding(player.Location.X, player.Location.Y);
 
                     // Respond to items on map.
-                    if (player.Location.Occupied())
+                    if (player.Location.ContainsItem())
                     {
+                        foundItem = true;
                         if (player.Location.ItemCharacter == MapLevel.GOLD)
                             PickUpGold();
                         else if (player.Location.MapInventory != null)
@@ -513,9 +510,16 @@ namespace RogueGame
 
                 // Determine if player can move automatically on FastPlay.  Three or more adjacent
                 // hallway spaces indicate a junction which needs to stop FastPlay.
+                adjacent = CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
-            } while (autoMove);
+            } while (!foundItem && CanAutoMove(player.Location, adjacent[direct]));
+        }
 
+        private bool CanAutoMove(MapSpace Origin, MapSpace Target)
+        {
+            return FastPlay && Target.FastMove() 
+                && Target.MapCharacter == Origin.MapCharacter 
+                && CurrentMap.SearchAdjacent(MapLevel.HALLWAY, Origin.X, Origin.Y).Count < 3;
         }
 
         private void PickUpGold()
@@ -526,7 +530,6 @@ namespace RogueGame
             CurrentPlayer.Gold += goldAmt;
             CurrentPlayer.Location!.ItemCharacter = null;
             cStatus = $"You picked up {goldAmt} pieces of gold.";
-
         }
 
 

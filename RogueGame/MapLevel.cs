@@ -71,8 +71,11 @@ namespace RogueGame{
         public static List<char> RoomInterior = new List<char>(){ROOM_DOOR, ROOM_INT, STAIRWAY};
 
         // List of characters a player or monster can move onto.
-        public static List<char> SpacesAllowed = new List<char>(){MapLevel.ROOM_INT, MapLevel.STAIRWAY,
-                MapLevel.ROOM_DOOR, MapLevel.HALLWAY};
+        public static List<char> SpacesAllowed = new List<char>(){ROOM_INT, STAIRWAY, ROOM_DOOR, HALLWAY};
+
+        // List of characters that can be moved past on Fast Play.
+        public static List<char> GlideSpaces = new List<char>(){ROOM_INT, HORIZONTAL, VERTICAL, CORNER_NE,
+                CORNER_NW, CORNER_SE, CORNER_SW, HALLWAY, EMPTY};
 
         // Array to hold map definition.
         private MapSpace[,] levelMap = new MapSpace[80, 25];
@@ -790,9 +793,12 @@ namespace RogueGame{
             }
         }
 
-        public void DiscoverSurrounding(int xPos, int yPos)
-        {            
-            // Discover new spaces
+        public bool DiscoverSurrounding(int xPos, int yPos)
+        {
+            // Discover surrounding spaces.  Return True if there's
+            // something in one of them.
+
+            bool retValue = false;
 
             foreach (MapSpace space in GetSurrounding(xPos, yPos))
             {
@@ -807,7 +813,16 @@ namespace RogueGame{
                     if (MapDiscovery.Contains(space.MapCharacter))
                         space.Visible = true;
                 }
+
+                // If there's something one of the spaces, return True.
+                // Ignore player's space.
+                if (!retValue) 
+                    if (space.X != xPos || space.Y != yPos)
+                        retValue = space.Occupied() ||
+                            (!GlideSpaces.Contains(space.PriorityChar()));
             }
+
+            return retValue;
         }
 
         public int GetRegionNumber(int xPos, int yPos)
@@ -1042,7 +1057,9 @@ namespace RogueGame{
         {
             char priorityChar = PriorityChar();
             // Determine if there's something in the space.
-            return (priorityChar != this.MapCharacter && priorityChar != this.AltMapCharacter);
+            return (priorityChar != this.MapCharacter 
+                && priorityChar != this.AltMapCharacter
+                && priorityChar != Player.CHARACTER);
         }
 
         public bool ContainsItem()
