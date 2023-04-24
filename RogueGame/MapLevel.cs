@@ -64,11 +64,15 @@ namespace RogueGame{
         public const int MAX_GOLD_AMT = 125;        // Max gold amount per stash.
         
         // List of characters that will be marked as Visible during map discovery.
-        public List<char> MapDiscovery = new List<char>(){HORIZONTAL, VERTICAL,
+        public static List<char> MapDiscovery = new List<char>(){HORIZONTAL, VERTICAL,
             CORNER_NW, CORNER_SE, CORNER_NE, CORNER_SW, ROOM_DOOR, HALLWAY, STAIRWAY};
 
         // List of characters that occur inside a room.
-        public List<char> RoomInterior = new List<char>(){ROOM_DOOR, ROOM_INT, STAIRWAY};
+        public static List<char> RoomInterior = new List<char>(){ROOM_DOOR, ROOM_INT, STAIRWAY};
+
+        // List of characters a player or monster can move onto.
+        public static List<char> SpacesAllowed = new List<char>(){MapLevel.ROOM_INT, MapLevel.STAIRWAY,
+                MapLevel.ROOM_DOOR, MapLevel.HALLWAY};
 
         // Array to hold map definition.
         private MapSpace[,] levelMap = new MapSpace[80, 25];
@@ -1014,20 +1018,20 @@ namespace RogueGame{
             this.Y = Y;
         }
 
-        public char? PriorityChar()
+        public char PriorityChar()
         {
-            char? retValue;
+            char retValue;
 
             // Standard priority - DisplayCharacter, ItemCharacter, MapInventory.DisplayCharacter
             // AltMapCharacter, MapCharacter.
             if (this.DisplayCharacter != null)
-                retValue = this.DisplayCharacter;
+                retValue = (char)this.DisplayCharacter;
             else if (this.ItemCharacter != null)
-                retValue = this.ItemCharacter;
+                retValue = (char)this.ItemCharacter;
             else if (this.MapInventory != null)
                 retValue = this.MapInventory.DisplayCharacter;
             else if (this.AltMapCharacter != null)
-                retValue = this.AltMapCharacter;
+                retValue = (char)this.AltMapCharacter;
             else
                 retValue = this.MapCharacter;
 
@@ -1035,11 +1039,24 @@ namespace RogueGame{
         }
 
         public bool Occupied()
-        { 
+        {
+            char priorityChar = PriorityChar();
             // Determine if there's something in the space.
-            return (this.ItemCharacter != null ||
-                this.DisplayCharacter != null ||
-                this.MapInventory != null);
+            return (priorityChar != this.MapCharacter && priorityChar != this.AltMapCharacter);
+        }
+
+        public bool ContainsItem()
+        {
+            // Determine if the space contains an inventory item or gold.
+            return(this.ItemCharacter != null ||  this.MapInventory != null);
+        }
+
+        public bool FastMove()
+        {
+            // Determine if the space is eligible for a Fast Play move.
+            return MapLevel.SpacesAllowed.Contains(PriorityChar()) 
+                && DisplayCharacter == null 
+                && !ContainsItem();
         }
 
         

@@ -54,6 +54,7 @@ namespace RogueGame
         public string ScreenDisplay { get; set; }  // Current contents of the screen.
         public DisplayMode GameMode { get; set; }
         public bool DevMode { get; set; }
+        public bool FastPlay { get; set; }
         public Func<char?, bool>? ReturnFunction { get; set; }  // Function to be run after inventory selection.
 
         // Status message for top of screen.
@@ -202,16 +203,16 @@ namespace RogueGame
                 {
                     // Movement keys
                     case KEY_WEST:
-                        startTurn = MoveCharacter(CurrentPlayer, MapLevel.Direction.West);
+                        MoveCharacter(CurrentPlayer, MapLevel.Direction.West);
                         break;
                     case KEY_NORTH:
-                        startTurn = MoveCharacter(CurrentPlayer, MapLevel.Direction.North);
+                        MoveCharacter(CurrentPlayer, MapLevel.Direction.North);
                         break;
                     case KEY_EAST:
-                        startTurn = MoveCharacter(CurrentPlayer, MapLevel.Direction.East);
+                        MoveCharacter(CurrentPlayer, MapLevel.Direction.East);
                         break;
                     case KEY_SOUTH:
-                        startTurn = MoveCharacter(CurrentPlayer, MapLevel.Direction.South);
+                        MoveCharacter(CurrentPlayer, MapLevel.Direction.South);
                         break;
                     case KEY_S:     // Search
                         startTurn = true;
@@ -237,26 +238,7 @@ namespace RogueGame
                 }
             }
 
-            if (startTurn)
-            {
-                do
-                {
-                    // Perform whatever actions needed to complete turn
-                    // (i.e. monster moves)
-
-
-                    // Then, evaluate the player's current condition.
-                    EvaluatePlayer();
-                    // Increment current turn number
-                    CurrentTurn++;
-
-
-                    if (CurrentPlayer.Immobile > 0) {
-                        CurrentPlayer.Immobile = CurrentPlayer.Immobile <= CurrentTurn ? 0 : CurrentPlayer.Immobile;
-                        if (CurrentPlayer.Immobile == 0) cStatus =  cStatus + " You can move again.";
-                    }
-                } while (CurrentPlayer.Immobile > CurrentTurn);
-            }
+            if (startTurn) CompleteTurn();
 
             // Display the appropriate map mode.
             if (GameMode == DisplayMode.Primary)
@@ -271,6 +253,28 @@ namespace RogueGame
                     break;
             }
 
+        }
+
+        private void CompleteTurn()
+        {
+            do
+            {
+                // Perform whatever actions needed to complete turn
+                // (i.e. monster moves)
+
+
+                // Then, evaluate the player's current condition.
+                EvaluatePlayer();
+                // Increment current turn number
+                CurrentTurn++;
+
+
+                if (CurrentPlayer.Immobile > 0)
+                {
+                    CurrentPlayer.Immobile = CurrentPlayer.Immobile <= CurrentTurn ? 0 : CurrentPlayer.Immobile;
+                    if (CurrentPlayer.Immobile == 0) cStatus = cStatus + " You can move again.";
+                }
+            } while (CurrentPlayer.Immobile > CurrentTurn);
         }
 
         private string CenterString(string Text, int Spaces)
@@ -458,56 +462,59 @@ namespace RogueGame
             CurrentPlayer.Location = CurrentMap.AddCharacterToMap(Player.CHARACTER);
         }
 
-        public bool MoveCharacter(Player player, MapLevel.Direction direct)
+        public void MoveCharacter(Player player, MapLevel.Direction direct)
         {
             char visibleCharacter;
-            bool retValue = false;
+            bool canMove, autoMove;
 
-            // Move character if possible.  This method is in development.
+            // Move character if possible.
             // Clear the status.
             cStatus = "";
 
-            // List of characters a living character can move onto.
-            List<char> charsAllowed = new List<char>(){MapLevel.ROOM_INT, MapLevel.STAIRWAY,
-                MapLevel.ROOM_DOOR, MapLevel.HALLWAY};
-
-            // Set surrounding characters
-            Dictionary<MapLevel.Direction, MapSpace> adjacent =
-                CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
-
-            visibleCharacter = adjacent[direct].SearchRequired ? (char)adjacent[direct].AltMapCharacter! : adjacent[direct].MapCharacter;
-
-            // If the map character in the chosen direction is habitable and if there's no monster there,
-            // move the character there.
-            if (charsAllowed.Contains(visibleCharacter) && 
-                adjacent[direct].DisplayCharacter == null)
-            { 
-                    player.Location = CurrentMap.MoveDisplayItem(player.Location, adjacent[direct]);
-                    retValue = true;
-            }
-
-            if(retValue)
+            do
             {
-                // If the character has moved.
+                // Get surrounding characters
+                Dictionary<MapLevel.Direction, MapSpace> adjacent =
+                    CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
-                // If this is a doorway, determine if the room is lighted.
-                if (player.Location.MapCharacter == MapLevel.ROOM_DOOR)
-                    CurrentMap.DiscoverRoom(player.Location.X, player.Location.Y);
+                visibleCharacter = adjacent[direct].PriorityChar();
 
-                // Discover the spaces surrounding the player.
-                CurrentMap.DiscoverSurrounding(player.Location.X, player.Location.Y);
+                // The player can move if the visible character is within a room or a hallway and there's no monster there.
+                canMove = (MapLevel.SpacesAllowed.Contains(visibleCharacter) || adjacent[direct].ContainsItem()) &&
+                    adjacent[direct].DisplayCharacter == null;
 
-                // Respond to items on map.
-                if (player.Location.Occupied())
+                autoMove = FastPlay && adjacent[direct].FastMove() &&
+                    CurrentMap.SearchAdjacent(MapLevel.HALLWAY, adjacent[direct].X, adjacent[direct].Y).Count < 3;
+
+                if (canMove)
                 {
-                    if (player.Location.ItemCharacter == MapLevel.GOLD)
-                        PickUpGold();
-                    else if (player.Location.MapInventory != null)
-                        cStatus = AddInventory();
-                }
-            }
+                    player.Location = CurrentMap.MoveDisplayItem(player.Location, adjacent[direct]);
+                    // If the character has moved.
 
-            return retValue;
+                    // If this is a doorway, determine if the room is lighted.
+                    if (player.Location.MapCharacter == MapLevel.ROOM_DOOR)
+                        CurrentMap.DiscoverRoom(player.Location.X, player.Location.Y);
+
+                    // Discover the spaces surrounding the player.
+                    CurrentMap.DiscoverSurrounding(player.Location.X, player.Location.Y);
+
+                    // Respond to items on map.
+                    if (player.Location.Occupied())
+                    {
+                        if (player.Location.ItemCharacter == MapLevel.GOLD)
+                            PickUpGold();
+                        else if (player.Location.MapInventory != null)
+                            cStatus = AddInventory();
+                    }
+
+                    // Complete the turn actions.
+                    CompleteTurn();
+                }
+
+                // Determine if player can move automatically on FastPlay.  Three or more adjacent
+                // hallway spaces indicate a junction which needs to stop FastPlay.
+
+            } while (autoMove);
 
         }
 
