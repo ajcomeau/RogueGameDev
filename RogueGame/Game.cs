@@ -27,6 +27,7 @@ namespace RogueGame
         private const int KEY_N = 78;
         private const int KEY_E = 69;
         private const int KEY_I = 73;
+        private const int KEY_F = 70;
         private const int KEY_ESC = 27;
         private const int KEY_HELP = 191;
         
@@ -172,6 +173,10 @@ namespace RogueGame
                         ScreenDisplay = HelpScreen();
                         cStatus = "Here is a list of commands you can use.";
                         break;
+                    case KEY_F: // Fast Play
+                        FastPlay = !FastPlay;
+                        cStatus = FastPlay ? "Fast Play mode ON." : "Fast Play mode OFF";
+                        break;
                     default:
                         break;
                 }
@@ -307,6 +312,7 @@ namespace RogueGame
                 "e - eat\n\n" +
                 "s - search for hidden doorways\n\n" +
                 "i - show inventory\n\n" +
+                "F - Fast Play mode ON / OFF\n\n" +
                 "> - go down a staircase\n\n" +
                 "< - go up a staircase(requires Amulet from level 26\n\n" +
                 "ESC - return to map.";
@@ -517,6 +523,9 @@ namespace RogueGame
 
         private bool CanAutoMove(MapSpace Origin, MapSpace Target)
         {
+            // Determine if the player can keep moving in the current direction.
+            // Target space must be eligible and the same map character as the 
+            // current space. If the player is in a hallway, they must stop at any junctions.
             return FastPlay && Target.FastMove() 
                 && Target.MapCharacter == Origin.MapCharacter 
                 && CurrentMap.SearchAdjacent(MapLevel.HALLWAY, Origin.X, Origin.Y).Count < 3;
