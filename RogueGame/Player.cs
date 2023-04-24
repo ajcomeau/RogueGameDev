@@ -27,10 +27,12 @@ namespace RogueGame
         }
 
         public string PlayerName { get; set; }  
-        public int HP { get; set; } = STARTING_HP;  // Maximum current hit points
+        public int MaxHP { get; set; } = STARTING_HP;  // Maximum current hit points
         public int HPDamage { get; set; }           // Current damage in hit points
-        public int Strength { get; set; } = STARTING_STRENGTH;  // Current max strength
+        public int CurrentHP { get { return MaxHP - HPDamage; } }  // Current HP
+        public int MaxStrength { get; set; } = STARTING_STRENGTH;  // Current max strength
         public int StrengthMod { get; set; }        // Current strength modifier
+        public int CurrentStrength { get { return MaxStrength - StrengthMod; } }  // Current Strength
         public int Gold { get; set; }               // Current gold
         public int Experience { get; set; }         // Current experience
         public HungerLevel HungerState { get; set; } = HungerLevel.Satisfied;
@@ -39,12 +41,29 @@ namespace RogueGame
         public int Immobile { get; set; }
         public int Blind { get; set; }
         public bool HasAmulet { get; set; }
+        public Inventory? Armor { get; set; }  // Armor currently worn
         public Inventory? LeftHand { get; set; }   // Rings
         public Inventory? RightHand { get; set; }
         public Inventory? Wielding { get; set; }    // Weapon
         public List<Inventory> PlayerInventory { get; set; }   // Main inventory list.
-
         public MapSpace? Location { get; set; }     
+
+        public int ExperienceLevel()
+        {
+            // Calculate player's experience level based on 
+            // experience points.
+
+            int returnLevel = 0;
+            int nextLevelReq = 5;
+
+            do { 
+                nextLevelReq *= 2; 
+                returnLevel += 1;
+            }
+            while (this.Experience > nextLevelReq);
+
+            return returnLevel;
+        }
 
         public Player(string PlayerName) {
 

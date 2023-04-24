@@ -74,9 +74,14 @@ namespace RogueGame
             if (GameMode == DisplayMode.Primary)
             {
                 // Assemble stats display for the bottom of the screen.
-                retValue = $"Level: {CurrentLevel}   ";
-                retValue += $"Gold: {CurrentPlayer.Gold}   ";
-                retValue += $"Turn: {CurrentTurn}       ";
+                retValue = $"Level: {CurrentLevel}    ";
+                retValue += $"HP: {CurrentPlayer.MaxHP}/{CurrentPlayer.CurrentHP}    ";
+                retValue += $"Strength: {CurrentPlayer.MaxStrength}/{CurrentPlayer.CurrentStrength}    ";
+                retValue += $"Gold: {CurrentPlayer.Gold}    ";
+                retValue += $"Armor: {(CurrentPlayer.Armor != null ? CurrentPlayer.Armor.ArmorClass : 0)}    ";
+                retValue += $"Turn: {CurrentTurn}    ";
+                retValue += $"Exp: {CurrentPlayer.ExperienceLevel()}/{CurrentPlayer.Experience}";
+
 
                 if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied)
                     retValue += $"{CurrentPlayer.HungerState}     ";
@@ -384,7 +389,7 @@ namespace RogueGame
             if (GameMode == DisplayMode.Inventory || GameMode == DisplayMode.Help)
             {
                 GameMode = DisplayMode.Primary;
-                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
+                ScreenDisplay = DevMode ? CurrentMap.MapCheck() : CurrentMap.MapText(CurrentPlayer.Location);
             }
         }
 

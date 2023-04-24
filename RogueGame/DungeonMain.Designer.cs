@@ -128,8 +128,6 @@
             Name = "DungeonMain";
             Text = "Dungeon Map";
             KeyDown += DungeonMain_KeyDown;
-            KeyPress += DungeonMain_KeyPress;
-            KeyUp += DungeonMain_KeyUp;
             pnlName.ResumeLayout(false);
             pnlName.PerformLayout();
             ResumeLayout(false);

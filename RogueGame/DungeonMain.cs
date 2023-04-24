@@ -25,15 +25,6 @@ namespace RogueGame
                 MessageBox.Show("Please enter a name for your character.");
         }
 
-        private void DungeonMain_KeyPress(object sender, KeyPressEventArgs e)
-        {
-
-        }
-
-        private void DungeonMain_KeyUp(object sender, KeyEventArgs e)
-        {
-
-        }
 
         private void DungeonMain_KeyDown(object sender, KeyEventArgs e)
         {
