@@ -76,17 +76,17 @@ namespace RogueGame
             if (GameMode == DisplayMode.Primary)
             {
                 // Assemble stats display for the bottom of the screen.
-                retValue = $"Level: {CurrentLevel}    ";
-                retValue += $"HP: {CurrentPlayer.MaxHP}/{CurrentPlayer.CurrentHP}    ";
-                retValue += $"Strength: {CurrentPlayer.MaxStrength}/{CurrentPlayer.CurrentStrength}    ";
-                retValue += $"Gold: {CurrentPlayer.Gold}    ";
-                retValue += $"Armor: {(CurrentPlayer.Armor != null ? CurrentPlayer.Armor.ArmorClass : 0)}    ";
-                retValue += $"Turn: {CurrentTurn}    ";
+                retValue = $"Level: {CurrentLevel}  ";
+                retValue += $"HP: {CurrentPlayer.MaxHP}/{CurrentPlayer.CurrentHP}  ";
+                retValue += $"Strength: {CurrentPlayer.MaxStrength}/{CurrentPlayer.CurrentStrength}  ";
+                retValue += $"Gold: {CurrentPlayer.Gold}  ";
+                retValue += $"Armor: {(CurrentPlayer.Armor != null ? CurrentPlayer.Armor.ArmorClass : 0)}  ";
+                retValue += $"Turn: {CurrentTurn}  ";
                 retValue += $"Exp: {CurrentPlayer.ExperienceLevel()}/{CurrentPlayer.Experience}";
 
 
                 if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied)
-                    retValue += $"{CurrentPlayer.HungerState}     ";
+                    retValue += $"  {CurrentPlayer.HungerState}     ";
             }
             else
                 retValue = "";
@@ -277,6 +277,7 @@ namespace RogueGame
                 if (CurrentPlayer.Immobile > 0)
                 {
                     CurrentPlayer.Immobile = CurrentPlayer.Immobile <= CurrentTurn ? 0 : CurrentPlayer.Immobile;
+
                     if (CurrentPlayer.Immobile == 0) cStatus = cStatus + " You can move again.";
                 }
             } while (CurrentPlayer.Immobile > CurrentTurn);
@@ -314,7 +315,7 @@ namespace RogueGame
                 "i - show inventory\n\n" +
                 "F - Fast Play mode ON / OFF\n\n" +
                 "> - go down a staircase\n\n" +
-                "< - go up a staircase(requires Amulet from level 26\n\n" +
+                "< - go up a staircase(requires Amulet from level 26)\n\n" +
                 "ESC - return to map.";
         }
         
@@ -492,6 +493,9 @@ namespace RogueGame
                 {
                     // Move the character.
                     player.Location = CurrentMap.MoveDisplayItem(player.Location, adjacent[direct]);
+                    Thread.Sleep(100);
+                    ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
+                    Application.DoEvents();
 
                     // If this is a doorway, determine if the room is lighted.
                     if (player.Location.MapCharacter == MapLevel.ROOM_DOOR)
@@ -523,12 +527,17 @@ namespace RogueGame
 
         private bool CanAutoMove(MapSpace Origin, MapSpace Target)
         {
-            // Determine if the player can keep moving in the current direction.
-            // Target space must be eligible and the same map character as the 
-            // current space. If the player is in a hallway, they must stop at any junctions.
-            return FastPlay && Target.FastMove() 
-                && Target.MapCharacter == Origin.MapCharacter 
-                && CurrentMap.SearchAdjacent(MapLevel.HALLWAY, Origin.X, Origin.Y).Count < 3;
+            // Determine if the player can keep moving in the
+            // current direction. Target space must be eligible
+            // and the same map character as the current space.
+            // If the player is in a hallway, they must stop at any junctions.
+            return FastPlay
+                & Target.DisplayCharacter == null // No monster
+                & !Target.ContainsItem()  
+                & Target.MapCharacter == Origin.MapCharacter 
+                & MapLevel.SpacesAllowed.Contains(Target.PriorityChar())
+                & CurrentMap.SearchAdjacent(MapLevel.HALLWAY, Origin.X, Origin.Y).Count < 3;
+        
         }
 
         private void PickUpGold()
@@ -539,6 +548,7 @@ namespace RogueGame
             CurrentPlayer.Gold += goldAmt;
             CurrentPlayer.Location!.ItemCharacter = null;
             cStatus = $"You picked up {goldAmt} pieces of gold.";
+
         }
 
 

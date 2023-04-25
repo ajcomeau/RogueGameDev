@@ -1071,7 +1071,7 @@ namespace RogueGame{
         public bool FastMove()
         {
             // Determine if the space is eligible for a Fast Play move.
-            return MapLevel.SpacesAllowed.Contains(PriorityChar())  // Space must be allowed for a move.
+            return MapLevel.SpacesAllowed.Contains(PriorityChar())  // Space must be eligible for a move.
                 && DisplayCharacter == null  // No monster in space.
                 && !ContainsItem();         // Does not contain an item.
         }
