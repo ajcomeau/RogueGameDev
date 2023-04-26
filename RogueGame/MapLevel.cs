@@ -157,50 +157,7 @@ namespace RogueGame{
 
         }
 
-        /*
-        private bool VerifyMap()
-        {
-            // Verify that the generate map is free of isolated rooms or sections.
-            // Old version - kept for comparison.  See VerifyMapLINQ
 
-            bool retValue = true;
-            List<char> dirCheck = new List<char>();
-
-            // Check horizontal for blank rows which no hallways. Top and bottom might be legitimately blank
-            // so just check a portion of the map.
-
-            for (int y = REGION_HT - MIN_ROOM_HT; y < (REGION_HT * 2) + MIN_ROOM_HT; y++)
-            {
-                    dirCheck.Clear();
-                    for (int x = 0; x <= MAP_WD - 1; x++)
-                    {
-                        if (!dirCheck.Contains(levelMap[x, y].MapCharacter))
-                            dirCheck.Add(levelMap[x, y].MapCharacter);
-                    }
-                    retValue = dirCheck.Count > 1;
-                    if (!retValue) { break; }
-            }
-
-            // Check vertical.
-
-            if (retValue)
-            {
-                for (int x = REGION_WD - MIN_ROOM_WT; x < (REGION_WD * 2) + MIN_ROOM_WT; x++)
-                {
-                    dirCheck.Clear();
-                    for (int y = 0; y <= MAP_HT - 1; y++)
-                    {
-                        if (!dirCheck.Contains(levelMap[x, y].MapCharacter))
-                            dirCheck.Add(levelMap[x, y].MapCharacter);
-                    }
-                    retValue = dirCheck.Count > 1;
-                    if (!retValue) { break; }
-                }
-            }
-
-            return retValue;
-        }
-        */
 
         /// <summary>
         /// Verify that the generate map is free of isolated rooms or sections.
@@ -1116,6 +1073,51 @@ namespace RogueGame{
 
             return sbReturn.ToString();
         }
+
+        /*
+            private bool VerifyMap()
+            {
+                // Verify that the generate map is free of isolated rooms or sections.
+                // Old version - kept for comparison.  See VerifyMapLINQ
+
+                bool retValue = true;
+                List<char> dirCheck = new List<char>();
+
+                // Check horizontal for blank rows which no hallways. Top and bottom might be legitimately blank
+                // so just check a portion of the map.
+
+                for (int y = REGION_HT - MIN_ROOM_HT; y < (REGION_HT * 2) + MIN_ROOM_HT; y++)
+                {
+                        dirCheck.Clear();
+                        for (int x = 0; x <= MAP_WD - 1; x++)
+                        {
+                            if (!dirCheck.Contains(levelMap[x, y].MapCharacter))
+                                dirCheck.Add(levelMap[x, y].MapCharacter);
+                        }
+                        retValue = dirCheck.Count > 1;
+                        if (!retValue) { break; }
+                }
+
+                // Check vertical.
+
+                if (retValue)
+                {
+                    for (int x = REGION_WD - MIN_ROOM_WT; x < (REGION_WD * 2) + MIN_ROOM_WT; x++)
+                    {
+                        dirCheck.Clear();
+                        for (int y = 0; y <= MAP_HT - 1; y++)
+                        {
+                            if (!dirCheck.Contains(levelMap[x, y].MapCharacter))
+                                dirCheck.Add(levelMap[x, y].MapCharacter);
+                        }
+                        retValue = dirCheck.Count > 1;
+                        if (!retValue) { break; }
+                    }
+                }
+
+                return retValue;
+            }
+            */
     }
 
     /// <summary>
