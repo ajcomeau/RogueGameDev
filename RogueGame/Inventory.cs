@@ -10,8 +10,14 @@ using System.Diagnostics;
 
 namespace RogueGame
 {
+    /// <summary>
+    /// Encapsulates all inventory item properties and special functions.
+    /// </summary>
     internal class Inventory
     {
+        /// <summary>
+        /// Inventory category
+        /// </summary>
         public enum InvCategory
         {
             Food = 0,
@@ -38,6 +44,10 @@ namespace RogueGame
             new Inventory(InvCategory.Food, 2, "a mango", "a mango", "mangoes", '♣', 95, null)
         };
 
+
+        /// <summary>
+        /// Read-only collection of inventory templates.
+        /// </summary>
         public static ReadOnlyCollection<Inventory> InventoryItems => invItems.AsReadOnly();
 
         public const int MAX_FOODVALUE = 1700;      // Maximum turns gained from food ration.
@@ -65,6 +75,29 @@ namespace RogueGame
         public Func<Player, MapLevel.Direction, bool>? ZapFunction { get; set; } // Delegate function if item can be used to zap.
         public Func<Player, Inventory?, bool>? MainFunction { get; set; }  // Default delegate function.
 
+        /// <summary>
+        /// Constructor for creating inventory item from scratch.
+        /// </summary>
+        /// <param name="InvType">Inventory category</param>
+        /// <param name="PriorityID">Template ID</param>
+        /// <param name="CodeName">Name for unidentified item</param>
+        /// <param name="RealName">Actual item name</param>
+        /// <param name="PluralName">Plural form of name for display</param>
+        /// <param name="Identified">Is the item identified?</param>
+        /// <param name="Groupable">Can the item be part of a collection in inventory?</param>
+        /// <param name="Wieldable">Can this be used as a weapon?</param>
+        /// <param name="Cursed">Is it cursed?</param>
+        /// <param name="ArmorClass">Class level for armor items</param>
+        /// <param name="Increment">Item increment level</param>
+        /// <param name="DamageInc">Damage increment</param>
+        /// <param name="AccuracyInc">Accuracy increment</param>
+        /// <param name="MinDamage">For weapons - minimum damage inflicted</param>
+        /// <param name="MaxDamage">For weapons - maximum damage inflicted</param>
+        /// <param name="AppearancePct">Probability percentage of item being on map</param>
+        /// <param name="DisplayChar">Symbol used for display</param>
+        /// <param name="mainFunction">Delegate function for primary use</param>
+        /// <param name="Throw">Delegate function when thrown</param>
+        /// <param name="Zap">Delegate function for staffs and wands</param>
         public Inventory(InvCategory InvType, int PriorityID, string CodeName, string RealName, string PluralName, bool Identified,
             bool Groupable, bool Wieldable, bool Cursed, int ArmorClass, int Increment, int DamageInc, int AccuracyInc,
             int MinDamage, int MaxDamage, int AppearancePct, char DisplayChar, Func<Player, Inventory?, bool>? mainFunction, 
@@ -93,6 +126,19 @@ namespace RogueGame
             this.ZapFunction = (Zap != null) ? Zap : null;
         }
 
+        /// <summary>
+        /// Primary constructor for randomly selecting item from template collection
+        /// </summary>
+        /// <param name="InvType">Inventory category</param>
+        /// <param name="PriorityID">Template ID</param>
+        /// <param name="CodeName">Name for unidentified item</param>
+        /// <param name="RealName">Actual item name</param>
+        /// <param name="PluralName">Plural form of name for display</param>
+        /// <param name="AppearancePct">Probability percentage of item being on map</param>
+        /// <param name="DisplayChar">Symbol used for display</param>
+        /// <param name="mainFunction">Delegate function for primary use</param>
+        /// <param name="Throw">Delegate function when thrown</param>
+        /// <param name="Zap">Delegate function for staffs and wands</param>
         public Inventory(InvCategory InvType, int PriorityID, string CodeName, string RealName, string PluralName, char DisplayChar, 
             int AppearancePct, Func<Player, Inventory?, bool>? mainFunction, Func<Player, MapLevel.Direction, bool>? Throw = null, 
             Func<Player, MapLevel.Direction, bool>? Zap = null)
@@ -119,6 +165,10 @@ namespace RogueGame
             this.ZapFunction = (Zap != null) ? Zap : null;
         }
 
+
+        /// <summary>
+        /// Coonstructor for blank inventory item
+        /// </summary>
         public Inventory()
         {
             // Contructor for blank item.
@@ -126,7 +176,11 @@ namespace RogueGame
             this.DisplayCharacter = '0';
         }
 
-
+        /// <summary>
+        /// Generates grouped inventory listing for inventory display screen.
+        /// </summary>
+        /// <param name="PlayerInventory"></param>
+        /// <returns></returns>
         public static List<InventoryLine> InventoryDisplay(List<Inventory> PlayerInventory)
         {
             char charID = 'a';
@@ -178,6 +232,12 @@ namespace RogueGame
 
         }
 
+        /// <summary>
+        /// Main function for generating item description for inventory display.
+        /// </summary>
+        /// <param name="Number">Number of items in inventory slot</param>
+        /// <param name="Item">Actual item</param>
+        /// <returns></returns>
         public static string ListingDescription(int Number, Inventory Item)
         {
             // Signle function to create inventory listing description for item and 
@@ -224,7 +284,11 @@ namespace RogueGame
 
         }
 
-
+        /// <summary>
+        /// Generates random item of specific category from inventory template list.
+        /// </summary>
+        /// <param name="InvType">Specific category</param>
+        /// <returns></returns>
         public static Inventory GetInventoryItem(InvCategory InvType)
         {
             // Get a random item from a specific inventory category.
@@ -235,6 +299,10 @@ namespace RogueGame
             return invSelect[rand.Next(invSelect.Count)]; 
         }
 
+        /// <summary>
+        /// Generates random item from inventory template list.
+        /// </summary>
+        /// <returns></returns>
         public static Inventory GetInventoryItem()
         {
             // TODO:  Omit amulet from this list when it's implemented. It will be added separately.
@@ -244,6 +312,9 @@ namespace RogueGame
 
     }
 
+    /// <summary>
+    /// Class used for constructing inventory display lines.
+    /// </summary>
     internal class InventoryLine
     {
         // InventoryLine class for formatting inventory display.

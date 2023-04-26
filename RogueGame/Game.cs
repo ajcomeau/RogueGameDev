@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace RogueGame
 {    
+    /// <summary>
+    /// Main class for managing game state and progress.
+    /// </summary>
     internal class Game
     {
         // Movement keys
@@ -76,7 +79,7 @@ namespace RogueGame
         }
 
         /// <summary>
-        /// Get current player stats display.
+        /// Get current player stats display for bottom of screen.
         /// </summary>
         public string StatsDisplay()
         {

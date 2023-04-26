@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace RogueGame
 {
+    /// <summary>
+    /// Encapsulates all player properties and functions.
+    /// </summary>
     internal class Player
     {
         private const int STARTING_HP = 12;         // Starting hit points
@@ -51,6 +54,10 @@ namespace RogueGame
         public List<Inventory> PlayerInventory { get; set; }   // Main inventory list.
         public MapSpace? Location { get; set; }     
 
+        /// <summary>
+        /// Calculates user experience level based on experience points.
+        /// </summary>
+        /// <returns>Experience level number</returns>
         public int ExperienceLevel()
         {
             // Calculate player's experience level based on 
@@ -68,6 +75,10 @@ namespace RogueGame
             return returnLevel;
         }
 
+        /// <summary>
+        /// Primary constructor for creating new player when game starts.
+        /// </summary>
+        /// <param name="PlayerName"></param>
         public Player(string PlayerName) {
 
             // Create a new player object.
@@ -77,19 +88,6 @@ namespace RogueGame
             this.Gold = 0;
             this.Experience = 1;
             this.HungerTurn = rand.Next(Inventory.MIN_FOODVALUE, Inventory.MAX_FOODVALUE + 1); 
-        }
-
-        public static bool ConsumeFood(Player currentPlayer, Inventory? inventoryItem = null)
-        {
-            // Delegate for consuming food
-            bool retValue = false;
-
-            if (inventoryItem != null) {
-
-                currentPlayer.HungerState = HungerLevel.Satisfied;
-            }
-
-            return true;
         }
 
 
