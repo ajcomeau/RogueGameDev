@@ -32,12 +32,16 @@ namespace RogueGame
             Amulet = 9
         }
 
-        // Random number generator
+        /// <summary>
+        /// Random number generator
+        /// </summary>
         private static Random rand = new Random();
 
-        // Item templates - program grabs these at random to create new inventory on map.
-        // PriorityID values must be unique. These will be used to identify the item elsewhere and to order the
-        // items in the inventory listing.
+        /// <summary>
+        /// Item templates - program grabs these at random to create new inventory on map.
+        /// PriorityID values must be unique. These will be used to identify the item elsewhere and to order the
+        /// items in the inventory listing.
+        /// </summary>
         private static List<Inventory> invItems = new List<Inventory>()
         {
             new Inventory(InvCategory.Food, 1, "some food", "some food", "rations of food", '♣', 95, null),
@@ -49,31 +53,94 @@ namespace RogueGame
         /// Read-only collection of inventory templates.
         /// </summary>
         public static ReadOnlyCollection<Inventory> InventoryItems => invItems.AsReadOnly();
-
-        public const int MAX_FOODVALUE = 1700;      // Maximum turns gained from food ration.
-        public const int MIN_FOODVALUE = 900;       // Minimum turns gained from food ration.
-
-
+        /// <summary>
+        /// Maximum turns gained from food ration.
+        /// </summary>
+        public const int MAX_FOODVALUE = 1700; 
+        /// <summary>
+        /// Minimum turns gained from food ration.
+        /// </summary>
+        public const int MIN_FOODVALUE = 900; 
+        /// <summary>
+        /// Item category from enumeration
+        /// </summary>
         public InvCategory ItemCategory { get; set; }
-        public int PriorityId { get; set; }     // Unique ID used for ordering.
-        public string? CodeName { get; set; }   // Name if unidentified.
-        public string RealName { get; set; }    // Identified name.
-        public string PluralName { get; set; }  // Plural of RealName
+        /// <summary>
+        /// Unique ID used for ordering.
+        /// </summary>
+        public int PriorityId { get; set; } 
+        /// <summary>
+        /// Name if unidentified.
+        /// </summary>
+        public string? CodeName { get; set; }
+        /// <summary>
+        /// Identified name.
+        /// </summary>
+        public string RealName { get; set; } 
+        /// <summary>
+        /// Plural of RealName
+        /// </summary>
+        public string PluralName { get; set; }
+        /// <summary>
+        /// Has the item been identified?
+        /// </summary>
         public bool IsIdentified { get; set; }
-        public bool IsGroupable { get; set; }   // Can more than one of these fit in an inventory slot?
-        public bool IsWieldable { get; set; }   // Can it be used as a weapon?
+        /// <summary>
+        /// Can more than one of these fit in an inventory slot?
+        /// </summary>
+        public bool IsGroupable { get; set; } 
+        /// <summary>
+        /// Can it be used as a weapon?
+        /// </summary>
+        public bool IsWieldable { get; set; } 
+        /// <summary>
+        /// Is the item cursed?
+        /// </summary>
         public bool IsCursed { get; set; }  
+        /// <summary>
+        /// Armor class rating
+        /// </summary>
         public int ArmorClass { get; set; } 
-        public int Increment { get; set; }      // Effectiveness bonus
-        public int DmgIncrement { get; set; }   // Damage bonus
-        public int AccIncrement { get; set; }   // Accuracy bonus
-        public int MinDamage { get; set; }      // Minimum damaage for weapon
-        public int MaxDamage { get; set; }      // Maximum damage for weapon
-        public int AppearancePct { get; set; }  // Probability of item being generated when selected randomly.
-        public char DisplayCharacter { get; set; }  // Symbol to be displayed.
-        public Func<Player, MapLevel.Direction, bool>? ThrowFunction { get; set; }  // Delegate function for throwing item.
-        public Func<Player, MapLevel.Direction, bool>? ZapFunction { get; set; } // Delegate function if item can be used to zap.
-        public Func<Player, Inventory?, bool>? MainFunction { get; set; }  // Default delegate function.
+        /// <summary>
+        /// Effectiveness bonus
+        /// </summary>
+        public int Increment { get; set; } 
+        /// <summary>
+        /// Damage bonus
+        /// </summary>
+        public int DmgIncrement { get; set; } 
+        /// <summary>
+        /// Accuracy bonus
+        /// </summary>
+        public int AccIncrement { get; set; } 
+        /// <summary>
+        /// Minimum damaage for weapon
+        /// </summary>
+        public int MinDamage { get; set; } 
+        /// <summary>
+        /// Maximum damage for weapon
+        /// </summary>
+        public int MaxDamage { get; set; } 
+        /// <summary>
+        /// Probability of item being generated when selected randomly.
+        /// </summary>
+        public int AppearancePct { get; set; } 
+        /// <summary>
+        /// Symbol to be displayed.
+        /// </summary>
+        public char DisplayCharacter { get; set; } 
+        /// <summary>
+        /// Delegate function for throwing item.
+        /// </summary>
+        public Func<Player, MapLevel.Direction, bool>? ThrowFunction { get; set; }
+        /// <summary>
+        /// Delegate function if item can be used to zap.
+        /// </summary>
+        public Func<Player, MapLevel.Direction, bool>? ZapFunction { get; set; }
+        /// <summary>
+        /// Default delegate function.
+        /// </summary>
+        public Func<Player, Inventory?, bool>? MainFunction { get; set; }
 
         /// <summary>
         /// Constructor for creating inventory item from scratch.

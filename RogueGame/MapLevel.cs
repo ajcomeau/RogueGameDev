@@ -2,23 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Diagnostics;
-using System.Drawing.Text;
-using System.Runtime.CompilerServices;
-using System.Collections;
-using System.Net.Http.Headers;
-using System.Runtime.InteropServices;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
-using System.CodeDom;
-using System.Numerics;
 
 namespace RogueGame{
 
     internal class MapLevel
     {
-        // Used to establish relative directions.
+        /// <summary>
+        /// Enumeration used to establish relative directions.
+        /// </summary>
         public enum Direction
         {
             None = 0,
@@ -28,7 +20,9 @@ namespace RogueGame{
             West = -2
         }
 
-        // Dictionary to hold hallway endings during map generation.
+        /// <summary>
+        /// Dictionary to hold hallway endings during map generation.
+        /// </summary>
         private Dictionary<MapSpace, Direction> deadEnds = 
             new Dictionary<MapSpace, Direction>();
 
@@ -46,60 +40,124 @@ namespace RogueGame{
         public const char GOLD = '*';
         public const char AMULET = '♀';
         private const char EMPTY = ' ';
-        private const int REGION_WD = 26;           //  Width / height of region holding single room.
+        /// <summary>
+        /// Width of region holding single room.
+        /// </summary>
+        private const int REGION_WD = 26;
+        /// <summary>
+        /// Height of region holding single room.
+        /// </summary>
         private const int REGION_HT = 8;
-        private const int MAP_WD = 78;              // Max width / height of map display.
+        /// <summary>
+        /// Max width of map display.
+        /// </summary>
+        private const int MAP_WD = 78;
+        /// <summary>
+        /// Max height of map display.
+        /// </summary>
         private const int MAP_HT = 24;
-        private const int MAX_ROOM_WT = 24;         // Based on screen width of 80, 78 allowed
-        private const int MAX_ROOM_HT = 6;          // Based on screen height of 25, 24 allowed
-        private const int MIN_ROOM_WT = 4;          // Minimum width / height of single room.
+        /// <summary>
+        /// Room width based on screen width of 80, 78 allowed
+        /// </summary>
+        private const int MAX_ROOM_WT = 24;
+        /// <summary>
+        /// Room height based on screen width of 80, 78 allowed
+        /// </summary>
+        private const int MAX_ROOM_HT = 6;          
+        /// <summary>
+        /// Minimum exterior room width
+        /// </summary>
+        private const int MIN_ROOM_WT = 4;          
+        /// <summary>
+        /// Minimum exterior room height
+        /// </summary>
         private const int MIN_ROOM_HT = 4;
-        private const int ROOM_CREATE_PCT = 95;       // Probability that room will be created for one region.
-        private const int ROOM_EXIT_PCT = 90;       // Probability that room wall will contain exit.
-        private const int HIDDEN_EXIT_PCT = 25;     // Probability that doorway will be hidden.
-        private const int ROOM_LIGHTED = 75;        // Probablility that room will be lighted.
-        private const int ROOM_GOLD_PCT = 70;       // Probability that a room will have gold.
-        private const int MAX_INVENTORY = 3;       // Maximum inventory in a room.
-        public const int MIN_GOLD_AMT = 10;        // Max gold amount per stash.
-        public const int MAX_GOLD_AMT = 125;        // Max gold amount per stash.
-        
-        // List of characters that will be marked as Visible during map discovery.
+        /// <summary>
+        /// Probability that room will be created for one region.
+        /// </summary>
+        private const int ROOM_CREATE_PCT = 95; 
+        /// <summary>
+        /// Probability that room wall will contain exit.
+        /// </summary>
+        private const int ROOM_EXIT_PCT = 90; 
+        /// <summary>
+        /// Probability that doorway will be hidden.
+        /// </summary>
+        private const int HIDDEN_EXIT_PCT = 25;
+        /// <summary>
+        /// Probablility that room will be lighted.
+        /// </summary>
+        private const int ROOM_LIGHTED = 75; 
+        /// <summary>
+        /// Probability that a room will have gold.
+        /// </summary>
+        private const int ROOM_GOLD_PCT = 70; 
+        /// <summary>
+        /// Maximum inventory in a room.
+        /// </summary>
+        private const int MAX_INVENTORY = 3; 
+        /// <summary>
+        /// Max gold amount per stash.
+        /// </summary>
+        public const int MIN_GOLD_AMT = 10;  
+        /// <summary>
+        /// Max gold amount per stash.
+        /// </summary>
+        public const int MAX_GOLD_AMT = 125;
+
+        /// <summary>
+        /// List of characters that will be marked as Visible during map discovery.
+        /// </summary>
         public static List<char> MapDiscovery = new List<char>(){HORIZONTAL, VERTICAL,
             CORNER_NW, CORNER_SE, CORNER_NE, CORNER_SW, ROOM_DOOR, HALLWAY, STAIRWAY};
 
-        // List of characters that occur inside a room.
+        /// <summary>
+        /// List of characters that occur inside a room.
+        /// </summary>
         public static List<char> RoomInterior = new List<char>(){ROOM_DOOR, ROOM_INT, STAIRWAY};
 
-        // List of characters a player or monster can move onto.
+        /// <summary>
+        /// List of characters a player or monster can move onto.
+        /// </summary>
         public static List<char> SpacesAllowed = new List<char>(){ROOM_INT, STAIRWAY, ROOM_DOOR, HALLWAY};
 
-        // List of characters that can be moved past on Fast Play.
+        /// <summary>
+        /// List of characters that can be moved past on Fast Play.
+        /// </summary>
         public static List<char> GlideSpaces = new List<char>(){ROOM_INT, HORIZONTAL, VERTICAL, CORNER_NE,
                 CORNER_NW, CORNER_SE, CORNER_SW, HALLWAY, EMPTY};
 
-        // Array to hold map definition.
+        /// <summary>
+        /// Array to hold map definition.
+        /// </summary>
         private MapSpace[,] levelMap = new MapSpace[80, 25];
         
-        // Random number generator
+        /// <summary>
+        /// Random number generator
+        /// </summary>
         private static Random rand = new Random();
-                
+
+        /// <summary>
+        /// Make map available to other classes.
+        /// </summary>
         public MapSpace[,] LevelMap
         {
-            // Make map available to other classes.
             get { return levelMap; }
         }
 
+        /// <summary>
+        /// Constructor - generate a new map for this level.
+        /// </summary>
         public MapLevel()
         {
-            // Constructor - generate a new map for this level.
-
             do
             {
                 MapGeneration();
-            } while (!VerifyMapLINQ());
+            } while (!VerifyMap());
 
         }
 
+        /*
         private bool VerifyMap()
         {
             // Verify that the generate map is free of isolated rooms or sections.
@@ -142,12 +200,14 @@ namespace RogueGame{
 
             return retValue;
         }
+        */
 
-        private bool VerifyMapLINQ()
+        /// <summary>
+        /// Verify that the generate map is free of isolated rooms or sections.
+        /// </summary>
+        /// <returns>True / False based on validity of map.</returns>
+        private bool VerifyMap()
         {
-            // Verify that the generate map is free of isolated rooms or sections.
-            // Alternate version using LINQ.
-
             bool retValue = true;
             List<char> dirCheck = new List<char>();
 
@@ -184,9 +244,11 @@ namespace RogueGame{
             return retValue;
         }
 
+        /// <summary>
+        /// Primary map generation procedure
+        /// </summary>
         private void MapGeneration()
         {
-            // Primary generation procedure
             // Screen is divided into nine cell regions and a room is randomly generated in each.
             // Room exterior must be at least four spaces in each direction but not more than the
             // size of its cell region, minus one space, to allow for hallways between rooms.
@@ -236,21 +298,26 @@ namespace RogueGame{
         }
 
 
-
+        /// <summary>
+        /// Search the array randomly for an interior room space and mark it as a hallway.
+        /// </summary>
         private void AddStairway()
         {
-            // Search the array randomly for an interior room space
-            // and mark it as a hallway.
             List <MapSpace> openSpaces = FindOpenSpaces(false);
             MapSpace stairway = openSpaces[rand.Next(openSpaces.Count)];
 
             levelMap[stairway.X, stairway.Y] = new MapSpace(STAIRWAY, stairway.X, stairway.Y);
         }
 
-
+        /// <summary>
+        /// Create room on map based on inputs
+        /// </summary>
+        /// <param name="westWallX"></param>
+        /// <param name="northWallY"></param>
+        /// <param name="roomWidth"></param>
+        /// <param name="roomHeight"></param>
         private void RoomGeneration(int westWallX, int northWallY, int roomWidth, int roomHeight)
         {
-            // Create room on map based on inputs
             int eastWallX = westWallX + roomWidth;          // Calculate room east
             int southWallY = northWallY + roomHeight;       // Calculate room south
 
@@ -382,10 +449,11 @@ namespace RogueGame{
             }
         }
 
+        /// <summary>
+        /// Create hallways between all the existing rooms.
+        /// </summary>
         private void HallwayGeneration()
         {
-            // After all rooms are generated with exits and initial hallway characters, create hallways
-            // between all the existing rooms.
             Direction hallDirection = Direction.None; Direction direction90; Direction direction270;
             MapSpace hallwaySpace, newSpace;
             Dictionary<Direction, MapSpace> adjacentChars = new Dictionary<Direction, MapSpace>();
@@ -500,11 +568,15 @@ namespace RogueGame{
             }
         }        
 
+        /// <summary>
+        /// Draw a hallway between specified spaces.  Break off if another hallway
+            /// is discovered to the side.
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="hallDirection"></param>
         private void DrawHallway(MapSpace start, MapSpace end, Direction hallDirection)
         {
-
-            // Draw a hallway between specified spaces.  Break off if another hallway
-            // is discovered to the side.
             switch (hallDirection) {
                 case Direction.North:
                     for (int y = start.Y; y >= end.Y; y--)
@@ -540,13 +612,13 @@ namespace RogueGame{
                     break;           
             }
 
-        }
+        }        
 
-        
-
+        /// <summary>
+        /// Raise the fog of war and hide the map.
+        /// </summary>
         public void ShroudMap()
         {
-            // Raise the fog of war and hide the map.
             List<MapSpace> mapSpaces = (from MapSpace space in levelMap
                                             select space).ToList();
 
@@ -559,26 +631,39 @@ namespace RogueGame{
 
         }
 
+        /// <summary>
+        /// Return direction 90 degrees from original based on forward direction.
+        /// </summary>
+        /// <param name="startingDirection"></param>
+        /// <returns></returns>
         private Direction GetDirection90(Direction startingDirection)
         {
-            // Return direction 90 degrees from original based on forward direction.
             Direction retValue = (Math.Abs((int)startingDirection) == 1) ? (Direction)2 : (Direction)1;
             return retValue;
         }
 
+        /// <summary>
+        /// Return direction 270 degrees from original (opposite of 90 degrees) based on forward direction.
+        /// </summary>
+        /// <param name="startingDirection"></param>
+        /// <returns></returns>
         private Direction GetDirection270(Direction startingDirection)
         {
-            // Return direction 270 degrees from original (opposite of 90 degrees) based on forward direction.
             Direction retValue = (Math.Abs((int)startingDirection) == 1) ? (Direction)2 : (Direction)1;
             retValue = (Direction)((int)retValue * -1);
             return retValue;
         }
 
+        /// <summary>
+        /// Search for specific character in four directions around point for a specific character. 
+        /// Return list of directions and characters found.
+        /// </summary>
+        /// <param name="character">Character to search for.</param>
+        /// <param name="x">Starting X point</param>
+        /// <param name="y">Starting Y point</param>
+        /// <returns>Dictionary of directions and characters found.</returns>
         public Dictionary<Direction, MapSpace> SearchAdjacent(char character, int x, int y)
         {
-
-            // Search for specific character in four directions around point for a 
-            // specific character. Return list of directions and characters found.
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
 
             if (y - 1 >= 0 && levelMap[x, y - 1].MapCharacter == character)  // North
@@ -597,9 +682,14 @@ namespace RogueGame{
 
         }
 
+        /// <summary>
+        /// Search in four directions around point. Return list of directions and characters found.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns>Dictionary of directions and characters found.</returns>
         public Dictionary<Direction, MapSpace> SearchAdjacent(int x, int y)
         {
-            // Search in four directions around point. Return list of directions and characters found.
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
             retValue.Add(Direction.North, levelMap[x, y - 1]);
             retValue.Add(Direction.East, levelMap[x + 1, y]);
@@ -609,9 +699,14 @@ namespace RogueGame{
             return retValue;
         }
 
+        /// <summary>
+        /// Look in all directions and return a Dictionary of the first non-space characters found.
+        /// </summary>
+        /// <param name="currentX"></param>
+        /// <param name="currentY"></param>
+        /// <returns></returns>
         public Dictionary<Direction, MapSpace> SearchAllDirections(int currentX, int currentY)
         {
-            // Look in all directions and return a Dictionary of the first non-space characters found.
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
 
             retValue.Add(Direction.North, SearchDirection(Direction.North, currentX, currentY - 1));
@@ -622,10 +717,15 @@ namespace RogueGame{
             return retValue;
         }
 
+        /// <summary>
+        /// Get the next non-space object found in a given direction. Return null if none is found.
+        /// </summary>
+        /// <param name="direction"></param>
+        /// <param name="startX"></param>
+        /// <param name="startY"></param>
+        /// <returns></returns>
         public MapSpace SearchDirection(Direction direction, int startX, int startY)
         {
-            // Get the next non-space object found in a given direction.
-            // Return null if none is found.
             int currentX = startX, currentY = startY;
             MapSpace? retValue = null;
 
@@ -661,10 +761,14 @@ namespace RogueGame{
         }
 
 
-
+        /// <summary>
+        /// Return a list of all spaces around given space in eight directions.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         public List<MapSpace> GetSurrounding(int x, int y)
         {
-            // Return a list of all spaces around given space in eight directions.
             List<MapSpace> surrounding = (from MapSpace space in levelMap
                                         where Math.Abs(space.X - x) <= 1
                                         && Math.Abs(space.Y - y) <= 1
@@ -673,9 +777,12 @@ namespace RogueGame{
             return surrounding;
         }
 
+        /// <summary>
+        /// Return the mapspace containing the player.
+        /// </summary>
+        /// <returns></returns>
         public MapSpace FindPlayer()
         {
-            // Return the mapspace containing the player.
             MapSpace playerSpace = (from MapSpace space in levelMap
                                         where space.DisplayCharacter == Player.CHARACTER
                                         select space).First();
@@ -683,10 +790,12 @@ namespace RogueGame{
             return playerSpace;
         }
 
+        /// <summary>
+        /// Return a list of all monsters and the player by checking the display character.
+        /// </summary>
+        /// <returns></returns>
         public List<MapSpace> FindAllOccupants()
         {
-            // Return a list of all monsters and the player by checking the
-            // display character.
             List<MapSpace> occupants = (from MapSpace space in levelMap
                                             where space.DisplayCharacter != null
                                             select space).ToList();
@@ -694,10 +803,12 @@ namespace RogueGame{
             return occupants;
         }
 
+        /// <summary>
+        /// Return a list of all items on the map by checking the item character.
+        /// </summary>
+        /// <returns></returns>
         public List<MapSpace> FindAllItems()
         {
-            // Return a list of all items on the map by checking the
-            // item character.
             List<MapSpace> items = (from MapSpace space in levelMap
                                         where space.ItemCharacter != null || space.MapInventory != null
                                         select space).ToList();
@@ -705,10 +816,14 @@ namespace RogueGame{
             return items;
         }
 
+        /// <summary>
+        /// Return a list of all open spaces on the map by checking the map character.
+        /// </summary>
+        /// <param name="hallways"></param>
+        /// <returns></returns>
         public List<MapSpace> FindOpenSpaces(bool hallways)
         {
-            // Return a list of all open spaces on the map by checking the
-            // map character.
+
             string charList = hallways ? (HALLWAY.ToString() + ROOM_INT.ToString()) : ROOM_INT.ToString();
 
             List<MapSpace> spaces = (from MapSpace space in levelMap
@@ -721,12 +836,14 @@ namespace RogueGame{
             return spaces;
         }
 
+        /// <summary>
+        /// Find a random space within one of the rooms that hasn't been occupied 
+        /// and add the player or monster.
+        /// </summary>
+        /// <param name="MapChar"></param>
+        /// <returns></returns>
         public MapSpace AddCharacterToMap(char MapChar)
         {
-            // Find a random space within one of the rooms that 
-            // hasn't been occupied add the player or monster.
-            // This version uses LINQ to get a list of the open spaces.
-
             MapSpace select;
 
             List<MapSpace> spaces = FindOpenSpaces(false);
@@ -740,9 +857,12 @@ namespace RogueGame{
             return select;
         }
 
+        /// <summary>
+        /// Add amulet to the map.
+        /// </summary>
+        /// <returns></returns>
         public MapSpace AddAmuletToMap()
         {
-            // Add amulet to the map.
             MapSpace select;
 
             List<MapSpace> spaces = FindOpenSpaces(false);
@@ -752,16 +872,26 @@ namespace RogueGame{
             return select;
         }
 
+        /// <summary>
+        /// Change the display character for the specified map space and return the reference as a confirmation.
+        /// </summary>
+        /// <param name="Start"></param>
+        /// <param name="Destination"></param>
+        /// <returns></returns>
         public MapSpace MoveDisplayItem(MapSpace Start, MapSpace Destination)
         {
-            // Change the display character for the specified map space
-            // and return the reference as a confirmation.
             levelMap[Destination.X, Destination.Y].DisplayCharacter = Start.DisplayCharacter;
             levelMap[Start.X, Start.Y].DisplayCharacter = null;
 
             return Destination;
         }
 
+        /// <summary>
+        /// For all room spaces in region, set Discovered = True and 
+        /// Visible according to ROOM_LIGHTED probability
+        /// </summary>
+        /// <param name="xPos"></param>
+        /// <param name="yPos"></param>
         public void DiscoverRoom(int xPos, int yPos)
         {
             // Get region limits
@@ -793,11 +923,14 @@ namespace RogueGame{
             }
         }
 
+        /// <summary>
+        /// Set surrounding spaces to Discovered.  Return True if there's something in one of them.
+        /// </summary>
+        /// <param name="xPos"></param>
+        /// <param name="yPos"></param>
+        /// <returns></returns>
         public bool DiscoverSurrounding(int xPos, int yPos)
         {
-            // Discover surrounding spaces.  Return True if there's
-            // something in one of them.
-
             bool retValue = false;
 
             foreach (MapSpace space in GetSurrounding(xPos, yPos))
@@ -825,6 +958,12 @@ namespace RogueGame{
             return retValue;
         }
 
+        /// <summary>
+        /// Return region number 1 through 9 based on map point.
+        /// </summary>
+        /// <param name="xPos"></param>
+        /// <param name="yPos"></param>
+        /// <returns></returns>
         public int GetRegionNumber(int xPos, int yPos)
         {
             // The map is divided into a 3 x 3 grid of 9 equal regions.
@@ -843,6 +982,12 @@ namespace RogueGame{
             return returnVal;
         }
 
+        /// <summary>
+        /// Get northwest and south east corners of region based on X,Y coordintes.
+        /// </summary>
+        /// <param name="xPos"></param>
+        /// <param name="yPos"></param>
+        /// <returns></returns>
         public Tuple<MapSpace, MapSpace> GetRegionLimits(int xPos, int yPos)
         {
             // Get a pair of MapSpaces defining the limits of the region based
@@ -856,6 +1001,11 @@ namespace RogueGame{
             return new Tuple<MapSpace, MapSpace>(levelMap[xTopLeft, yTopLeft], levelMap[xBottomRight, yBottomRight]);
         }
 
+        /// <summary>
+        /// Get northwest and south east corners of specific region.
+        /// </summary>
+        /// <param name="RegionNumber"></param>
+        /// <returns></returns>
         public Tuple<MapSpace, MapSpace> GetRegionLimits(int RegionNumber)
         {
             // Get a pair of MapSpaces defining the limits of the region based
@@ -872,12 +1022,12 @@ namespace RogueGame{
             return new Tuple<MapSpace, MapSpace>(levelMap[xTopLeft, yTopLeft], levelMap[xBottomRight, yBottomRight]);
         }
 
+        /// <summary>
+        /// For Dev mode. Output the array to text for display with no alternate characters and everything visible.
+        /// </summary>
+        /// <returns></returns>
         public string MapCheck()
-        {
-            // Output the array to text for display with no alternate characters.
-            // and everything visible.
-            // This is used in Dev Mode.
-
+        { 
             StringBuilder sbReturn = new StringBuilder();
             char? priorityChar;
 
@@ -907,9 +1057,13 @@ namespace RogueGame{
             return sbReturn.ToString();
         }
 
+        /// <summary>
+        /// Output the array to text for display.
+        /// </summary>
+        /// <param name="PlayerLocation"></param>
+        /// <returns></returns>
         public string MapText(MapSpace PlayerLocation)
         {
-            // Output the array to text for display.
             StringBuilder sbReturn = new StringBuilder();
             MapSpace playerSpace = PlayerLocation;
             List<MapSpace> surroundingSpaces = GetSurrounding(playerSpace.X, playerSpace.Y);
@@ -964,22 +1118,50 @@ namespace RogueGame{
         }
     }
 
-
+    /// <summary>
+    /// Class to hold information for a specific space on the map.
+    /// </summary>
     internal class MapSpace{
-        public char MapCharacter { get; set; } // Actual character on map (Room interior, hallway, wall, etc..).
-        public char? AltMapCharacter { get; set; } // Map character to display if search is required.
-        public char? ItemCharacter { get; set; } // Item sitting on map (potion, scroll, etc..).
-        public char? DisplayCharacter { get; set; }  // Player and monsters.
-        public Inventory? MapInventory { get; set; } // Inventory items found on the map.
-        public bool SearchRequired { get; set; }  // Does the player need to search to reveal?
+        /// <summary>
+        /// Actual character on map (Room interior, hallway, wall, etc..).
+        /// </summary>
+        public char MapCharacter { get; set; }
+        /// <summary>
+        /// Map character to display if search is required.
+        /// </summary>
+        public char? AltMapCharacter { get; set; }
+        /// <summary>
+        /// Item sitting on map (potion, scroll, etc..).
+        /// </summary>
+        public char? ItemCharacter { get; set; }
+        /// <summary>
+        /// Player and monsters.
+        /// </summary>
+        public char? DisplayCharacter { get; set; }
+        /// <summary>
+        /// Inventory items found on the map.
+        /// </summary>
+        public Inventory? MapInventory { get; set; }
+        /// <summary>
+        /// Does the player need to search to reveal?
+        /// </summary>
+        public bool SearchRequired { get; set; }
+        /// <summary>
+        /// Has the player discovered this space?
+        /// </summary>
         public bool Discovered { get; set; }
-        public bool Visible { get; set; } // Is space supposed to be visible.
+        /// <summary>
+        /// Is space supposed to be visible.
+        /// </summary>
+        public bool Visible { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
 
+        /// <summary>
+        /// Constructor to create blank space for map
+        /// </summary>
         public MapSpace()
         {
-            // Create blank space for map
             this.MapCharacter = ' ';
             this.AltMapCharacter = null;
             this.ItemCharacter = null;
@@ -991,10 +1173,13 @@ namespace RogueGame{
             Y = 0;
         }
 
+        /// <summary>
+        /// Constructor to create new MapSpace, reusing settings from the previous one.
+        /// </summary>
+        /// <param name="mapChar"></param>
+        /// <param name="oldSpace"></param>
         public MapSpace(char mapChar, MapSpace oldSpace)
         {
-            // Create new MapSpace, reusing settings from
-            // the previous one.
             this.MapCharacter = mapChar;
             this.AltMapCharacter = null; 
             this.ItemCharacter = null;
@@ -1006,9 +1191,14 @@ namespace RogueGame{
             this.Discovered = oldSpace.Discovered;
         }
 
+        /// <summary>
+        /// Constructor to create visible character
+        /// </summary>
+        /// <param name="mapChar"></param>
+        /// <param name="X"></param>
+        /// <param name="Y"></param>
         public MapSpace(char mapChar, int X, int Y)
         {
-            // Create visible character
             this.MapCharacter = mapChar;
             this.AltMapCharacter = null;
             this.ItemCharacter = null;
@@ -1020,6 +1210,14 @@ namespace RogueGame{
             this.Y = Y;
         }
 
+        /// <summary>
+        /// Basic constructor to create mapspace.
+        /// </summary>
+        /// <param name="mapChar"></param>
+        /// <param name="hidden"></param>
+        /// <param name="search"></param>
+        /// <param name="X"></param>
+        /// <param name="Y"></param>
         public MapSpace(char mapChar, Boolean hidden, Boolean search, int X, int Y)
         {
             this.MapCharacter = mapChar;
@@ -1033,12 +1231,15 @@ namespace RogueGame{
             this.Y = Y;
         }
 
+        /// <summary>
+        /// Return character to be displayed for space based on standard priority.
+        /// DisplayCharacter, ItemCharacter, MapInventory.DisplayCharacter AltMapCharacter, MapCharacter.
+        /// </summary>
+        /// <returns></returns>
         public char PriorityChar()
         {
             char retValue;
 
-            // Standard priority - DisplayCharacter, ItemCharacter, MapInventory.DisplayCharacter
-            // AltMapCharacter, MapCharacter.
             if (this.DisplayCharacter != null)
                 retValue = (char)this.DisplayCharacter;
             else if (this.ItemCharacter != null)
@@ -1053,30 +1254,27 @@ namespace RogueGame{
             return retValue;
         }
 
+        /// <summary>
+        /// Determine if there's something on the map space.
+        /// </summary>
+        /// <returns></returns>
         public bool Occupied()
         {
             char priorityChar = PriorityChar();
-            // Determine if there's something in the space.
+
             return (priorityChar != this.MapCharacter 
                 && priorityChar != this.AltMapCharacter
                 && priorityChar != Player.CHARACTER);
         }
 
+        /// <summary>
+        /// Determine if the space contains an inventory item or gold.
+        /// </summary>
+        /// <returns></returns>
         public bool ContainsItem()
         {
-            // Determine if the space contains an inventory item or gold.
             return(this.ItemCharacter != null ||  this.MapInventory != null);
-        }
-
-        public bool FastMove()
-        {
-            // Determine if the space is eligible for a Fast Play move.
-            return MapLevel.SpacesAllowed.Contains(PriorityChar())  // Space must be eligible for a move.
-                && DisplayCharacter == null  // No monster in space.
-                && !ContainsItem();         // Does not contain an item.
-        }
-
-        
+        }        
     }
 }
 

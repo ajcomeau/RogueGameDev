@@ -34,11 +34,22 @@ namespace RogueGame
         private const int KEY_ESC = 27;
         private const int KEY_HELP = 191;
         
-        private const int SEARCH_PCT = 20;  // Probability of search revealing hidden doors, etc..
-        private const int MAX_LEVEL = 26;   // Maximum dungeon level
-        private const int FAINT_PCT = 33;   // Probability of fainting at any given point when FAINT
-        private const int MAX_TURN_LOSS = 5;  // Maximum turns to lose when fainting, etc..
-
+        /// <summary>
+        /// Probability of search revealing hidden doors, etc..
+        /// </summary>
+        private const int SEARCH_PCT = 20; 
+        /// <summary>
+        /// Maximum dungeon level
+        /// </summary>
+        private const int MAX_LEVEL = 26;   
+        /// <summary>
+        /// Probability of fainting at any given point when FAIN
+        /// </summary>
+        private const int FAINT_PCT = 33;   
+        /// <summary>
+        /// Maximum turns to lose when fainting, etc..
+        /// </summary>
+        private const int MAX_TURN_LOSS = 5; 
         /// <summary>
         /// Lists modes to be used for displaying different screens.
         /// </summary>
@@ -54,20 +65,51 @@ namespace RogueGame
         }
 
 
+        /// <summary>
+        /// Current map object being shown.
+        /// </summary>
         public MapLevel CurrentMap { get; set; }                    
+        /// <summary>
+        /// Current game level.
+        /// </summary>
         public int CurrentLevel { get; set; }
+        /// <summary>
+        /// Current player object
+        /// </summary>
         public Player CurrentPlayer { get; }
+        /// <summary>
+        /// Current turn number
+        /// </summary>
         public int CurrentTurn { get; set; }
-        public string ScreenDisplay { get; set; }  // Current contents of the screen.
+        /// <summary>
+        /// String showing current contents of the screen.
+        /// </summary>
+        public string ScreenDisplay { get; set; }
+        /// <summary>
+        /// Current display mode indicating which screen is showing
+        /// </summary>
         public DisplayMode GameMode { get; set; }
+        /// <summary>
+        /// Developer mode ON / OFF
+        /// </summary>
         public bool DevMode { get; set; }
+        /// <summary>
+        /// Fast Play mode ON / OFF
+        /// </summary>
         public bool FastPlay { get; set; }
-        public Func<char?, bool>? ReturnFunction { get; set; }  // Function to be run after inventory selection.
+        /// <summary>
+        /// Delgate used to return to function that enables an inventory item to be used.
+        /// </summary>
+        public Func<char?, bool>? ReturnFunction { get; set; } 
 
-        // Status message for top of screen.
+        /// <summary>
+        /// Status message for top of screen.
+        /// </summary>
         private string cStatus;  
 
-        // Random number generator
+        /// <summary>
+        /// Random number generator
+        /// </summary>
         public static Random rand = new Random();
 
         /// <summary>

@@ -14,12 +14,26 @@ namespace RogueGame
     /// </summary>
     internal class Player
     {
-        private const int STARTING_HP = 12;         // Starting hit points
-        private const int STARTING_STRENGTH = 16;   // Starting strength points
-        public const int HUNGER_TURNS = 150;       // Turns between hunger states
-        public const char CHARACTER = '☺';          // Display character
-        public const int INVENTORY_LIMIT = 50;      // Maximum items in inventory
-
+        /// <summary>
+        /// Starting hit points
+        /// </summary>
+        private const int STARTING_HP = 12;
+        /// <summary>
+        /// Starting strength points
+        /// </summary>
+        private const int STARTING_STRENGTH = 16;
+        /// <summary>
+        /// Turns between hunger states
+        /// </summary>
+        public const int HUNGER_TURNS = 150;
+        /// <summary>
+        /// Display character
+        /// </summary>
+        public const char CHARACTER = '☺'; 
+        /// <summary>
+        /// Maximum items in inventory
+        /// </summary>
+        public const int INVENTORY_LIMIT = 50;
         /// <summary>
         /// Player's hunger stages. Decrement to increase hunger.
         /// </summary>
@@ -32,28 +46,90 @@ namespace RogueGame
             Dead = 0
         }
 
+        /// <summary>
+        /// Name provided by player
+        /// </summary>
         public string PlayerName { get; set; }  
-        public int MaxHP { get; set; } = STARTING_HP;  // Maximum current hit points
-        public int HPDamage { get; set; }           // Current damage in hit points
-        public int CurrentHP { get { return MaxHP - HPDamage; } }  // Current HP
-        public int MaxStrength { get; set; } = STARTING_STRENGTH;  // Current max strength
-        public int StrengthMod { get; set; }        // Current strength modifier
-        public int CurrentStrength { get { return MaxStrength - StrengthMod; } }  // Current Strength
-        public int Gold { get; set; }               // Current gold
-        public int Experience { get; set; }         // Current experience
+        /// <summary>
+        /// Maximum current hit points
+        /// </summary>
+        public int MaxHP { get; set; } = STARTING_HP; 
+        /// <summary>
+        /// Current damage in hit points
+        /// </summary>
+        public int HPDamage { get; set; }
+        /// <summary>
+        /// Current HP
+        /// </summary>
+        public int CurrentHP { get { return MaxHP - HPDamage; } } 
+        /// <summary>
+        /// Current max strength
+        /// </summary>
+        public int MaxStrength { get; set; } = STARTING_STRENGTH;
+        /// <summary>
+        /// Current strength modifier
+        /// </summary>
+        public int StrengthMod { get; set; } 
+        /// <summary>
+        /// Current Strength
+        /// </summary>
+        public int CurrentStrength { get { return MaxStrength - StrengthMod; } } 
+        /// <summary>
+        /// Current gold
+        /// </summary>        
+        public int Gold { get; set; }
+        /// <summary>
+        /// Current experience
+        /// </summary>
+        public int Experience { get; set; } 
+        /// <summary>
+        /// Current hunger level
+        /// </summary>
         public HungerLevel HungerState { get; set; } = HungerLevel.Satisfied;
-        public int HungerTurn { get; set; }         // Next turn at which hunger state will change      
-        public int Confused { get; set; }           // Temporary disabilities
+        /// <summary>
+        /// Next turn at which hunger state will change
+        /// </summary>
+        public int HungerTurn { get; set; }     
+        /// <summary>
+        /// Confused - player moves erratically.
+        /// </summary>
+        public int Confused { get; set; } 
+        /// <summary>
+        /// Paralysis, frozen by ice monster, etc..
+        /// </summary>
         public int Immobile { get; set; }
+        /// <summary>
+        /// Blind from potion, etc..
+        /// </summary>
         public int Blind { get; set; }
+        /// <summary>
+        /// Whether player has found the amulet
+        /// </summary>
         public bool HasAmulet { get; set; }
-        public Inventory? Armor { get; set; }  // Armor currently worn
-        public Inventory? LeftHand { get; set; }   // Rings
+        /// <summary>
+        /// Armor currently worn
+        /// </summary>
+        public Inventory? Armor { get; set; } 
+        /// <summary>
+        /// Left hand ring
+        /// </summary>
+        public Inventory? LeftHand { get; set; }   
+        /// <summary>
+        /// Right hand ring
+        /// </summary>
         public Inventory? RightHand { get; set; }
-        public Inventory? Wielding { get; set; }    // Weapon
-        public List<Inventory> PlayerInventory { get; set; }   // Main inventory list.
-        public MapSpace? Location { get; set; }     
-
+        /// <summary>
+        /// Weapon
+        /// </summary>
+        public Inventory? Wielding { get; set; } 
+        /// <summary>
+        /// Main inventory list.
+        /// </summary>
+        public List<Inventory> PlayerInventory { get; set; } 
+        /// <summary>
+        /// Current map space occupied
+        /// </summary>
+        public MapSpace? Location { get; set; } 
         /// <summary>
         /// Calculates user experience level based on experience points.
         /// </summary>
