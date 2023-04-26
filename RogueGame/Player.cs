@@ -17,6 +17,9 @@ namespace RogueGame
         public const char CHARACTER = '☺';          // Display character
         public const int INVENTORY_LIMIT = 50;      // Maximum items in inventory
 
+        /// <summary>
+        /// Player's hunger stages. Decrement to increase hunger.
+        /// </summary>
         public enum HungerLevel
         {            
             Satisfied = 4,

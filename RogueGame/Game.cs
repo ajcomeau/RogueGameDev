@@ -36,6 +36,9 @@ namespace RogueGame
         private const int FAINT_PCT = 33;   // Probability of fainting at any given point when FAINT
         private const int MAX_TURN_LOSS = 5;  // Maximum turns to lose when fainting, etc..
 
+        /// <summary>
+        /// Lists modes to be used for displaying different screens.
+        /// </summary>
         public enum DisplayMode {
             //DevMode = 0,
             Titles = 1,
@@ -64,11 +67,17 @@ namespace RogueGame
         // Random number generator
         public static Random rand = new Random();
 
+        /// <summary>
+        /// Read-only property to return current status message.
+        /// </summary>
         public string StatusMessage
         {
             get { return cStatus; }
         }
 
+        /// <summary>
+        /// Get current player stats display.
+        /// </summary>
         public string StatsDisplay()
         {
             string retValue = "";
@@ -84,7 +93,7 @@ namespace RogueGame
                 retValue += $"Turn: {CurrentTurn}  ";
                 retValue += $"Exp: {CurrentPlayer.ExperienceLevel()}/{CurrentPlayer.Experience}";
 
-
+                
                 if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied)
                     retValue += $"  {CurrentPlayer.HungerState}     ";
             }
@@ -94,12 +103,15 @@ namespace RogueGame
             return retValue;
         }
 
-
+        /// <summary>
+        /// Primary constructor for starting new game.
+        /// </summary>
+        /// <param name="PlayerName"></param>
         public Game(string PlayerName) {
 
             // Setup a new game with a map and a player.
             // Put the player on the map and set the opening status.
-
+            
             this.CurrentLevel = 1;
 
             // Generate the new map and shroud it.
@@ -120,8 +132,15 @@ namespace RogueGame
 
             // Set the current screen display.
             this.ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
+          
         }
 
+        /// <summary>
+        /// Method for responding to key presses.
+        /// </summary>
+        /// <param name="KeyVal">ASCII value of key pressed.</param>
+        /// <param name="Shift">If SHIFT is held down.</param>
+        /// <param name="Control">If CTRL is held down.</param>
         public void KeyHandler(int KeyVal, bool Shift, bool Control)
         {
             // Process whatever key is sent by the form.
@@ -260,6 +279,9 @@ namespace RogueGame
 
         }
 
+        /// <summary>
+        /// Carries out necessary actions to finish the turn.
+        /// </summary>
         private void CompleteTurn()
         {
             do
@@ -283,6 +305,12 @@ namespace RogueGame
             } while (CurrentPlayer.Immobile > CurrentTurn);
         }
 
+        /// <summary>
+        /// Centers a text string for display.
+        /// </summary>
+        /// <param name="Text">Text to be centered.</param>
+        /// <param name="Spaces">Total number of spaces in displayed string.</param>
+        /// <returns></returns>
         private string CenterString(string Text, int Spaces)
         {
             // Center the string provided within the specified
@@ -306,8 +334,12 @@ namespace RogueGame
             return retValue;
         }
 
+        /// <summary>
+        /// Returns help screen text.
+        /// </summary>
+        /// <returns></returns>
         private string HelpScreen()
-        {            
+        {
             return "\n\nArrows - movement\n\n" +
                 "d - drop inventory\n\n" +
                 "e - eat\n\n" +
@@ -316,9 +348,15 @@ namespace RogueGame
                 "F - Fast Play mode ON / OFF\n\n" +
                 "> - go down a staircase\n\n" +
                 "< - go up a staircase(requires Amulet from level 26)\n\n" +
-                "ESC - return to map.";
+                "ESC - return to map.\n\n" +
+                "CTRL-D - Developer mode.  See entire map.\n" +
+                "CTRL-N - Change out map for new one in dev mode.";
         }
         
+        /// <summary>
+        /// Creates and returns R.I.P. screen.
+        /// </summary>
+        /// <returns></returns>
         private string RIPScreen()
         {
             string endingCause = "";
@@ -351,6 +389,9 @@ namespace RogueGame
 
         }
 
+        /// <summary>
+        /// Evaluate and adjust all player stats at end of turn.
+        /// </summary>
         private void EvaluatePlayer()
         {
             // If the player's scheduled to get hungry on the current turn, update the properties.
@@ -383,6 +424,9 @@ namespace RogueGame
 
         }
 
+        /// <summary>
+        /// Bring up inventory screen for viewing.
+        /// </summary>
         private void DisplayInventory()
         {
             // Switch the screen to the player's inventory.
@@ -394,6 +438,9 @@ namespace RogueGame
                 ScreenDisplay += line.Description + "\n";
         }
 
+        /// <summary>
+        /// Restore current map after viewing another screen.
+        /// </summary>
         private void RestoreMap()
         {
             // Restore the map display.
@@ -404,6 +451,9 @@ namespace RogueGame
             }
         }
 
+        /// <summary>
+        /// Search surrounding area for hidden items and display them.
+        /// </summary>
         private void SearchForHidden()
         {
             // Search for hiden items and reveal them if found.
@@ -430,6 +480,10 @@ namespace RogueGame
                 cStatus = "";
         }
 
+        /// <summary>
+        /// Change the current map level number.
+        /// </summary>
+        /// <param name="Change"></param>
         private void ChangeLevel(int Change)
         {
             bool allowPass = false;
@@ -462,6 +516,9 @@ namespace RogueGame
 
         }
 
+        /// <summary>
+        /// Dev mode: Change out current map for a new one.
+        /// </summary>
         private void ReplaceMap()
         {
             // Dev mode only - replace the map for testing.
@@ -469,6 +526,11 @@ namespace RogueGame
             CurrentPlayer.Location = CurrentMap.AddCharacterToMap(Player.CHARACTER);
         }
 
+        /// <summary>
+        /// Move character in specified direction.
+        /// </summary>
+        /// <param name="player">Player object to be moved</param>
+        /// <param name="direct">Direction enumeration reference</param>
         public void MoveCharacter(Player player, MapLevel.Direction direct)
         {
             char visibleCharacter;
@@ -493,9 +555,6 @@ namespace RogueGame
                 {
                     // Move the character.
                     player.Location = CurrentMap.MoveDisplayItem(player.Location, adjacent[direct]);
-                    Thread.Sleep(100);
-                    ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
-                    Application.DoEvents();
 
                     // If this is a doorway, determine if the room is lighted.
                     if (player.Location.MapCharacter == MapLevel.ROOM_DOOR)
@@ -525,6 +584,12 @@ namespace RogueGame
             } while (!foundItem && CanAutoMove(player.Location, adjacent[direct]));
         }
 
+        /// <summary>
+        /// In Fast Play, evaluate the next space in a given direciton for moving.
+        /// </summary>
+        /// <param name="Origin">Starting or current space</param>
+        /// <param name="Target">Target space</param>
+        /// <returns></returns>
         private bool CanAutoMove(MapSpace Origin, MapSpace Target)
         {
             // Determine if the player can keep moving in the
@@ -540,6 +605,9 @@ namespace RogueGame
         
         }
 
+        /// <summary>
+        /// Retrieve gold from map and add it to the player's purse.
+        /// </summary>
         private void PickUpGold()
         {
             // Add the gold at the current location to the player's purse and remove
@@ -548,10 +616,14 @@ namespace RogueGame
             CurrentPlayer.Gold += goldAmt;
             CurrentPlayer.Location!.ItemCharacter = null;
             cStatus = $"You picked up {goldAmt} pieces of gold.";
-
         }
 
 
+        /// <summary>
+        /// Eat specified food.
+        /// </summary>
+        /// <param name="ListItem">Selected list item</param>
+        /// <returns>True / False indicating if item was eaten</returns>
         private bool Eat(char? ListItem)
         {
             bool retValue = false;
@@ -618,6 +690,11 @@ namespace RogueGame
             return retValue;
         }
 
+        /// <summary>
+        /// Drop specified inventory on map.
+        /// </summary>
+        /// <param name="ListItem">Selected item to be dropped</param>
+        /// <returns>True / False indicating success</returns>
         private bool DropInventory(char? ListItem)
         {
             bool retValue = false;
@@ -666,6 +743,10 @@ namespace RogueGame
             return retValue;
         }
 
+        /// <summary>
+        /// Add found items to player's inventory.
+        /// </summary>
+        /// <returns>Display string with description of item.</returns>
         private string AddInventory()
         {
             // Inventory management.
