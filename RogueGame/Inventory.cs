@@ -322,6 +322,7 @@ namespace RogueGame
             // Signle function to create inventory listing description for item and 
             // handle all the grammatical adjustments.
 
+            string increments = "";
             string retValue = "";
 
             switch (Item.ItemCategory)
@@ -360,6 +361,38 @@ namespace RogueGame
                 default:
                     retValue = Item.RealName;
                     break;
+            }
+
+            if (Item.IsIdentified)
+            {
+                // Add increments if there are any.
+                switch (Item.ItemCategory)
+                {
+                    case InvCategory.Ring:
+                        if (Item.Increment != 0) increments = Item.Increment.ToString("+0;-#");
+                        break;
+                    case InvCategory.Armor:
+                        increments += $"class {Item.ArmorClass} ";
+                        if (Item.Increment != 0) increments += Item.Increment.ToString("+0;-#");
+                        break;
+                    case InvCategory.Wand:
+                    case InvCategory.Staff:
+                    case InvCategory.Weapon:
+                    case InvCategory.Ammunition:
+                        if (Item.Increment != 0) increments = Item.Increment.ToString("+0;-#") + " ";
+                        increments += Item.AccIncrement.ToString("+0;-#") + " ";
+                        increments += Item.DmgIncrement.ToString("+0;-#");
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (increments.Length > 0)
+            {
+                increments = increments.TrimEnd();
+                increments = $" ({increments})";
+                retValue += increments;
             }
 
             return retValue;
