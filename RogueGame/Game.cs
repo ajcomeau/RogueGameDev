@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
@@ -795,8 +796,10 @@ namespace RogueGame
         private string AddInventory()
         {
             // Inventory management.
-
+            // TODO: Ammunition should be added in batches.
             Inventory foundItem;
+            List<Inventory> tempInventory = CurrentPlayer.PlayerInventory;
+            
 
             string retValue = "";
 
@@ -818,27 +821,24 @@ namespace RogueGame
             }
             else if (CurrentPlayer.Location!.MapInventory != null)
             {
-                // For everything else, pick it up if it can fit in inventory.
-                if(CurrentPlayer.PlayerInventory.Count < Player.INVENTORY_LIMIT)
-                {
-                    CurrentPlayer.Location!.ItemCharacter = null;                    
-                    
-                    if (CurrentPlayer.Location.MapInventory != null)
-                    {
-                        foundItem = CurrentPlayer.Location.MapInventory;
+                // Identify the found item.
+                foundItem = CurrentPlayer.Location.MapInventory;
 
-                        //TODO:  This will need to be changed based on item ident status.
-                        retValue = $"You picked up {foundItem.CodeName}.";                        
-                        
-                        // Move the Inventory reference to the player's inventory.
-                        CurrentPlayer.PlayerInventory.Add(foundItem);
-                        CurrentPlayer.Location.MapInventory = null;
-                    } 
+                // Copy the item to the player's inventory.
+                CurrentPlayer.PlayerInventory.Add(foundItem);
+
+                // If the additional inventory fits within the limit, keep the item.
+                // Otherwise, remove it.
+                if(Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory).Count <= Player.INVENTORY_LIMIT)
+                {
+                    //TODO:  This will need to be changed based on item identified status.
+                    retValue = $"You picked up {foundItem.CodeName}.";
+                    CurrentPlayer.Location.MapInventory = null;
                 }
                 else
                 {
-                    // Notify the player if inventory is full.
-                    retValue = "You can't pick that up; your inventory is full.";
+                    CurrentPlayer.PlayerInventory.Remove(foundItem);
+                    retValue = "The item won't fit in your inventory.";
                 }
             }
 

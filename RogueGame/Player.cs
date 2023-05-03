@@ -33,7 +33,7 @@ namespace RogueGame
         /// <summary>
         /// Maximum items in inventory
         /// </summary>
-        public const int INVENTORY_LIMIT = 50;
+        public const int INVENTORY_LIMIT = 20;
         /// <summary>
         /// Player's hunger stages. Decrement to increase hunger.
         /// </summary>
@@ -157,13 +157,27 @@ namespace RogueGame
         /// <param name="PlayerName"></param>
         public Player(string PlayerName) {
 
-            // Create a new player object.
+            // Create a new player object
             var rand = new Random();
             this.PlayerName = PlayerName;
             this.PlayerInventory = new List<Inventory>();
             this.Gold = 0;
             this.Experience = 1;
-            this.HungerTurn = rand.Next(Inventory.MIN_FOODVALUE, Inventory.MAX_FOODVALUE + 1); 
+            this.HungerTurn = rand.Next(Inventory.MIN_FOODVALUE, Inventory.MAX_FOODVALUE + 1);
+
+            // Add inventory items
+            this.PlayerInventory.Add(Inventory.GetInventoryItem("some food")!);
+            this.PlayerInventory.Add(Inventory.GetInventoryItem("studded leather armor")!);
+            this.PlayerInventory.Add(Inventory.GetInventoryItem("a mace")!);
+            this.PlayerInventory.Add(Inventory.GetInventoryItem("a short bow")!);
+
+            // Add batch of arrows
+            for (int i = 1; i < rand.Next(1, Inventory.MAX_AMMO_BATCH + 1); i++)
+                this.PlayerInventory.Add(Inventory.GetInventoryItem("an arrow")!);
+
+            // Check for null items in list and remove
+            this.PlayerInventory = this.PlayerInventory.Where(x => x != null).ToList();
+
         }
 
 

@@ -44,8 +44,13 @@ namespace RogueGame
         /// </summary>
         private static List<Inventory> invItems = new List<Inventory>()
         {
-            new Inventory(InvCategory.Food, 1, "some food", "some food", "rations of food", '♣', 95, null),
-            new Inventory(InvCategory.Food, 2, "a mango", "a mango", "mangoes", '♣', 95, null)
+            new Inventory(InvCategory.Food, 1, "some food", "some food", "rations of food", '♣', 20, null),
+            new Inventory(InvCategory.Food, 2, "a mango", "a mango", "mangoes", '♣', 20, null),
+            new Inventory(InvCategory.Armor, 3, "studded leather armor", "studded leather armor", "studded leather armor", true, false, false, false, 3, 1, 0, 0, 0, 0, 0, 15, '◘', null, null, null),
+            new Inventory(InvCategory.Weapon, 4, "a mace", "a mace", "a mace", true, false, true, false, 0, 0, 1, 1, 2, 8, -3, 10, '↑', null, null, null),
+            new Inventory(InvCategory.Weapon, 5, "a short bow", "a short bow", "a short bow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑', null, null, null),
+            new Inventory(InvCategory.Ammunition, 6, "an arrow", "an arrow", "arrows", true, true, true, false, 0, 0, 0, 0, 1, 1, 3, 10, '↑', null, null, null)
+
         };
 
 
@@ -60,7 +65,8 @@ namespace RogueGame
         /// <summary>
         /// Minimum turns gained from food ration.
         /// </summary>
-        public const int MIN_FOODVALUE = 900; 
+        public const int MIN_FOODVALUE = 900;
+        public const int MAX_AMMO_BATCH = 15;
         /// <summary>
         /// Item category from enumeration
         /// </summary>
@@ -120,7 +126,11 @@ namespace RogueGame
         /// <summary>
         /// Maximum damage for weapon
         /// </summary>
-        public int MaxDamage { get; set; } 
+        public int MaxDamage { get; set; }
+        /// <summary>
+        /// Positive or negative bonus for weapon when thrown rather than wielded.
+        /// </summary>
+        public int ThrowingBonus { get; set; }
         /// <summary>
         /// Probability of item being generated when selected randomly.
         /// </summary>
@@ -160,6 +170,7 @@ namespace RogueGame
         /// <param name="AccuracyInc">Accuracy increment</param>
         /// <param name="MinDamage">For weapons - minimum damage inflicted</param>
         /// <param name="MaxDamage">For weapons - maximum damage inflicted</param>
+        /// <param name="ThrowingBonus">Positive or negative bonus for weapon when thrown rather than wielded.</param>
         /// <param name="AppearancePct">Probability percentage of item being on map</param>
         /// <param name="DisplayChar">Symbol used for display</param>
         /// <param name="mainFunction">Delegate function for primary use</param>
@@ -167,7 +178,7 @@ namespace RogueGame
         /// <param name="Zap">Delegate function for staffs and wands</param>
         public Inventory(InvCategory InvType, int PriorityID, string CodeName, string RealName, string PluralName, bool Identified,
             bool Groupable, bool Wieldable, bool Cursed, int ArmorClass, int Increment, int DamageInc, int AccuracyInc,
-            int MinDamage, int MaxDamage, int AppearancePct, char DisplayChar, Func<Player, Inventory?, bool>? mainFunction, 
+            int MinDamage, int MaxDamage, int ThrowingBonus, int AppearancePct, char DisplayChar, Func<Player, Inventory?, bool>? mainFunction, 
             Func<Player, MapLevel.Direction, bool>? Throw = null, Func<Player, MapLevel.Direction, bool>? Zap = null)
         {
             // Apply parameters
@@ -186,6 +197,7 @@ namespace RogueGame
             this.AccIncrement = AccuracyInc;
             this.MinDamage = MinDamage;
             this.MaxDamage = MaxDamage;
+            this.ThrowingBonus = ThrowingBonus;
             this.AppearancePct = AppearancePct;
             this.DisplayCharacter = DisplayChar;
             this.MainFunction = mainFunction;
@@ -285,7 +297,7 @@ namespace RogueGame
                 lines.Add(new InventoryLine { Count = 1, InvItem = invEntry });
 
             // Order new list by item category.
-            lines = lines.OrderBy(x => x.InvItem.ItemCategory).ToList();
+            lines = lines.OrderBy(x => x.InvItem.PriorityId).ToList();
 
             // Call the ListingDescription function to get a finished description.
             foreach (InventoryLine line in lines)
@@ -329,6 +341,9 @@ namespace RogueGame
                 case InvCategory.Ammunition:
                     retValue = Number == 1 ? "1 " + Item.RealName : Number.ToString() + " " + Item.PluralName;
                     break;
+                case InvCategory.Weapon:
+                    retValue = Item.RealName;
+                    break;
                 case InvCategory.Ring:
                 case InvCategory.Scroll:
                 case InvCategory.Wand:
@@ -343,12 +358,27 @@ namespace RogueGame
                     break;
 
                 default:
-                    retValue = "A" + Item.RealName;
+                    retValue = Item.RealName;
                     break;
             }
 
             return retValue;
 
+        }
+
+        /// <summary>
+        /// Get a specific inventory item by name from the list of templates.
+        /// </summary>
+        /// <param name="ItemName">Real name of item.</param>
+        /// <returns></returns>
+        public static Inventory? GetInventoryItem(string ItemName)
+        {
+            
+            List<Inventory> retList = (from Inventory item in InventoryItems
+                        where item.RealName == ItemName
+                        select item).ToList();
+
+            if (retList.Count > 0) return retList[0]; else return null;
         }
 
         /// <summary>
