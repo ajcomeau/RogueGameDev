@@ -1,5 +1,7 @@
 # RogueGameDev
 
+If you like this project and would like to support it, just [buy me a coffee](https://www.buymeacoffee.com/acomeau)!
+
 4/22/2023 - Food collection and hunger now works.  Eating is necessary for survival and the game includes an R.I.P. screen.  The following keys now work and I'll be adding a help screen this week.
 ```
 Arrows - movement
