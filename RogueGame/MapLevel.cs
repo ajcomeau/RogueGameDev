@@ -797,7 +797,7 @@ namespace RogueGame{
         /// Find a random space within one of the rooms that hasn't been occupied 
         /// and add the player or monster.
         /// </summary>
-        /// <param name="MapChar"></param>
+        /// <param name="MapChar">Character to be added to map.</param>
         /// <returns></returns>
         public MapSpace AddCharacterToMap(char MapChar)
         {

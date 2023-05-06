@@ -172,7 +172,7 @@ namespace RogueGame
             this.PlayerInventory.Add(Inventory.GetInventoryItem("a short bow")!);
 
             // Add batch of arrows
-            for (int i = 1; i < rand.Next(1, Inventory.MAX_AMMO_BATCH + 1); i++)
+            for (int i = 1; i <= rand.Next(1, Inventory.MAX_AMMO_BATCH + 1); i++)
                 this.PlayerInventory.Add(Inventory.GetInventoryItem("an arrow")!);
 
             // Check for null items in list and remove

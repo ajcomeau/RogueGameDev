@@ -823,7 +823,7 @@ namespace RogueGame
             {
                 // Identify the found item.
                 foundItem = CurrentPlayer.Location.MapInventory;
-
+                
                 // Copy the item to the player's inventory.
                 CurrentPlayer.PlayerInventory.Add(foundItem);
 

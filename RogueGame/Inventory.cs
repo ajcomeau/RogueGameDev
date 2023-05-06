@@ -39,7 +39,7 @@ namespace RogueGame
 
         /// <summary>
         /// Item templates - program grabs these at random to create new inventory on map.
-        /// PriorityID values must be unique. These will be used to identify the item elsewhere and to order the
+        /// PriorityID values MUST BE UNIQUE. These will be used to identify the item elsewhere and to order the
         /// items in the inventory listing.
         /// </summary>
         private static List<Inventory> invItems = new List<Inventory>()
@@ -263,26 +263,20 @@ namespace RogueGame
         public static List<InventoryLine> InventoryDisplay(List<Inventory> PlayerInventory)
         {
             char charID = 'a';
+            string preferredName = "";
 
             // Get the player's current inventory in a grouped format.
 
             List<InventoryLine> lines = new List<InventoryLine>();
 
-            // Get groupable identified inventory.
+            // Get groupable inventory.
             var groupedInventory =
                 (from invEntry in PlayerInventory
-                    where invEntry.IsGroupable && invEntry.IsIdentified
-                    group invEntry by invEntry.RealName into itemGroup
+                    where invEntry.IsGroupable
+                    group invEntry by invEntry.PriorityId into itemGroup
                     select itemGroup).ToList();
 
-            // Add groupable non-identified inventory.
-            groupedInventory.Concat(
-                from invEntry in PlayerInventory
-                where invEntry.IsGroupable && !invEntry.IsIdentified
-                group invEntry by invEntry.CodeName into itemGroup
-                select itemGroup).ToList();
-
-            // Get non-groupable identified
+            // Get non-groupable inventory.
             var individualItems =
                 (from invEntry in PlayerInventory
                     where !invEntry.IsGroupable
@@ -290,7 +284,8 @@ namespace RogueGame
 
             // Create a unique list of grouped items and count of each.
             foreach (var itemGroup in groupedInventory)
-                lines.Add(new InventoryLine { Count = itemGroup.Count(), InvItem = itemGroup.First() });
+                lines.Add(new InventoryLine { Count = itemGroup.Count(), 
+                    InvItem = itemGroup.First() });
 
             // Add non-grouped items.
             foreach (var invEntry in individualItems)
