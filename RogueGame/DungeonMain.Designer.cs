@@ -55,7 +55,7 @@
             lblStats.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             lblStats.AutoSize = true;
             lblStats.Font = new Font("Consolas", 14F, FontStyle.Bold, GraphicsUnit.Point);
-            lblStats.Location = new Point(13, 700);
+            lblStats.Location = new Point(13, 767);
             lblStats.Margin = new Padding(4, 0, 4, 0);
             lblStats.Name = "lblStats";
             lblStats.Size = new Size(80, 22);
@@ -70,7 +70,7 @@
             lblArray.Location = new Point(0, 0);
             lblArray.Margin = new Padding(4, 0, 4, 0);
             lblArray.Name = "lblArray";
-            lblArray.Size = new Size(1096, 731);
+            lblArray.Size = new Size(1156, 798);
             lblArray.TabIndex = 10;
             // 
             // pnlName
@@ -79,7 +79,7 @@
             pnlName.Controls.Add(btnStart);
             pnlName.Controls.Add(txtName);
             pnlName.Controls.Add(lblQuestion);
-            pnlName.Location = new Point(118, 644);
+            pnlName.Location = new Point(118, 711);
             pnlName.Name = "pnlName";
             pnlName.Size = new Size(727, 44);
             pnlName.TabIndex = 11;
@@ -117,7 +117,7 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Black;
-            ClientSize = new Size(1096, 731);
+            ClientSize = new Size(1156, 798);
             Controls.Add(pnlName);
             Controls.Add(lblStats);
             Controls.Add(lblStatusMsg);
