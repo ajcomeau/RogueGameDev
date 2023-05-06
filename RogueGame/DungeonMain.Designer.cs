@@ -52,9 +52,10 @@
             // 
             // lblStats
             // 
+            lblStats.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             lblStats.AutoSize = true;
             lblStats.Font = new Font("Consolas", 14F, FontStyle.Bold, GraphicsUnit.Point);
-            lblStats.Location = new Point(13, 624);
+            lblStats.Location = new Point(13, 700);
             lblStats.Margin = new Padding(4, 0, 4, 0);
             lblStats.Name = "lblStats";
             lblStats.Size = new Size(80, 22);
@@ -69,23 +70,24 @@
             lblArray.Location = new Point(0, 0);
             lblArray.Margin = new Padding(4, 0, 4, 0);
             lblArray.Name = "lblArray";
-            lblArray.Size = new Size(997, 655);
+            lblArray.Size = new Size(1096, 731);
             lblArray.TabIndex = 10;
             // 
             // pnlName
             // 
+            pnlName.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             pnlName.Controls.Add(btnStart);
             pnlName.Controls.Add(txtName);
             pnlName.Controls.Add(lblQuestion);
-            pnlName.Location = new Point(176, 567);
+            pnlName.Location = new Point(118, 644);
             pnlName.Name = "pnlName";
-            pnlName.Size = new Size(655, 44);
+            pnlName.Size = new Size(727, 44);
             pnlName.TabIndex = 11;
             // 
             // btnStart
             // 
             btnStart.BackColor = SystemColors.ActiveCaptionText;
-            btnStart.Location = new Point(533, 9);
+            btnStart.Location = new Point(548, 9);
             btnStart.Name = "btnStart";
             btnStart.Size = new Size(75, 23);
             btnStart.TabIndex = 2;
@@ -97,17 +99,16 @@
             // 
             txtName.BackColor = SystemColors.ControlText;
             txtName.ForeColor = Color.FromArgb(255, 128, 0);
-            txtName.Location = new Point(239, 10);
+            txtName.Location = new Point(265, 10);
             txtName.Name = "txtName";
             txtName.Size = new Size(277, 23);
             txtName.TabIndex = 1;
             // 
             // lblQuestion
             // 
-            lblQuestion.AutoSize = true;
             lblQuestion.Location = new Point(17, 13);
             lblQuestion.Name = "lblQuestion";
-            lblQuestion.Size = new Size(216, 17);
+            lblQuestion.Size = new Size(242, 21);
             lblQuestion.TabIndex = 0;
             lblQuestion.Text = "What is your rogue's name?";
             // 
@@ -116,7 +117,7 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Black;
-            ClientSize = new Size(997, 655);
+            ClientSize = new Size(1096, 731);
             Controls.Add(pnlName);
             Controls.Add(lblStats);
             Controls.Add(lblStatusMsg);
