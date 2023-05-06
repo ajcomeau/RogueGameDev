@@ -33,7 +33,7 @@ namespace RogueGame
         /// <summary>
         /// Maximum items in inventory
         /// </summary>
-        public const int INVENTORY_LIMIT = 20;
+        public const int INVENTORY_LIMIT = 21;
         /// <summary>
         /// Player's hunger stages. Decrement to increase hunger.
         /// </summary>
@@ -179,8 +179,5 @@ namespace RogueGame
             this.PlayerInventory = this.PlayerInventory.Where(x => x != null).ToList();
 
         }
-
-
-
     }
 }

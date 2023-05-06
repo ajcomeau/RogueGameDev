@@ -744,7 +744,7 @@ namespace RogueGame
         private bool DropInventory(char? ListItem)
         {
             bool retValue = false;
-            List<Inventory> items;
+            List<InventoryLine> items;
 
             if (GameMode != DisplayMode.Inventory)
             {
@@ -756,17 +756,34 @@ namespace RogueGame
             {
                 items = (from InventoryLine in Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
                     where InventoryLine.ID == ListItem
-                    select InventoryLine.InvItem).ToList();
+                    select InventoryLine).ToList();
                 
                 if (items.Count > 0)
                 {
                     if(CurrentPlayer.Location!.MapInventory == null)
                     {
-                        CurrentPlayer.Location.MapInventory = items[0];
-                        CurrentPlayer.PlayerInventory.Remove(items[0]);
+                        if (items[0].InvItem.ItemCategory == Inventory.InvCategory.Ammunition
+                            && items[0].InvItem.IsGroupable)
+                        {
+                            // We're dropping the entire batch so update the amount.
+                            items[0].InvItem.Amount = items[0].Count;
+                            // For ammunition, remove all items from the slot.
+                            CurrentPlayer.PlayerInventory =
+                                CurrentPlayer.PlayerInventory.Where(x => x.RealName != items[0].InvItem.RealName).ToList();
+                                                        
+                            cStatus = $"You dropped {Inventory.ListingDescription(items[0].Count, items[0].InvItem)}.";
+
+                        }
+                        else
+                        {
+                            items[0].InvItem.Amount = 1;
+                            CurrentPlayer.PlayerInventory.Remove(items[0].InvItem);
+                            cStatus = $"You dropped {Inventory.ListingDescription(1, items[0].InvItem)}.";
+                        }
+
+                        CurrentPlayer.Location.MapInventory = items[0].InvItem;
                         RestoreMap();
-                        retValue = true;
-                        cStatus = $"The item has been removed from inventory.";
+                        retValue = true;                        
                     }
                     else
                     {
@@ -796,43 +813,29 @@ namespace RogueGame
         private string AddInventory()
         {
             // Inventory management.
-            // TODO: Ammunition should be added in batches.
-            Inventory foundItem;
-            List<Inventory> tempInventory = CurrentPlayer.PlayerInventory;
-            
+            int itemAmount = 1;
+            Inventory foundItem;            
+            List<Inventory> tempInventory = CurrentPlayer.PlayerInventory;            
 
             string retValue = "";
 
-            // If the player found the Amulet ...
-            // TODO: Change this after the Amulet has been added as an inventory item. 
-            if(CurrentPlayer.Location!.ItemCharacter == MapLevel.AMULET)
-            {
-                CurrentPlayer.HasAmulet = true;
-                CurrentPlayer.Location!.ItemCharacter = null;
-
-                // Add it to the inventory.
-                if(CurrentPlayer.Location.MapInventory != null)
-                {
-                    CurrentPlayer.PlayerInventory.Add(CurrentPlayer.Location.MapInventory);
-                    CurrentPlayer.Location.MapInventory = null;
-                }
-                
-                retValue = "You found the Amulet of Yendor!  It has been added to your inventory.";
-            }
-            else if (CurrentPlayer.Location!.MapInventory != null)
+            if (CurrentPlayer.Location!.MapInventory != null)
             {
                 // Identify the found item.
                 foundItem = CurrentPlayer.Location.MapInventory;
                 
-                // Copy the item to the player's inventory.
-                CurrentPlayer.PlayerInventory.Add(foundItem);
-
                 // If the additional inventory fits within the limit, keep the item.
-                // Otherwise, remove it.
-                if(Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory).Count <= Player.INVENTORY_LIMIT)
+                // Otherwise, remove it.                
+                if(Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory).Count + 1 <= Player.INVENTORY_LIMIT)
                 {
-                    //TODO:  This will need to be changed based on item identified status.
-                    retValue = $"You picked up {foundItem.CodeName}.";
+                    // When the item is actually added, it needs to be a single item.
+                    itemAmount = foundItem.Amount;
+                    foundItem.Amount = 1;
+                    // Move the item to the player's inventory.
+                    for (int i = 1; i <= itemAmount; i++)
+                        CurrentPlayer.PlayerInventory.Add(Inventory.GetInventoryItem(foundItem.RealName)!);
+
+                    retValue = $"You picked up {Inventory.ListingDescription(itemAmount, foundItem)}.";
                     CurrentPlayer.Location.MapInventory = null;
                 }
                 else
@@ -840,6 +843,14 @@ namespace RogueGame
                     CurrentPlayer.PlayerInventory.Remove(foundItem);
                     retValue = "The item won't fit in your inventory.";
                 }
+
+                // If the player found the Amulet ...
+                if (foundItem.DisplayCharacter == MapLevel.AMULET)
+                {
+                    CurrentPlayer.HasAmulet = true;
+                    retValue = "You found the Amulet of Yendor!  It has been added to your inventory.";
+                }
+
             }
 
             return retValue;

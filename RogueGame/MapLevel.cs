@@ -387,6 +387,11 @@ namespace RogueGame{
                 // Place the inventory according to its chances of showing up.
                 if (rand.Next(1, 101) <= invItem.AppearancePct)
                 {
+                    // For ammunition that's groupable, decide how many items are in the batch.
+                    if (invItem.ItemCategory == Inventory.InvCategory.Ammunition 
+                        && invItem.IsGroupable)
+                        invItem.Amount = rand.Next(1, Inventory.MAX_AMMO_BATCH + 1);
+
                     invX = westWallX; invY = northWallY;
                     itemSpace = levelMap[invX, invY];
 
@@ -824,8 +829,7 @@ namespace RogueGame{
 
             List<MapSpace> spaces = FindOpenSpaces(false);
             select = spaces[rand.Next(0, spaces.Count)];
-            //TODO: This will be changed when the amulet is made an inventory item.
-            select.ItemCharacter = AMULET;
+            select.MapInventory = Inventory.GetInventoryItem("The Amulet");
             return select;
         }
 

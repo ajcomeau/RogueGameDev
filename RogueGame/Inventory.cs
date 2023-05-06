@@ -7,6 +7,7 @@ using System.Linq;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 
 namespace RogueGame
 {
@@ -49,10 +50,9 @@ namespace RogueGame
             new Inventory(InvCategory.Armor, 3, "studded leather armor", "studded leather armor", "studded leather armor", true, false, false, false, 3, 1, 0, 0, 0, 0, 0, 15, '◘', null, null, null),
             new Inventory(InvCategory.Weapon, 4, "a mace", "a mace", "a mace", true, false, true, false, 0, 0, 1, 1, 2, 8, -3, 10, '↑', null, null, null),
             new Inventory(InvCategory.Weapon, 5, "a short bow", "a short bow", "a short bow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑', null, null, null),
-            new Inventory(InvCategory.Ammunition, 6, "an arrow", "an arrow", "arrows", true, true, true, false, 0, 0, 0, 0, 1, 1, 3, 10, '↑', null, null, null)
-
+            new Inventory(InvCategory.Ammunition, 6, "an arrow", "an arrow", "arrows", true, true, true, false, 0, 0, 0, 0, 1, 1, 3, 10, '↑', null, null, null),
+            new Inventory(InvCategory.Amulet, 7, "The Amulet", "The Amulet", "The Amulet", true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 0, MapLevel.AMULET, null, null, null)
         };
-
 
         /// <summary>
         /// Read-only collection of inventory templates.
@@ -94,10 +94,11 @@ namespace RogueGame
         /// <summary>
         /// Can more than one of these fit in an inventory slot?
         /// </summary>
-        public bool IsGroupable { get; set; } 
+        public bool IsGroupable { get; set; }
         /// <summary>
-        /// Can it be used as a weapon?
+        /// How many items are there in the batch?
         /// </summary>
+        public int Amount { get; set; } = 1;
         public bool IsWieldable { get; set; } 
         /// <summary>
         /// Is the item cursed?
@@ -152,6 +153,37 @@ namespace RogueGame
         /// </summary>
         public Func<Player, Inventory?, bool>? MainFunction { get; set; }
 
+        /// <summary>
+        /// Clone a new object off of another. To be used with inventory object templates.
+        /// </summary>
+        /// <param name="Original">Original object to be cloned.</param>
+        /// <returns></returns>
+        public Inventory(Inventory Original)
+        {        
+            this.ItemCategory = Original.ItemCategory;
+            this.PriorityId = Original.PriorityId;
+            this.CodeName = Original.CodeName;
+            this.RealName = Original.RealName;
+            this.PluralName = Original.PluralName;
+            this.IsIdentified = Original.IsIdentified;
+            this.IsGroupable = Original.IsGroupable;
+            this.IsWieldable = Original.IsWieldable;
+            this.IsCursed = Original.IsCursed;
+            this.ArmorClass = Original.ArmorClass;
+            this.Increment = Original.Increment;
+            this.AccIncrement = Original.AccIncrement;
+            this.DmgIncrement = Original.DmgIncrement;
+            this.MinDamage = Original.MinDamage;
+            this.MaxDamage = Original.MaxDamage;
+            this.ThrowingBonus = Original.ThrowingBonus;
+            this.AppearancePct = Original.AppearancePct;
+            this.DisplayCharacter = Original.DisplayCharacter;
+            this.ThrowFunction = Original.ThrowFunction;
+            this.ZapFunction = Original.ZapFunction;
+            this.MainFunction = Original.MainFunction;
+        }
+
+        // TODO:  Create category-specific constructors.
         /// <summary>
         /// Constructor for creating inventory item from scratch.
         /// </summary>
@@ -263,7 +295,6 @@ namespace RogueGame
         public static List<InventoryLine> InventoryDisplay(List<Inventory> PlayerInventory)
         {
             char charID = 'a';
-            string preferredName = "";
 
             // Get the player's current inventory in a grouped format.
 
@@ -303,7 +334,6 @@ namespace RogueGame
             }
 
             return lines;
-
         }
 
         /// <summary>
@@ -325,17 +355,12 @@ namespace RogueGame
                 // Make adjustments by inventory category.
                 case InvCategory.Food:
                     if (Number == 1)
-                    {
-                        if (Item.RealName == "some food")
-                            retValue = Item.RealName;
-                        else
-                            retValue = "1 " + Item.RealName;
-                    }
+                        retValue = Item.RealName;
                     else
                         retValue = Number.ToString() + " " + Item.PluralName;
                     break;
                 case InvCategory.Ammunition:
-                    retValue = Number == 1 ? "1 " + Item.RealName : Number.ToString() + " " + Item.PluralName;
+                    retValue = Number == 1 ? Item.RealName : Number.ToString() + " " + Item.PluralName;
                     break;
                 case InvCategory.Weapon:
                     retValue = Item.RealName;
@@ -406,7 +431,8 @@ namespace RogueGame
                         where item.RealName == ItemName
                         select item).ToList();
 
-            if (retList.Count > 0) return retList[0]; else return null;
+            // Clone a new object from template.
+            if (retList.Count > 0) return new Inventory(retList[0]); else return null;
         }
 
         /// <summary>
@@ -420,8 +446,9 @@ namespace RogueGame
             List<Inventory> invSelect = (from Inventory item in InventoryItems
                                             where item.ItemCategory == InvType
                                             select item).ToList();
-            
-            return invSelect[rand.Next(invSelect.Count)]; 
+
+            // Clone a new object from template.
+            return new Inventory(invSelect[rand.Next(invSelect.Count)]); 
         }
 
         /// <summary>
@@ -431,10 +458,10 @@ namespace RogueGame
         public static Inventory GetInventoryItem()
         {
             // TODO:  Omit amulet from this list when it's implemented. It will be added separately.
-            // Get a random item from the inventory templates.
-            return InventoryItems[rand.Next(InventoryItems.Count)];
-        }
 
+            // Clone a new object from template.
+            return new Inventory(InventoryItems[rand.Next(InventoryItems.Count)]);
+        }
     }
 
     /// <summary>
