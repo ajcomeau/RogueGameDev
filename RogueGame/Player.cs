@@ -33,7 +33,7 @@ namespace RogueGame
         /// <summary>
         /// Maximum items in inventory
         /// </summary>
-        public const int INVENTORY_LIMIT = 21;
+        public const int INVENTORY_LIMIT = 20;
         /// <summary>
         /// Player's hunger stages. Decrement to increase hunger.
         /// </summary>
@@ -178,6 +178,18 @@ namespace RogueGame
             // Check for null items in list and remove
             this.PlayerInventory = this.PlayerInventory.Where(x => x != null).ToList();
 
+        }
+
+        /// <summary>
+        /// Search the player's inventory for a specific item.
+        /// </summary>
+        /// <param name="ItemName">Real name of item.</param>
+        /// <returns></returns>
+        public bool SearchInventory(string ItemName)
+        {
+            return (from Inventory item in PlayerInventory
+                    where item.RealName == ItemName
+                    select item).Count() > 0;
         }
     }
 }

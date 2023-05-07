@@ -772,7 +772,6 @@ namespace RogueGame
                                 CurrentPlayer.PlayerInventory.Where(x => x.RealName != items[0].InvItem.RealName).ToList();
                                                         
                             cStatus = $"You dropped {Inventory.ListingDescription(items[0].Count, items[0].InvItem)}.";
-
                         }
                         else
                         {
@@ -814,6 +813,7 @@ namespace RogueGame
         {
             // Inventory management.
             int itemAmount = 1;
+            bool addToInventory = false;
             Inventory foundItem;            
             List<Inventory> tempInventory = CurrentPlayer.PlayerInventory;            
 
@@ -823,10 +823,18 @@ namespace RogueGame
             {
                 // Identify the found item.
                 foundItem = CurrentPlayer.Location.MapInventory;
-                
+
+                // Determine if there's room in inventory for the item.
+
+                // If it's groupable and the player already has a slot for it, add it.
+                // Otherwise, if there's an extra slot available, add it.
+                addToInventory = (foundItem.IsGroupable && CurrentPlayer.SearchInventory(foundItem.RealName));
+                if (!addToInventory) addToInventory =
+                        Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory).Count + 1 <= Player.INVENTORY_LIMIT;
+
                 // If the additional inventory fits within the limit, keep the item.
                 // Otherwise, remove it.                
-                if(Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory).Count + 1 <= Player.INVENTORY_LIMIT)
+                if (addToInventory)
                 {
                     // When the item is actually added, it needs to be a single item.
                     itemAmount = foundItem.Amount;

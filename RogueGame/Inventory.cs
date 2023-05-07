@@ -66,6 +66,9 @@ namespace RogueGame
         /// Minimum turns gained from food ration.
         /// </summary>
         public const int MIN_FOODVALUE = 900;
+        /// <summary>
+        /// Maximum items in a batch of arrows or bolts
+        /// </summary>
         public const int MAX_AMMO_BATCH = 15;
         /// <summary>
         /// Item category from enumeration
