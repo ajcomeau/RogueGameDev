@@ -826,7 +826,7 @@ namespace RogueGame
 
                 // Determine if there's room in inventory for the item.
 
-                // If it's groupable and the player already has a slot for it, add it.
+                // If it's groupable and the player already has it in a slot, add it.
                 // Otherwise, if there's an extra slot available, add it.
                 addToInventory = (foundItem.IsGroupable && CurrentPlayer.SearchInventory(foundItem.RealName));
                 if (!addToInventory) addToInventory =
