@@ -17,8 +17,32 @@ namespace RogueGame
         /// </summary>
         private static List<Monster> monsterIncubator = new List<Monster>()
         {
+            new Monster("Aquator", 5, 40, 9, 7, 15, 25, 0, 0, 'A', 0, null, true, false),
+            new Monster("Bat", 1, 8, 2, 1, 8, 25, 1, 2, 'B', 0, null, true, false),
+            new Monster("Centaur", 4, 32, 6, 8, 17, 25, 2, 12, 'C', 0, null, true, false),
+            new Monster("Dragon", 10, 80, 10, 22, 26, 25, 5, 46, 'D', 0, null, true, false),
+            new Monster("Emu", 1, 8, 2, 2, 11, 25, 1, 2, 'E', 0, null, true, false),
+            new Monster("Flytrap", 8, 64, 9, 15, 20, 25, 0, 0, 'F', 0, null, true, false),
+            new Monster("Griffin", 13, 104, 9, 6, 15, 25, 0, 0, 'G', 0, null, true, false),
+            new Monster("Hobgoblin", 1, 8, 9, 1, 10, 25, 0, 0, 'H', 0, null, true, false),
+            new Monster("Ice Monster", 1, 8, 9, 3, 12, 25, 0, 0, 'I', 0, null, true, false),
+            new Monster("Jabberwock", 15, 120, 9, 20, 26, 25, 0, 0, 'J', 0, null, true, false),
             new Monster("Kestral", 1, 8, 2, 1, 6, 50, 1, 4, 'K', 0, null, true, false),
-            new Monster("Snake", 1, 8, 2, 1, 6, 50, 1, 3, 'S', 0, null, true, false)
+            new Monster("Leprechaun", 3, 24, 9, 7, 16, 25, 0, 0, 'L', 0, null, true, false),
+            new Monster("Medusa", 8, 64, 9, 19, 26, 25, 0, 0, 'M', 0, null, true, false),
+            new Monster("Nymph", 3, 24, 9, 11, 20, 25, 0, 0, 'N', 0, null, true, false),
+            new Monster("Orc", 1, 8, 9, 4, 13, 25, 0, 0, 'O', 0, null, true, false),
+            new Monster("Phantom", 8, 64, 9, 20, 26, 25, 0, 0, 'P', 0, null, true, false),
+            new Monster("Quagga", 3, 24, 9, 10, 19, 25, 0, 0, 'Q', 0, null, true, false),
+            new Monster("Rattlesnake", 2, 16, 9, 9, 18, 25, 0, 0, 'R', 0, null, true, false),
+            new Monster("Snake", 1, 8, 2, 1, 9, 50, 1, 3, 'S', 0, null, true, false),
+            new Monster("Troll", 6, 48, 9, 13, 22, 25, 0, 0, 'T', 0, null, true, false),
+            new Monster("Ur-vile", 7, 56, 9, 18, 26, 25, 0, 0, 'U', 0, null, true, false),
+            new Monster("Vampire", 8, 64, 9, 20, 26, 25, 0, 0, 'V', 0, null, true, false),
+            new Monster("Wraith", 5, 40, 9, 14, 23, 25, 0, 0, 'W', 0, null, true, false),
+            new Monster("Xeroc", 7, 56, 9, 17, 26, 25, 0, 0, 'X', 0, null, true, false),
+            new Monster("Yeti", 4, 32, 9, 12, 21, 25, 0, 0, 'Y', 0, null, true, false),
+            new Monster("Zombie", 2, 16, 9, 5, 14, 25, 0, 0, 'Z', 0, null, true, false),
         };
 
         /// <summary>

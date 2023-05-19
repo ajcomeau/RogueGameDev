@@ -26,7 +26,9 @@ namespace RogueGame{
         private Dictionary<MapSpace, Direction> deadEnds = 
             new Dictionary<MapSpace, Direction>();
 
-        // Box drawing constants and other symbols.
+        /// <summary>
+        /// Box drawing constants and other symbols.
+        /// </summary>
         private const char HORIZONTAL = '═';        // Unicode symbols can be copy-pasted from https://www.w3.org/TR/xml-entity-names/025.html.  
         private const char VERTICAL = '║';
         private const char CORNER_NW = '╔';
@@ -131,6 +133,9 @@ namespace RogueGame{
         public static List<char> GlideSpaces = new List<char>(){ROOM_INT, HORIZONTAL, VERTICAL, CORNER_NE,
                 CORNER_NW, CORNER_SE, CORNER_SW, HALLWAY, EMPTY};
 
+        /// <summary>
+        /// List of monsters on current map.
+        /// </summary>
         public List<Monster> ActiveMonsters = new List<Monster>();
 
         /// <summary>
