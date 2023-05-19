@@ -460,8 +460,6 @@ namespace RogueGame
         /// <returns></returns>
         public static Inventory GetInventoryItem()
         {
-            // TODO:  Omit amulet from this list when it's implemented. It will be added separately.
-
             // Clone a new object from template.
             return new Inventory(InventoryItems[rand.Next(InventoryItems.Count)]);
         }

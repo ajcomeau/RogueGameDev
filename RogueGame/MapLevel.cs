@@ -104,6 +104,10 @@ namespace RogueGame{
         /// Max gold amount per stash.
         /// </summary>
         public const int MAX_GOLD_AMT = 125;
+        /// <summary>
+        /// Probability of a monster appearing at any given point.
+        /// </summary>
+        public const int SPAWN_MONSTER = 90;
 
         /// <summary>
         /// List of characters that will be marked as Visible during map discovery.
@@ -127,6 +131,8 @@ namespace RogueGame{
         public static List<char> GlideSpaces = new List<char>(){ROOM_INT, HORIZONTAL, VERTICAL, CORNER_NE,
                 CORNER_NW, CORNER_SE, CORNER_SW, HALLWAY, EMPTY};
 
+        public List<Monster> ActiveMonsters = new List<Monster>();
+
         /// <summary>
         /// Array to hold map definition.
         /// </summary>
@@ -145,16 +151,18 @@ namespace RogueGame{
             get { return levelMap; }
         }
 
+        public int CurrentLevel { get; set; }
+
         /// <summary>
         /// Constructor - generate a new map for this level.
         /// </summary>
-        public MapLevel()
+        public MapLevel(int levelNumber)
         {
+            CurrentLevel = levelNumber;
             do
             {
                 MapGeneration();
-            } while (!VerifyMap());
-
+            } while (!VerifyMap());            
         }
 
 
@@ -280,7 +288,7 @@ namespace RogueGame{
 
             // Regions are defined 1 to 9, L to R, top to bottom.
             int regionNumber = GetRegionNumber(westWallX, northWallY);
-            int doorway = 0, doorCount = 0, goldX, goldY, invX, invY;
+            int doorway = 0, doorCount = 0, openX, openY;
 
             bool searchRequired;
 
@@ -288,6 +296,7 @@ namespace RogueGame{
             int maxInventoryItems = rand.Next(1, MAX_INVENTORY + 1);
             int mapInventory = 0;
             Inventory invItem;
+            Monster? spawned;
             MapSpace itemSpace;
 
             // Create horizontal and vertical walls for room.
@@ -364,19 +373,22 @@ namespace RogueGame{
             levelMap[westWallX, southWallY] = new MapSpace(CORNER_SW, false, false, westWallX, southWallY);
             levelMap[eastWallX, southWallY] = new MapSpace(CORNER_SE, false, false, eastWallX, southWallY);
 
+            // Set starting point to northwest corner
+            openX = westWallX; openY = northWallY;
+            itemSpace = levelMap[openX, openY];
+
             // Evaluate room for a gold deposit
-            if(rand.Next(1, 101) < ROOM_GOLD_PCT)
+            if (rand.Next(1, 101) < ROOM_GOLD_PCT)
             {
-                goldX = westWallX; goldY = northWallY;
                 // Search the room randomly for an empty interior room space
                 // and mark it as a gold deposit.
-                while (levelMap[goldX, goldY].MapCharacter != ROOM_INT)
+                while (levelMap[openX, openY].MapCharacter != ROOM_INT)
                 {
-                    goldX = rand.Next(westWallX + 1, eastWallX);
-                    goldY = rand.Next(northWallY + 1, southWallY);
+                    openX = rand.Next(westWallX + 1, eastWallX);
+                    openY = rand.Next(northWallY + 1, southWallY);
                 }
 
-                levelMap[goldX, goldY].ItemCharacter = GOLD;
+                levelMap[openX, openY].ItemCharacter = GOLD;
             }
 
             // Add up to the number of specified inventory items.
@@ -392,21 +404,43 @@ namespace RogueGame{
                         && invItem.IsGroupable)
                         invItem.Amount = rand.Next(1, Inventory.MAX_AMMO_BATCH + 1);
 
-                    invX = westWallX; invY = northWallY;
-                    itemSpace = levelMap[invX, invY];
-
                     // Look for an interior space that hasn't been used by gold.
                     while (itemSpace.MapCharacter != ROOM_INT || itemSpace.ItemCharacter != null)
                     {
-                        invX = rand.Next(westWallX + 1, eastWallX);
-                        invY = rand.Next(northWallY + 1, southWallY);
-                        itemSpace = levelMap[invX, invY];
+                        openX = rand.Next(westWallX + 1, eastWallX);
+                        openY = rand.Next(northWallY + 1, southWallY);
+                        itemSpace = levelMap[openX, openY];
                     }
                     
                     // Update the space and increment the count.
                     itemSpace.MapInventory = invItem;
 
                     mapInventory++;
+                }
+            }
+
+            // Add a monster to room based on probability.
+            if(rand.Next(1, 101) < SPAWN_MONSTER)
+            {
+                do
+                {
+                    spawned = Monster.SpawnMonster(CurrentLevel);
+                } while (spawned != null && rand.Next(1, 101) <= spawned.AppearancePct);
+
+                if (spawned != null)
+                {
+                    // Look for an interior space. Monsters can sit on top of
+                    // anything within the room.
+                    do
+                    {
+                        openX = rand.Next(westWallX + 1, eastWallX);
+                        openY = rand.Next(northWallY + 1, southWallY);
+                        itemSpace = levelMap[openX, openY];
+                    } while (itemSpace.MapCharacter != ROOM_INT);
+
+                    ActiveMonsters.Add(spawned);
+                    itemSpace.DisplayCharacter = spawned.DisplayCharacter;
+                    spawned.Location = itemSpace;
                 }
             }
         }
@@ -1092,7 +1126,7 @@ namespace RogueGame{
         /// </summary>
         public char? AltMapCharacter { get; set; }
         /// <summary>
-        /// Item sitting on map (potion, scroll, etc..).
+        /// Item sitting on map, usually gold.
         /// </summary>
         public char? ItemCharacter { get; set; }
         /// <summary>

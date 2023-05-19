@@ -161,7 +161,7 @@ namespace RogueGame
             this.CurrentLevel = 1;
 
             // Generate the new map and shroud it.
-            this.CurrentMap = new MapLevel();
+            this.CurrentMap = new MapLevel(CurrentLevel);
             this.CurrentMap.ShroudMap();
             
             // Put new player on map.
@@ -547,7 +547,7 @@ namespace RogueGame
 
             if (allowPass)
             {
-                CurrentMap = new MapLevel();
+                CurrentMap = new MapLevel(CurrentLevel);
                 CurrentMap.ShroudMap();
                 CurrentLevel += Change;
                 CurrentPlayer.Location = CurrentMap.AddCharacterToMap(Player.CHARACTER);
@@ -568,7 +568,7 @@ namespace RogueGame
         private void ReplaceMap()
         {
             // Dev mode only - replace the map for testing.
-            CurrentMap = new MapLevel();
+            CurrentMap = new MapLevel(CurrentLevel);
             CurrentPlayer.Location = CurrentMap.AddCharacterToMap(Player.CHARACTER);
         }
 

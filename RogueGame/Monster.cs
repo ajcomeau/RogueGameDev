@@ -3,10 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RogueLike
+namespace RogueGame
 {
     internal class Monster
     {
@@ -16,8 +17,8 @@ namespace RogueLike
         /// </summary>
         private static List<Monster> monsterIncubator = new List<Monster>()
         {
-            new Monster("Kestral", 1, 8, 2, 1, 6, 25, 1, 4, 'K', 0, null, true, false),
-            new Monster("Snake", 1, 8, 2, 1, 6, 25, 1, 3, 'S', 0, null, true, false)
+            new Monster("Kestral", 1, 8, 2, 1, 6, 50, 1, 4, 'K', 0, null, true, false),
+            new Monster("Snake", 1, 8, 2, 1, 6, 50, 1, 3, 'S', 0, null, true, false)
         };
 
         /// <summary>
@@ -172,8 +173,21 @@ namespace RogueLike
             this.Aggressive = original.Aggressive;
             this.CanRegenerate = original.CanRegenerate;
             this.MonsterInventory = new List<Inventory>();
-        }   
-    
-    
+        }
+
+
+        public static Monster? SpawnMonster(int LevelNumber)
+        {
+            int itemSelect = 0;
+
+            List<Monster> retList = (from Monster item in Monsters
+                                        where item.MinLevel <= 1 && item.MaxLevel >= LevelNumber
+                                        select item).ToList();
+
+            itemSelect = Game.rand.Next(0, retList.Count);
+            // Clone a new object from template.
+            if (retList.Count > 0) return new Monster(retList[itemSelect]); else return null;
+        }
+
     }
 }
