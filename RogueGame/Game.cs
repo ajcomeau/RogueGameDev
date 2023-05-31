@@ -657,9 +657,10 @@ namespace RogueGame
             // Up to 10 hit points damage.
             if (hitSuccess)
             {
-                cStatus = $"You hit the {Defender.MonsterName}.";
+                cStatus = $"You hit the {Defender.MonsterName.ToLower()}.";
                 damage = rand.Next(1, 11);
             }
+            else cStatus = $"You missed the {Defender.MonsterName.ToLower()}.";
 
             Defender.HPDamage += damage;
 
