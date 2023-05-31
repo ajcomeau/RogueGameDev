@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,7 +12,14 @@ namespace RogueGame
 {
     internal class Monster
     {
+        public enum Activity {
+            Resting = 0,
+            Wandering = 1,
+            Angered = 2
+        }
 
+        
+        
         /// <summary>
         /// Monster templates - program grabs these at random to spawn new monsters on map.
         /// </summary>
@@ -115,9 +123,13 @@ namespace RogueGame
         /// </summary>
         public bool Aggressive { get; set; }
         /// <summary>
-        /// Is the monster currently angry and persisting in an atack?
+        /// How likely is the monster to rest on a turn?
         /// </summary>
-        public bool Angered { get; set; } = false;
+        public int Inertia { get; set; }        
+        /// <summary>
+        /// What is the monster's current activity level?
+        /// </summary>
+        public Activity CurrentState { get; set; } = Activity.Resting;
         /// <summary>
         /// Can the monster regenerate hit points?
         /// </summary>
@@ -132,6 +144,10 @@ namespace RogueGame
         /// Inventory
         public List<Inventory> MonsterInventory { get; set; }
         public MapSpace? Location { get; set; }
+        public MapSpace? Destination { get; set; }
+        public MapLevel.Direction? Direction { get; set; }
+
+
 
         /// <summary>
         /// Main constructor for creating monster from scratch with defaults.
@@ -196,7 +212,7 @@ namespace RogueGame
             this.SpecialAttack = original.SpecialAttack;
             this.Aggressive = original.Aggressive;
             this.CanRegenerate = original.CanRegenerate;
-            this.MonsterInventory = new List<Inventory>();
+            this.MonsterInventory = new List<Inventory>();            
         }
 
 

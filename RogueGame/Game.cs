@@ -50,7 +50,8 @@ namespace RogueGame
         /// <summary>
         /// Maximum turns to lose when fainting, etc..
         /// </summary>
-        private const int MAX_TURN_LOSS = 5; 
+        private const int MAX_TURN_LOSS = 5;
+        private const int MAX_PURSUIT = 7;
         /// <summary>
         /// Lists modes to be used for displaying different screens.
         /// </summary>
@@ -102,7 +103,6 @@ namespace RogueGame
         /// Delgate used to return to function that enables an inventory item to be used.
         /// </summary>
         public Func<char?, bool>? ReturnFunction { get; set; } 
-
         /// <summary>
         /// Status message for top of screen.
         /// </summary>
@@ -334,7 +334,8 @@ namespace RogueGame
             {
                 // Perform whatever actions needed to complete turn
                 // (i.e. monster moves)
-
+                foreach (Monster monster in CurrentMap.ActiveMonsters)
+                    MoveMonster(monster);
 
                 // Then, evaluate the player's current condition.
                 EvaluatePlayer();
@@ -580,7 +581,7 @@ namespace RogueGame
         public void MoveCharacter(Player player, MapLevel.Direction direct)
         {
             char visibleCharacter;
-            bool canMove, foundItem = false;
+            bool canMove, foundItem = false, turnComplete = false;
             Dictionary<MapLevel.Direction, MapSpace> adjacent =
                 CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
@@ -619,15 +620,131 @@ namespace RogueGame
                             cStatus = AddInventory();
                     }
 
-                    // Complete the turn actions.
-                    CompleteTurn();
+                    // Player turn completed.
+                    turnComplete = true;
                 }
+                else if (adjacent[direct].DisplayCharacter != null)
+                {
+                    Monster opponent = (from Monster monster in CurrentMap.ActiveMonsters
+                                                  where monster.Location == adjacent[direct]
+                                                  select monster).First();
+
+                    Attack(CurrentPlayer, opponent);
+
+                    // Player turn completed.
+                    turnComplete = true;
+                }
+
+                // Complete turn if indicated.
+                if (turnComplete) { CompleteTurn(); }
 
                 // Determine if player can move automatically on FastPlay.  Three or more adjacent
                 // hallway spaces indicate a junction which needs to stop FastPlay.
                 adjacent = CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
             } while (!foundItem && CanAutoMove(player.Location, adjacent[direct]));
+        }
+
+        private void Attack(Player Attacker, Monster Defender)
+        {
+
+            // Basic attack method to get monsters out of the way.  In progress.
+
+            // Start with a 50% chance of landing a punch.
+            bool hitSuccess = rand.Next(1, 101) > 50;
+            int damage = 0;
+
+            // Up to 10 hit points damage.
+            if (hitSuccess)
+            {
+                cStatus = $"You hit the {Defender.MonsterName}.";
+                damage = rand.Next(1, 11);
+            }
+
+            Defender.HPDamage += damage;
+
+            // If the monster has been defeated, remove it from the map.
+            if(Defender.CurrentHP < 1)
+            {
+                if(Defender.Location != CurrentPlayer.Location)
+                    CurrentMap.LevelMap[Defender.Location!.X, Defender.Location.Y].DisplayCharacter = null;
+
+                CurrentMap.ActiveMonsters.Remove(Defender);
+                cStatus = $"You defeated the {Defender.MonsterName}.";
+            }
+        }
+
+        public void MoveMonster(Monster monster)
+        {
+            char visibleCharacter;
+            int tentativeDistance;
+            MapLevel.Direction direct, direct90, direct270;
+            MapSpace destinationSpace = monster.Location!;
+
+            // Move monster if possible.
+
+            // Get adjacent spacees.
+            Dictionary<MapLevel.Direction, MapSpace> adjacent =
+                CurrentMap.SearchAdjacent(monster.Location!.X, monster.Location.Y);
+
+            // Get the current distance of the player from the monster.
+            int playerDistance = Math.Abs(CurrentPlayer.Location!.X - monster.Location.X) 
+                + Math.Abs(CurrentPlayer.Location.Y - monster.Location.Y);
+
+            // If the monster has not chosen a direction, find out if the player is near.
+            if (playerDistance <= MAX_PURSUIT && monster.Aggressive)
+            {
+                // If the player is within pursuit distance, search the adjacent spaces
+                // for one that's available and closest to the player.
+                foreach (KeyValuePair<MapLevel.Direction, MapSpace> adjSpace in adjacent)
+                {
+                    if (MapLevel.SpacesAllowed.Contains(adjSpace.Value.PriorityChar()))
+                    {
+                        tentativeDistance = Math.Abs(adjSpace.Value.X - CurrentPlayer.Location.X) 
+                            + Math.Abs(adjSpace.Value.Y - CurrentPlayer.Location.Y);
+
+                        // If the next space is closer, set it as the new destination.
+                        if (tentativeDistance < Math.Abs(CurrentPlayer.Location.X - destinationSpace.X)
+                            + Math.Abs(CurrentPlayer.Location.Y - destinationSpace.Y))
+                        {
+                            destinationSpace = adjSpace.Value;
+                            monster.Direction = adjSpace.Key;
+                        }
+                    }
+                }
+            }
+
+            // If the monster is still feeling aimless, just pick one except 'None'.
+            if(monster.Direction == null)
+            {
+                do
+                {
+                    monster.Direction = (MapLevel.Direction)rand.Next(-2, 3);
+                } while (monster.Direction == MapLevel.Direction.None);
+            }
+
+            // Get relative directions to monster's choice.
+            direct = (MapLevel.Direction)monster.Direction!;
+            direct90 = CurrentMap.GetDirection90(direct);
+            direct270 = CurrentMap.GetDirection270(direct);
+
+            // Inspect target character
+            visibleCharacter = adjacent[direct].PriorityChar();
+
+            // The monster can move if the visible character is within a room or a hallway and there's no monster there.
+            if (MapLevel.SpacesAllowed.Contains(visibleCharacter) || adjacent[direct].ContainsItem())
+                monster.Location = CurrentMap.MoveDisplayItem(monster.Location, adjacent[direct]);
+            else
+            {
+                if (adjacent[direct].DisplayCharacter != null && monster.Aggressive)
+                    // The monster just tried to run into the player.  For now, just change direction.
+                    // TODO:  This might need to result in an attack.
+                    monster.Direction = rand.Next(1, 101) > 50 ? direct270 : direct90;
+                else
+                    // Change direction.
+                    monster.Direction = rand.Next(1, 101) > 50 ? direct270 : direct90;
+            }
+                
         }
 
         /// <summary>

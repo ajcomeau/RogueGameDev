@@ -170,8 +170,6 @@ namespace RogueGame{
             } while (!VerifyMap());            
         }
 
-
-
         /// <summary>
         /// Verify that the generate map is free of isolated rooms or sections.
         /// </summary>
@@ -637,7 +635,7 @@ namespace RogueGame{
         /// </summary>
         /// <param name="startingDirection"></param>
         /// <returns></returns>
-        private Direction GetDirection90(Direction startingDirection)
+        public Direction GetDirection90(Direction startingDirection)
         {
             Direction retValue = (Math.Abs((int)startingDirection) == 1) ? (Direction)2 : (Direction)1;
             return retValue;
@@ -648,7 +646,7 @@ namespace RogueGame{
         /// </summary>
         /// <param name="startingDirection"></param>
         /// <returns></returns>
-        private Direction GetDirection270(Direction startingDirection)
+        public Direction GetDirection270(Direction startingDirection)
         {
             Direction retValue = (Math.Abs((int)startingDirection) == 1) ? (Direction)2 : (Direction)1;
             retValue = (Direction)((int)retValue * -1);
@@ -1068,7 +1066,7 @@ namespace RogueGame{
             MapSpace playerSpace = PlayerLocation;
             List<MapSpace> surroundingSpaces = GetSurrounding(playerSpace.X, playerSpace.Y);
             int playerRegion = GetRegionNumber(playerSpace.X, playerSpace.Y);
-            char? priorityChar;
+            char? priorityChar, appendChar;
             bool inRoom = false;    
 
             // Iterate through the two-dimensional array and use StringBuilder to 
@@ -1085,30 +1083,24 @@ namespace RogueGame{
                     inRoom = (GetRegionNumber(x, y) == playerRegion &&
                                 (RoomInterior.Contains(playerSpace.MapCharacter)));
 
+                    // If the space is within one space of the character, show standard priority character.  
+                    appendChar = surroundingSpaces.Contains(levelMap[x, y]) ? priorityChar : null;
+
                     // If the space is set to visible
-                    if (levelMap[x, y].Visible)
+                    if (appendChar == null && levelMap[x, y].Visible)
                     {
                         // If the player is in the room, or the space represents the player,
                         // show the standard priority character. Otherwise, just show the map character.
-                        if (inRoom || levelMap[x, y] == playerSpace)
-                            sbReturn.Append(priorityChar);
+                        if (inRoom)
+                            appendChar = priorityChar;
                         else
-                        { 
-                            if(levelMap[x, y].SearchRequired)
-                                sbReturn.Append(levelMap[x, y].AltMapCharacter);
-                            else
-                                sbReturn.Append(levelMap[x, y].MapCharacter);
-                        }
+                            appendChar = (levelMap[x, y].SearchRequired) ?
+                                levelMap[x, y].AltMapCharacter : levelMap[x, y].MapCharacter;
                     }
-                    else
-                    {
-                        // If the space is not visible but within one space of the character.
-                        // Show standard priority character.  Otherwise show blank space.
-                        if (surroundingSpaces.Contains(levelMap[x, y]))
-                            sbReturn.Append(priorityChar);
-                        else
-                            sbReturn.Append(' ');
-                    }
+
+                    if(appendChar == null) { appendChar = ' '; }
+
+                    sbReturn.Append(appendChar);
                 }
 
                 sbReturn.Append("\n");     // Start new line.           
