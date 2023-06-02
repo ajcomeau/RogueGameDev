@@ -177,7 +177,7 @@ namespace RogueGame
             cStatus = $"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ... (Press ? for list of commands.)";
 
             // Set the current screen display.
-            this.ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location);
+            this.ScreenDisplay = DevMode ? this.CurrentMap.MapCheck(CurrentPlayer.Location) : this.CurrentMap.MapText(CurrentPlayer.Location);
           
         }
 
@@ -312,7 +312,7 @@ namespace RogueGame
 
             // Display the appropriate map mode.
             if (GameMode == DisplayMode.Primary)
-                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText(CurrentPlayer.Location!);
+                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck(CurrentPlayer.Location!) : this.CurrentMap.MapText(CurrentPlayer.Location!);
 
             switch (GameMode)
             {
@@ -494,7 +494,7 @@ namespace RogueGame
             if (GameMode == DisplayMode.Inventory || GameMode == DisplayMode.Help)
             {
                 GameMode = DisplayMode.Primary;
-                ScreenDisplay = DevMode ? CurrentMap.MapCheck() : CurrentMap.MapText(CurrentPlayer.Location);
+                ScreenDisplay = DevMode ? CurrentMap.MapCheck(CurrentPlayer.Location!) : CurrentMap.MapText(CurrentPlayer.Location!);
             }
         }
 
@@ -596,12 +596,12 @@ namespace RogueGame
 
                 // The player can move if the visible character is within a room or a hallway and there's no monster there.
                 canMove = (MapLevel.SpacesAllowed.Contains(visibleCharacter) || adjacent[direct].ContainsItem()) &&
-                    adjacent[direct].DisplayCharacter == null;
+                    CurrentMap.DetectMonster(adjacent[direct]) == null;
 
                 if (canMove)
                 {
                     // Move the character.
-                    player.Location = CurrentMap.MoveDisplayItem(player.Location, adjacent[direct]);
+                    player.Location = adjacent[direct];
 
                     // If this is a doorway, determine if the room is lighted.
                     if (player.Location.MapCharacter == MapLevel.ROOM_DOOR)
@@ -623,7 +623,7 @@ namespace RogueGame
                     // Player turn completed.
                     turnComplete = true;
                 }
-                    else if (adjacent[direct].DisplayCharacter != null)
+                    else if (CurrentMap.DetectMonster(adjacent[direct]) != null)
                     {
                         Monster opponent = (from Monster monster in CurrentMap.ActiveMonsters
                                                         where monster.Location == adjacent[direct]
@@ -667,9 +667,6 @@ namespace RogueGame
             // If the monster has been defeated, remove it from the map.
             if(Defender.CurrentHP < 1)
             {
-                if(Defender.Location != CurrentPlayer.Location)
-                    CurrentMap.LevelMap[Defender.Location!.X, Defender.Location.Y].DisplayCharacter = null;
-
                 CurrentMap.ActiveMonsters.Remove(Defender);
                 cStatus = $"You defeated the {Defender.MonsterName.ToLower()}.";
             }
@@ -679,12 +676,16 @@ namespace RogueGame
         {
             char visibleCharacter;
             int tentativeDistance;
+            bool timeToMove, canMove;
             MapLevel.Direction direct, direct90, direct270;
             MapSpace destinationSpace = monster.Location!;
 
             // Move monster if possible.
 
-            if(rand.Next(1,101) >= monster.Inertia)
+            timeToMove = (monster.CurrentState == Monster.Activity.Wandering ||
+                rand.Next(1, 101) >= monster.Inertia);
+
+            if (timeToMove)
             {
                 // Get adjacent spacees.
                 Dictionary<MapLevel.Direction, MapSpace> adjacent =
@@ -736,19 +737,29 @@ namespace RogueGame
 
                 // The monster can move if the visible character is within a room or a hallway
                 // and there's no monster there.
-                if (MapLevel.SpacesAllowed.Contains(visibleCharacter) || adjacent[direct].ContainsItem())
-                    monster.Location = CurrentMap.MoveDisplayItem(monster.Location, adjacent[direct]);
+
+                canMove = 
+                    (MapLevel.SpacesAllowed.Contains(visibleCharacter) || adjacent[direct].ContainsItem())
+                    & adjacent[direct] != CurrentPlayer.Location
+                    & CurrentMap.DetectMonster(adjacent[direct]) == null;
+
+                if (canMove)
+                    monster.Location = adjacent[direct];
                 else
                 {
-                    if (adjacent[direct].DisplayCharacter != null && monster.Aggressive)
+                    if (CurrentMap.DetectMonster(adjacent[direct]) != null && monster.Aggressive)
                         // The monster just tried to run into the player.  For now, just change direction.
                         // TODO:  This might need to result in an attack.
                         monster.Direction = rand.Next(1, 101) > 50 ? direct270 : direct90;
-                    else
-                        // Change direction.
+                    else { 
+                        // Change direction and decide on a current state.
                         monster.Direction = rand.Next(1, 101) > 50 ? direct270 : direct90;
+                        if (rand.Next(1, 101) < monster.Inertia) { monster.CurrentState = Monster.Activity.Resting; }
                 }
-            }                
+                }
+            }
+
+
         }
 
         /// <summary>
@@ -764,7 +775,7 @@ namespace RogueGame
             // and the same map character as the current space.
             // If the player is in a hallway, they must stop at any junctions.
             return FastPlay
-                & Target.DisplayCharacter == null // No monster
+                & CurrentMap.DetectMonster(Target) == null // No monster
                 & !Target.ContainsItem()  
                 & Target.MapCharacter == Origin.MapCharacter 
                 & MapLevel.SpacesAllowed.Contains(Target.PriorityChar())

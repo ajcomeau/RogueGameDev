@@ -442,7 +442,6 @@ namespace RogueGame{
                     } while (itemSpace.MapCharacter != ROOM_INT);
 
                     ActiveMonsters.Add(spawned);
-                    itemSpace.DisplayCharacter = spawned.DisplayCharacter;
                     spawned.Location = itemSpace;
                 }
             }
@@ -459,32 +458,11 @@ namespace RogueGame{
             Dictionary<Direction, MapSpace> surroundingChars = new Dictionary<Direction, MapSpace>();
             bool hallwayDug = false;
 
-            // Grab a copy of the deadEnds collection so we can do a final pass at the end.
-            Dictionary<MapSpace, Direction> deadEndsCopy = new Dictionary<MapSpace, Direction>(deadEnds);
-
             // Iterate through the list of hallway endings (deadends) until all are resolved one way or another.
             // Count backwards so we can remove processed items.
 
-            // If there are doors on more than one side, the hallway is already connected.
-            for (int i = deadEnds.Count - 1; i >= 0; i--)
-            {
-                hallwaySpace = deadEnds.ElementAt(i).Key;
-
-                if (SearchAdjacent(ROOM_DOOR, hallwaySpace.X, hallwaySpace.Y).Count > 1)
-                    deadEnds.Remove(hallwaySpace);
-            }
-
             while (deadEnds.Count > 0)
             {
-                // If there's a neighboring hallway space, this one is already connected.
-                for (int i = deadEnds.Count - 1; i >= 0; i--)
-                {
-                    hallwaySpace = deadEnds.ElementAt(i).Key;
-
-                    if (SearchAdjacent(HALLWAY, hallwaySpace.X, hallwaySpace.Y).Count > 1)
-                        deadEnds.Remove(hallwaySpace);
-                }
-
                 for (int i = deadEnds.Count - 1; i >= 0; i--)
                 {
                     // Establish current space and three directions - forward and to the sides.
@@ -759,6 +737,22 @@ namespace RogueGame{
             return retValue;
         }
 
+        /// <summary>
+        /// Search for a monster at a specific location based on the locations
+        /// recorded in the ActiveMonsters list.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public Monster? DetectMonster(MapSpace Location)
+        {
+            Monster? foundMonster = (from Monster monster in ActiveMonsters
+                                    where monster.Location!.X == Location.X
+                                    && monster.Location.Y == Location.Y
+                                    select monster).FirstOrDefault();
+            
+            return foundMonster;
+        }
 
         /// <summary>
         /// Return a list of all spaces around given space in eight directions.
@@ -777,52 +771,13 @@ namespace RogueGame{
         }
 
         /// <summary>
-        /// Return the mapspace containing the player.
-        /// </summary>
-        /// <returns></returns>
-        public MapSpace FindPlayer()
-        {
-            MapSpace playerSpace = (from MapSpace space in levelMap
-                                        where space.DisplayCharacter == Player.CHARACTER
-                                        select space).First();
-
-            return playerSpace;
-        }
-
-        /// <summary>
-        /// Return a list of all monsters and the player by checking the display character.
-        /// </summary>
-        /// <returns></returns>
-        public List<MapSpace> FindAllOccupants()
-        {
-            List<MapSpace> occupants = (from MapSpace space in levelMap
-                                            where space.DisplayCharacter != null
-                                            select space).ToList();
-
-            return occupants;
-        }
-
-        /// <summary>
-        /// Return a list of all items on the map by checking the item character.
-        /// </summary>
-        /// <returns></returns>
-        public List<MapSpace> FindAllItems()
-        {
-            List<MapSpace> items = (from MapSpace space in levelMap
-                                        where space.ItemCharacter != null || space.MapInventory != null
-                                        select space).ToList();
-            
-            return items;
-        }
-
-        /// <summary>
         /// Return a list of all open spaces on the map by checking the map character.
         /// </summary>
         /// <param name="hallways"></param>
         /// <returns></returns>
         public List<MapSpace> FindOpenSpaces(bool hallways)
         {
-
+            // TODO:  This needs to be updated to remove search of DisplayCharacter.
             string charList = hallways ? (HALLWAY.ToString() + ROOM_INT.ToString()) : ROOM_INT.ToString();
 
             List<MapSpace> spaces = (from MapSpace space in levelMap
@@ -843,17 +798,8 @@ namespace RogueGame{
         /// <returns></returns>
         public MapSpace AddCharacterToMap(char MapChar)
         {
-            MapSpace select;
-
-            List<MapSpace> spaces = FindOpenSpaces(false);
-            
-            select = spaces[rand.Next(0, spaces.Count)];                 
-
-            // If the character is for the player or a monster, add
-            // it to the Display character. Otherwise, use the item character.
-            select.DisplayCharacter = MapChar;
-
-            return select;
+            List<MapSpace> spaces = FindOpenSpaces(false);            
+            return spaces[rand.Next(0, spaces.Count)]; 
         }
 
         /// <summary>
@@ -868,20 +814,6 @@ namespace RogueGame{
             select = spaces[rand.Next(0, spaces.Count)];
             select.MapInventory = Inventory.GetInventoryItem("The Amulet");
             return select;
-        }
-
-        /// <summary>
-        /// Change the display character for the specified map space and return the reference as a confirmation.
-        /// </summary>
-        /// <param name="Start"></param>
-        /// <param name="Destination"></param>
-        /// <returns></returns>
-        public MapSpace MoveDisplayItem(MapSpace Start, MapSpace Destination)
-        {
-            levelMap[Destination.X, Destination.Y].DisplayCharacter = Start.DisplayCharacter;
-            levelMap[Start.X, Start.Y].DisplayCharacter = null;
-
-            return Destination;
         }
 
         /// <summary>
@@ -1024,10 +956,14 @@ namespace RogueGame{
         /// For Dev mode. Output the array to text for display with no alternate characters and everything visible.
         /// </summary>
         /// <returns></returns>
-        public string MapCheck()
+        public string MapCheck(MapSpace PlayerLocation)
         { 
             StringBuilder sbReturn = new StringBuilder();
             char? priorityChar;
+
+            // Refresh monster and player positions.  Better to do it here, once, than
+            // throughout the program.
+            RefreshCharacterLocations(PlayerLocation);
 
             // Iterate through the two-dimensional array and use StringBuilder to 
             // concatenate the proper characters into rows and columns for display.
@@ -1042,7 +978,7 @@ namespace RogueGame{
                     else if (levelMap[x, y].ItemCharacter != null)
                         priorityChar = levelMap[x, y].ItemCharacter;
                     else if (levelMap[x, y].MapInventory != null)
-                        priorityChar = levelMap[x, y].MapInventory.DisplayCharacter;
+                        priorityChar = levelMap[x, y].MapInventory!.DisplayCharacter;
                     else
                         priorityChar = levelMap[x, y].MapCharacter;
 
@@ -1055,6 +991,21 @@ namespace RogueGame{
             return sbReturn.ToString();
         }
 
+        public void RefreshCharacterLocations(MapSpace PlayerLocation)
+        {
+            // Refresh monster and player positions.
+            for (int y = 0; y <= MAP_HT; y++)
+                for (int x = 0; x <= MAP_WD; x++)
+                    levelMap[x, y].DisplayCharacter = null;
+
+            // Put player on map.
+            levelMap[PlayerLocation.X, PlayerLocation.Y].DisplayCharacter = Player.CHARACTER;
+
+            // Place monsters.
+            foreach (Monster monster in ActiveMonsters)
+                levelMap[monster.Location!.X, monster.Location.Y].DisplayCharacter = monster.DisplayCharacter;
+        }
+
         /// <summary>
         /// Output the array to text for display.
         /// </summary>
@@ -1063,11 +1014,14 @@ namespace RogueGame{
         public string MapText(MapSpace PlayerLocation)
         {
             StringBuilder sbReturn = new StringBuilder();
-            MapSpace playerSpace = PlayerLocation;
-            List<MapSpace> surroundingSpaces = GetSurrounding(playerSpace.X, playerSpace.Y);
-            int playerRegion = GetRegionNumber(playerSpace.X, playerSpace.Y);
+            List<MapSpace> surroundingSpaces = GetSurrounding(PlayerLocation.X, PlayerLocation.Y);
+            int playerRegion = GetRegionNumber(PlayerLocation.X, PlayerLocation.Y);
             char? priorityChar, appendChar;
-            bool inRoom = false;    
+            bool inRoom = false;
+
+            // Refresh monster and player positions.  Better to do it here, once, than
+            // throughout the program.
+            RefreshCharacterLocations(PlayerLocation);
 
             // Iterate through the two-dimensional array and use StringBuilder to 
             // concatenate the proper characters into rows and columns for display.
@@ -1081,7 +1035,7 @@ namespace RogueGame{
 
                     // Determine if player is actually in the room.
                     inRoom = (GetRegionNumber(x, y) == playerRegion &&
-                                (RoomInterior.Contains(playerSpace.MapCharacter)));
+                                (RoomInterior.Contains(PlayerLocation.MapCharacter)));
 
                     // If the space is within one space of the character, show standard priority character.  
                     appendChar = surroundingSpaces.Contains(levelMap[x, y]) ? priorityChar : null;
@@ -1101,7 +1055,7 @@ namespace RogueGame{
                         }
                     }
 
-                    if(appendChar == null) { appendChar = ' '; }
+                    if (appendChar == null) { appendChar = ' '; }
 
                     sbReturn.Append(appendChar);
                 }
