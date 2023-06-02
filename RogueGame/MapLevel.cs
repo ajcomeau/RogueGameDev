@@ -1087,15 +1087,18 @@ namespace RogueGame{
                     appendChar = surroundingSpaces.Contains(levelMap[x, y]) ? priorityChar : null;
 
                     // If the space is set to visible
-                    if (appendChar == null && levelMap[x, y].Visible)
+                    if (appendChar == null)
                     {
-                        // If the player is in the room, or the space represents the player,
-                        // show the standard priority character. Otherwise, just show the map character.
-                        if (inRoom)
-                            appendChar = priorityChar;
-                        else
-                            appendChar = (levelMap[x, y].SearchRequired) ?
-                                levelMap[x, y].AltMapCharacter : levelMap[x, y].MapCharacter;
+                        if (levelMap[x, y].Visible)
+                        {
+                            // If the player is in the room, or the space represents the player,
+                            // show the standard priority character. Otherwise, just show the map character.
+                            if (inRoom)
+                                appendChar = priorityChar;
+                            else
+                                appendChar = (levelMap[x, y].SearchRequired) ?
+                                    levelMap[x, y].AltMapCharacter : levelMap[x, y].MapCharacter;
+                        }
                     }
 
                     if(appendChar == null) { appendChar = ' '; }

@@ -25,32 +25,32 @@ namespace RogueGame
         /// </summary>
         private static List<Monster> monsterIncubator = new List<Monster>()
         {
-            new Monster("Aquator"       , 5, 40, 5, 7, 15, 50, 0, 0, 'A', 0, null, true, false),
-            new Monster("Bat"           , 1, 8, 2, 1, 5, 50, 1, 2, 'B', 0, null, true, false),
-            new Monster("Centaur"       , 4, 32, 5, 8, 17, 50, 3, 12, 'C', 0, null, true, false),
-            new Monster("Dragon"        , 10, 80, 10, 22, 26, 50, 5, 46, 'D', 0, null, true, false),
-            new Monster("Emu"           , 1, 8, 2, 2, 11, 50, 1, 2, 'E', 0, null, true, false),
-            new Monster("Flytrap"       , 8, 64, 9, 15, 20, 50, 0, 0, 'F', 0, null, true, false),
-            new Monster("Griffin"       , 13, 104, 5, 6, 15, 50, 7, 27, 'G', 0, null, true, false),
-            new Monster("Hobgoblin"     , 1, 8, 3, 1, 10, 50, 1, 8, 'H', 0, null, true, false),
-            new Monster("Ice Monster"   , 1, 8, 2, 3, 12, 50, 0, 0, 'I', 0, null, true, false),
-            new Monster("Jabberwock"    , 15, 120, 9, 20, 26, 50, 4, 32, 'J', 0, null, true, false),
-            new Monster("Kestral"       , 1, 8, 2, 1, 6, 50, 1, 4, 'K', 0, null, true, false),
-            new Monster("Leprechaun"    , 3, 24, 5, 7, 16, 50, 1, 1, 'L', 0, null, true, false),
-            new Monster("Medusa"        , 8, 64, 5, 19, 26, 50, 8, 34, 'M', 0, null, true, false),
-            new Monster("Nymph"         , 3, 24, 5, 11, 20, 50, 0, 0, 'N', 0, null, true, false),
-            new Monster("Orc"           , 1, 8, 3, 4, 13, 50, 1, 8, 'O', 0, null, true, false),
-            new Monster("Phantom"       , 8, 64, 9, 20, 26, 50, 4, 16, 'P', 0, null, true, false),
-            new Monster("Quagga"        , 3, 24, 9, 10, 19, 50, 2, 10, 'Q', 0, null, true, false),
-            new Monster("Rattlesnake"   , 2, 16, 5, 9, 18, 50, 1, 6, 'R', 0, null, true, false),
-            new Monster("Snake"         , 1, 8, 2, 1, 9, 50, 1, 3, 'S', 0, null, true, false),
-            new Monster("Troll"         , 6, 48, 9, 13, 22, 50, 4, 28, 'T', 0, null, true, false),
-            new Monster("Ur-vile"       , 7, 56, 9, 18, 26, 50, 4, 36, 'U', 0, null, true, false),
-            new Monster("Vampire"       , 8, 64, 9, 20, 26, 50, 1, 10, 'V', 0, null, true, false),
-            new Monster("Wraith"        , 5, 40, 9, 14, 23, 50, 1, 6, 'W', 0, null, true, false),
-            new Monster("Xeroc"         , 7, 56, 9, 17, 26, 50, 4, 16, 'X', 0, null, true, false),
-            new Monster("Yeti"          , 4, 32, 5, 12, 21, 50, 2, 12, 'Y', 0, null, true, false),
-            new Monster("Zombie"        , 2, 16, 5, 7, 14, 50, 1, 8, 'Z', 0, null, true, false),
+            new Monster("Aquator"       , 5, 40, 5, 7, 15, 50, 0, 0, 'A', 0, null, true, 10, false),
+            new Monster("Bat"           , 1, 8, 2, 1, 5, 50, 1, 2, 'B', 0, null, true, 10, false),
+            new Monster("Centaur"       , 4, 32, 5, 8, 17, 50, 3, 12, 'C', 0, null, true, 10, false),
+            new Monster("Dragon"        , 10, 80, 10, 22, 26, 50, 5, 46, 'D', 0, null, true,  10, false),
+            new Monster("Emu"           , 1, 8, 2, 2, 11, 50, 1, 2, 'E', 0, null, true,  10, false),
+            new Monster("Flytrap"       , 8, 64, 9, 15, 20, 50, 0, 0, 'F', 0, null, true, 10,  false),
+            new Monster("Griffin"       , 13, 104, 5, 6, 15, 50, 7, 27, 'G', 0, null, true, 10, false),
+            new Monster("Hobgoblin"     , 1, 8, 3, 1, 10, 50, 1, 8, 'H', 0, null, true, 10, false),
+            new Monster("Ice Monster"   , 1, 8, 2, 3, 12, 50, 0, 0, 'I', 0, null, true, 10, false),
+            new Monster("Jabberwock"    , 15, 120, 9, 20, 26, 50, 4, 32, 'J', 0, null, true, 10, false),
+            new Monster("Kestral"       , 1, 8, 2, 1, 6, 50, 1, 4, 'K', 0, null, true, 10, false),
+            new Monster("Leprechaun"    , 3, 24, 5, 7, 16, 50, 1, 1, 'L', 0, null, true, 10, false),
+            new Monster("Medusa"        , 8, 64, 5, 19, 26, 50, 8, 34, 'M', 0, null, true, 10, false),
+            new Monster("Nymph"         , 3, 24, 5, 11, 20, 50, 0, 0, 'N', 0, null, true, 10, false),
+            new Monster("Orc"           , 1, 8, 3, 4, 13, 50, 1, 8, 'O', 0, null, true, 10, false),
+            new Monster("Phantom"       , 8, 64, 9, 20, 26, 50, 4, 16, 'P', 0, null, true, 10, false),
+            new Monster("Quagga"        , 3, 24, 9, 10, 19, 50, 2, 10, 'Q', 0, null, true, 10, false),
+            new Monster("Rattlesnake"   , 2, 16, 5, 9, 18, 50, 1, 6, 'R', 0, null, true, 10, false),
+            new Monster("Snake"         , 1, 8, 2, 1, 9, 50, 1, 3, 'S', 0, null, true, 10, false),
+            new Monster("Troll"         , 6, 48, 9, 13, 22, 50, 4, 28, 'T', 0, null, true, 10, false),
+            new Monster("Ur-vile"       , 7, 56, 9, 18, 26, 50, 4, 36, 'U', 0, null, true, 10, false),
+            new Monster("Vampire"       , 8, 64, 9, 20, 26, 50, 1, 10, 'V', 0, null, true, 10, false),
+            new Monster("Wraith"        , 5, 40, 9, 14, 23, 50, 1, 6, 'W', 0, null, true, 10, false),
+            new Monster("Xeroc"         , 7, 56, 9, 17, 26, 50, 4, 16, 'X', 0, null, true, 10, false),
+            new Monster("Yeti"          , 4, 32, 5, 12, 21, 50, 2, 12, 'Y', 0, null, true, 10, false),
+            new Monster("Zombie"        , 2, 16, 5, 7, 14, 50, 1, 8, 'Z', 0, null, true, 10, false),
         };
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace RogueGame
         /// </summary>
         public bool Aggressive { get; set; }
         /// <summary>
-        /// How likely is the monster to rest on a turn?
+        /// How likely is the monster to rest on a turn? Higher setting slows movement.
         /// </summary>
         public int Inertia { get; set; }        
         /// <summary>
@@ -170,7 +170,7 @@ namespace RogueGame
         public Monster(string monsterName, int minStartingHP, int maxStartingHP,  
             int armorClass, int minLevel, int maxLevel, int appearancePct, 
             int minAttackDmg, int maxAttackDmg, char displayCharacter, int specialAttackPct, 
-            Func<Player>? specialAttack, bool aggressive, bool canRegenerate)
+            Func<Player>? specialAttack, bool aggressive, int inertia, bool canRegenerate)
         {
             this.MonsterName = monsterName;
             this.MinStartingHP = minStartingHP;
@@ -186,6 +186,7 @@ namespace RogueGame
             this.SpecialAttackPct = specialAttackPct;
             this.SpecialAttack = specialAttack;
             this.Aggressive = aggressive;
+            this.Inertia = inertia;
             this.CanRegenerate = canRegenerate;
             this.MonsterInventory = new List<Inventory>();
         }
@@ -211,6 +212,7 @@ namespace RogueGame
             this.SpecialAttackPct = original.SpecialAttackPct;
             this.SpecialAttack = original.SpecialAttack;
             this.Aggressive = original.Aggressive;
+            this.Inertia = original.Inertia;
             this.CanRegenerate = original.CanRegenerate;
             this.MonsterInventory = new List<Inventory>();            
         }
