@@ -1,4 +1,23 @@
-# RogueGameDev
+# Rogue C#
+
+6/5/2023
+
+Monsters are wandering around the map and you can attack them by running into them to get them out of your way.
+The fight mechanics are really basic and the same for every monster.  I'll expand them later.
+
+I'm working on a major refactoring of the program now that monsters are moving around the map.
+Previously, everything was stored on the map itself and the program would read and write directly there.  
+
+Then inventory came along, inventory objects were stored on the map array, along with a separate character to be displayed.
+When I added monsters, I decided to store the current monsters in a class-level list with a display character on the map but 
+monsters were disappearing mysteriously.
+
+I finally decided to let the main function that renders the map place the monsters as needed rather than trying to update their
+locations throughout the program in both the list and the map.  Then I decided that Inventory should use the same strategy.
+
+This meant changes throughout the program.  Mostly it works now but there is a glitch or two. I'm working on that
+I hope to have a full writeup on ComeauSoftware.com in the next day or two.
+
 
 4/22/2023 - Food collection and hunger now works.  Eating is necessary for survival and the game includes an R.I.P. screen.  The following keys now work and I'll be adding a help screen this week.
 ```
