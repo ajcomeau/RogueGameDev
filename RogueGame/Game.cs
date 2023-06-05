@@ -42,7 +42,7 @@ namespace RogueGame
         /// <summary>
         /// Maximum dungeon level
         /// </summary>
-        private const int MAX_LEVEL = 26;   
+        public const int MAX_LEVEL = 26;   
         /// <summary>
         /// Probability of fainting at any given point when FAIN
         /// </summary>
@@ -65,7 +65,6 @@ namespace RogueGame
             Scoreboard = 6,
             Victory = 7,        
         }
-
 
         /// <summary>
         /// Current map object being shown.
@@ -158,16 +157,14 @@ namespace RogueGame
             // Setup a new game with a map and a player.
             // Put the player on the map and set the opening status.
             
-            this.CurrentLevel = 1;
-
-            // Generate the new map and shroud it.
-            this.CurrentMap = new MapLevel(CurrentLevel);
-            this.CurrentMap.ShroudMap();
-            
-            // Put new player on map.
+            this.CurrentLevel = 1;            
+            // Create new player.
             this.CurrentPlayer = new Player(PlayerName);
-            this.CurrentPlayer.Location = CurrentMap.AddCharacterToMap(Player.CHARACTER);
-            
+            // Generate the new map, add player and shroud the map.
+            this.CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer);
+            this.CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
+            this.CurrentMap.ShroudMap();
+
             // Activate the player's current room.
             this.CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
 
@@ -177,7 +174,7 @@ namespace RogueGame
             cStatus = $"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ... (Press ? for list of commands.)";
 
             // Set the current screen display.
-            this.ScreenDisplay = DevMode ? this.CurrentMap.MapCheck(CurrentPlayer.Location) : this.CurrentMap.MapText(CurrentPlayer.Location);
+            this.ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText();
           
         }
 
@@ -312,7 +309,7 @@ namespace RogueGame
 
             // Display the appropriate map mode.
             if (GameMode == DisplayMode.Primary)
-                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck(CurrentPlayer.Location!) : this.CurrentMap.MapText(CurrentPlayer.Location!);
+                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText();
 
             switch (GameMode)
             {
@@ -494,7 +491,7 @@ namespace RogueGame
             if (GameMode == DisplayMode.Inventory || GameMode == DisplayMode.Help)
             {
                 GameMode = DisplayMode.Primary;
-                ScreenDisplay = DevMode ? CurrentMap.MapCheck(CurrentPlayer.Location!) : CurrentMap.MapText(CurrentPlayer.Location!);
+                ScreenDisplay = DevMode ? CurrentMap.MapCheck() : CurrentMap.MapText();
             }
         }
 
@@ -523,8 +520,7 @@ namespace RogueGame
                 }
 
             }
-            else
-                cStatus = "";
+            else cStatus = "";
         }
 
         /// <summary>
@@ -548,19 +544,14 @@ namespace RogueGame
 
             if (allowPass)
             {
-                CurrentMap = new MapLevel(CurrentLevel);
+                CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer);
                 CurrentMap.ShroudMap();
                 CurrentLevel += Change;
-                CurrentPlayer.Location = CurrentMap.AddCharacterToMap(Player.CHARACTER);
+                CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
                 CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
                                 
                 cStatus = "";
             }
-
-            // Place Amulet on last level.
-            if(CurrentLevel == MAX_LEVEL)
-                CurrentMap.AddAmuletToMap();
-
         }
 
         /// <summary>
@@ -569,8 +560,8 @@ namespace RogueGame
         private void ReplaceMap()
         {
             // Dev mode only - replace the map for testing.
-            CurrentMap = new MapLevel(CurrentLevel);
-            CurrentPlayer.Location = CurrentMap.AddCharacterToMap(Player.CHARACTER);
+            CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer);
+            CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
         }
 
         /// <summary>
@@ -612,28 +603,22 @@ namespace RogueGame
 
                     // Respond to items on map.
                     if (player.Location.ContainsItem())
-                    {
-                        foundItem = true;
-                        if (player.Location.ItemCharacter == MapLevel.GOLD)
-                            PickUpGold();
-                        else if (player.Location.MapInventory != null)
-                            cStatus = AddInventory();
-                    }
+                        cStatus = AddInventory();
 
                     // Player turn completed.
                     turnComplete = true;
                 }
-                    else if (CurrentMap.DetectMonster(adjacent[direct]) != null)
-                    {
-                        Monster opponent = (from Monster monster in CurrentMap.ActiveMonsters
-                                                        where monster.Location == adjacent[direct]
-                                                        select monster).First();
+                else if (CurrentMap.DetectMonster(adjacent[direct]) != null)
+                {
+                    Monster opponent = (from Monster monster in CurrentMap.ActiveMonsters
+                                                    where monster.Location == adjacent[direct]
+                                                    select monster).First();
 
-                        Attack(CurrentPlayer, opponent);
+                    Attack(CurrentPlayer, opponent);
 
-                        // Player turn completed.
-                        turnComplete = true;
-                    }
+                    // Player turn completed.
+                    turnComplete = true;
+                }
 
                 // Complete turn if indicated.
                 if (turnComplete) { CompleteTurn(); }
@@ -736,7 +721,7 @@ namespace RogueGame
                 visibleCharacter = adjacent[direct].PriorityChar();
 
                 // The monster can move if the visible character is within a room or a hallway
-                // and there's no monster there.
+                // and there's nobody else there.
 
                 canMove = 
                     (MapLevel.SpacesAllowed.Contains(visibleCharacter) || adjacent[direct].ContainsItem())
@@ -748,8 +733,11 @@ namespace RogueGame
                 else
                 {
                     if (CurrentMap.DetectMonster(adjacent[direct]) != null && monster.Aggressive)
-                        // The monster just tried to run into the player.  For now, just change direction.
+                        // The monster just tried to run into another monster.  For now, just change direction.
                         // TODO:  This might need to result in an attack.
+                        monster.Direction = rand.Next(1, 101) > 50 ? direct270 : direct90;
+                    else if (adjacent[direct] == CurrentPlayer.Location)
+                        // The monster just tried to run into the player.
                         monster.Direction = rand.Next(1, 101) > 50 ? direct270 : direct90;
                     else { 
                         // Change direction and decide on a current state.
@@ -781,19 +769,6 @@ namespace RogueGame
                 & MapLevel.SpacesAllowed.Contains(Target.PriorityChar())
                 & CurrentMap.SearchAdjacent(MapLevel.HALLWAY, Origin.X, Origin.Y).Count < 3;
         
-        }
-
-        /// <summary>
-        /// Retrieve gold from map and add it to the player's purse.
-        /// </summary>
-        private void PickUpGold()
-        {
-            // Add the gold at the current location to the player's purse and remove
-            // it from the map.
-            int goldAmt = rand.Next(MapLevel.MIN_GOLD_AMT, MapLevel.MAX_GOLD_AMT + 1);
-            CurrentPlayer.Gold += goldAmt;
-            CurrentPlayer.Location!.ItemCharacter = null;
-            cStatus = $"You picked up {goldAmt} pieces of gold.";
         }
 
 
@@ -912,7 +887,8 @@ namespace RogueGame
                             cStatus = $"You dropped {Inventory.ListingDescription(1, items[0].InvItem)}.";
                         }
 
-                        CurrentPlayer.Location.MapInventory = items[0].InvItem;
+                        items[0].InvItem.Location = CurrentPlayer.Location;
+                        CurrentMap.MapInventory.Add(items[0].InvItem);
                         RestoreMap();
                         retValue = true;                        
                     }
@@ -945,52 +921,57 @@ namespace RogueGame
         {
             // Inventory management.
             int itemAmount = 1;
-            bool addToInventory = false;
-            Inventory foundItem;            
-            List<Inventory> tempInventory = CurrentPlayer.PlayerInventory;            
-
+            bool addToInventory = false;          
+            List<Inventory> tempInventory = CurrentPlayer.PlayerInventory;
+            Inventory? foundItem = CurrentMap.DetectInventory(CurrentPlayer.Location!);
             string retValue = "";
 
-            if (CurrentPlayer.Location!.MapInventory != null)
-            {
-                // Identify the found item.
-                foundItem = CurrentPlayer.Location.MapInventory;
-
-                // Determine if there's room in inventory for the item.
-
-                // If it's groupable and the player already has it in a slot, add it.
-                // Otherwise, if there's an extra slot available, add it.
-                addToInventory = (foundItem.IsGroupable && CurrentPlayer.SearchInventory(foundItem.RealName));
-                if (!addToInventory) addToInventory =
-                        Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory).Count + 1 <= Player.INVENTORY_LIMIT;
-
-                // If the additional inventory fits within the limit, keep the item.
-                // Otherwise, remove it.                
-                if (addToInventory)
+            if (foundItem != null)
+            { 
+                if(foundItem.ItemCategory == Inventory.InvCategory.Gold)
                 {
-                    // When the item is actually added, it needs to be a single item.
-                    itemAmount = foundItem.Amount;
-                    foundItem.Amount = 1;
-                    // Move the item to the player's inventory.
-                    for (int i = 1; i <= itemAmount; i++)
-                        CurrentPlayer.PlayerInventory.Add(Inventory.GetInventoryItem(foundItem.RealName)!);
-
-                    retValue = $"You picked up {Inventory.ListingDescription(itemAmount, foundItem)}.";
-                    CurrentPlayer.Location.MapInventory = null;
+                    // Add the gold at the current location to the player's purse and remove
+                    // it from the map.
+                    int goldAmt = rand.Next(MapLevel.MIN_GOLD_AMT, MapLevel.MAX_GOLD_AMT + 1);
+                    CurrentPlayer.Gold += goldAmt;
+                    CurrentMap.MapInventory.Remove(foundItem);
+                    cStatus = $"You picked up {goldAmt} pieces of gold.";
                 }
                 else
                 {
-                    CurrentPlayer.PlayerInventory.Remove(foundItem);
-                    retValue = "The item won't fit in your inventory.";
-                }
+                    // Determine if there's room in inventory for the item.
+                    // If it's groupable and the player already has it in a slot, add it.
+                    // Otherwise, if there's an extra slot available, add it.
+                    addToInventory = (foundItem.IsGroupable && CurrentPlayer.SearchInventory(foundItem.RealName));
+                    if (!addToInventory) addToInventory =
+                            Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory).Count + 1 <= Player.INVENTORY_LIMIT;
 
-                // If the player found the Amulet ...
-                if (foundItem.DisplayCharacter == MapLevel.AMULET)
-                {
-                    CurrentPlayer.HasAmulet = true;
-                    retValue = "You found the Amulet of Yendor!  It has been added to your inventory.";
-                }
+                    // If the additional inventory fits within the limit, keep the item.
+                    // Otherwise, remove it.                
+                    if (addToInventory)
+                    {
+                        // When the item is actually added, it needs to be a single item.
+                        itemAmount = foundItem.Amount;
+                        foundItem.Amount = 1;
+                        // Move the item to the player's inventory.
+                        for (int i = 1; i <= itemAmount; i++)
+                            CurrentPlayer.PlayerInventory.Add(Inventory.GetInventoryItem(foundItem.RealName)!);
 
+                        retValue = $"You picked up {Inventory.ListingDescription(itemAmount, foundItem)}.";
+                        CurrentMap.MapInventory.Remove(foundItem);
+
+                        if(foundItem.ItemCategory == Inventory.InvCategory.Amulet) 
+                        {
+                            CurrentPlayer.HasAmulet = true;
+                            retValue = "You found the Amulet of Yendor!  It has been added to your inventory.";
+                        }
+                    }
+                    else
+                    {
+                        CurrentPlayer.PlayerInventory.Remove(foundItem);
+                        retValue = "The item won't fit in your inventory.";
+                    }
+                }
             }
 
             return retValue;

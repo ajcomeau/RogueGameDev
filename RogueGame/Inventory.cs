@@ -30,7 +30,8 @@ namespace RogueGame
             Armor = 6,
             Weapon = 7,
             Ammunition = 8,
-            Amulet = 9
+            Amulet = 9,
+            Gold = 10
         }
 
         /// <summary>
@@ -51,7 +52,8 @@ namespace RogueGame
             new Inventory(InvCategory.Weapon, 4, "a mace", "a mace", "a mace", true, false, true, false, 0, 0, 1, 1, 2, 8, -3, 10, '↑', null, null, null),
             new Inventory(InvCategory.Weapon, 5, "a short bow", "a short bow", "a short bow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑', null, null, null),
             new Inventory(InvCategory.Ammunition, 6, "an arrow", "an arrow", "arrows", true, true, true, false, 0, 0, 0, 0, 1, 1, 3, 10, '↑', null, null, null),
-            new Inventory(InvCategory.Amulet, 7, "The Amulet", "The Amulet", "The Amulet", true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 0, MapLevel.AMULET, null, null, null)
+            new Inventory(InvCategory.Amulet, 7, "The Amulet", "The Amulet", "The Amulet", true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 0, MapLevel.AMULET, null, null, null),
+            new Inventory(InvCategory.Gold, 8, "gold", "gold", "gold", true, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, '*', null, null, null )
         };
 
         /// <summary>
@@ -102,6 +104,9 @@ namespace RogueGame
         /// How many items are there in the batch?
         /// </summary>
         public int Amount { get; set; } = 1;
+        /// <summary>
+        /// Can the item be wielded as a weapon?
+        /// </summary>
         public bool IsWieldable { get; set; } 
         /// <summary>
         /// Is the item cursed?
@@ -142,7 +147,11 @@ namespace RogueGame
         /// <summary>
         /// Symbol to be displayed.
         /// </summary>
-        public char DisplayCharacter { get; set; } 
+        public char DisplayCharacter { get; set; }
+        /// <summary>
+        /// Location of the item on the map.
+        /// </summary>
+        public MapSpace Location { get; set; }
         /// <summary>
         /// Delegate function for throwing item.
         /// </summary>
@@ -306,7 +315,7 @@ namespace RogueGame
             // Get groupable inventory.
             var groupedInventory =
                 (from invEntry in PlayerInventory
-                    where invEntry.IsGroupable
+                    where invEntry.IsGroupable && invEntry.ItemCategory !=  InvCategory.Gold
                     group invEntry by invEntry.PriorityId into itemGroup
                     select itemGroup).ToList();
 
@@ -443,25 +452,35 @@ namespace RogueGame
         /// </summary>
         /// <param name="InvType">Specific category</param>
         /// <returns></returns>
-        public static Inventory GetInventoryItem(InvCategory InvType)
+        public static Inventory GetInventoryItem(InvCategory InvType, MapSpace Location)
         {
+            Inventory returnVal;
+
             // Get a random item from a specific inventory category.
             List<Inventory> invSelect = (from Inventory item in InventoryItems
                                             where item.ItemCategory == InvType
                                             select item).ToList();
 
             // Clone a new object from template.
-            return new Inventory(invSelect[rand.Next(invSelect.Count)]); 
+            returnVal = new Inventory(invSelect[rand.Next(invSelect.Count)]);
+            returnVal.Location = Location;
+
+            return returnVal;
         }
 
         /// <summary>
         /// Generates random item from inventory template list.
         /// </summary>
         /// <returns></returns>
-        public static Inventory GetInventoryItem()
+        public static Inventory GetInventoryItem(MapSpace Location)
         {
+            Inventory returnVal;
+
             // Clone a new object from template.
-            return new Inventory(InventoryItems[rand.Next(InventoryItems.Count)]);
+            returnVal = new Inventory(InventoryItems[rand.Next(InventoryItems.Count)]);
+            returnVal.Location = Location;
+
+            return returnVal;
         }
     }
 
