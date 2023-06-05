@@ -19,7 +19,10 @@ This meant changes throughout the program.  Mostly it works now but there is a g
 I hope to have a full writeup on ComeauSoftware.com in the next day or two.
 
 
-4/22/2023 - Food collection and hunger now works.  Eating is necessary for survival and the game includes an R.I.P. screen.  The following keys now work and I'll be adding a help screen this week.
+
+4/22/2023
+
+Food collection and hunger now works.  Eating is necessary for survival and the game includes an R.I.P. screen.  The following keys now work and I'll be adding a help screen this week.
 ```
 Arrows - movement
 
