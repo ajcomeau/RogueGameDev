@@ -5,6 +5,9 @@
 Monsters are wandering around the map and you can attack them by running into them to get them out of your way.
 The fight mechanics are really basic and the same for every monster.  I'll expand them later.
 
+See the latest write-up on ComeauSoftware.com -
+https://www.comeausoftware.com/c-sharp/rogue-csharp-monster-shuffle/
+
 I'm working on a major refactoring of the program now that monsters are moving around the map.
 Previously, everything was stored on the map itself and the program would read and write directly there.  
 
@@ -15,8 +18,7 @@ monsters were disappearing mysteriously.
 I finally decided to let the main function that renders the map place the monsters as needed rather than trying to update their
 locations throughout the program in both the list and the map.  Then I decided that Inventory should use the same strategy.
 
-This meant changes throughout the program.  Mostly it works now but there is a glitch or two. I'm working on that
-I hope to have a full writeup on ComeauSoftware.com in the next day or two.
+This meant changes throughout the program.  Mostly it works now but there is a glitch or two and I'm working on that.
 
 
 
