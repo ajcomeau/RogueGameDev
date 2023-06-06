@@ -833,7 +833,6 @@ namespace RogueGame{
         {
             RefreshMapLocations();
 
-            // TODO:  This needs to be updated to remove search of DisplayCharacter.
             string charList = hallways ? (HALLWAY.ToString() + ROOM_INT.ToString()) : ROOM_INT.ToString();
 
             List<MapSpace> spaces = (from MapSpace space in levelMap
@@ -1048,12 +1047,7 @@ namespace RogueGame{
             MapSpace PlayerLocation = CurrentPlayer.Location!;
 
             // Clear existing spaces on map.
-            List<MapSpace> spaces = (from MapSpace space in levelMap
-                                     where space.ItemCharacter != null
-                                     || space.DisplayCharacter != null
-                                     select space).ToList();
-
-            foreach (MapSpace space in spaces)
+            foreach (MapSpace space in CurrentMapItems())
             {
                 space.ItemCharacter = null;
                 space.DisplayCharacter = null;
