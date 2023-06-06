@@ -655,7 +655,7 @@ namespace RogueGame{
         {
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
 
-            RefreshMapLocations(CurrentPlayer.Location!);
+            RefreshMapLocations();
 
             if (y - 1 >= 0 && levelMap[x, y - 1].MapCharacter == character)  // North
                 retValue.Add(Direction.North, levelMap[x, y - 1]);
@@ -681,7 +681,7 @@ namespace RogueGame{
         /// <returns>Dictionary of directions and characters found.</returns>
         public Dictionary<Direction, MapSpace> SearchAdjacent(int x, int y)
         {
-            RefreshMapLocations(CurrentPlayer.Location!);
+            RefreshMapLocations();
 
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
             retValue.Add(Direction.North, levelMap[x, y - 1]);
@@ -702,7 +702,7 @@ namespace RogueGame{
         {
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
 
-            RefreshMapLocations(CurrentPlayer.Location!);
+            RefreshMapLocations();
 
             retValue.Add(Direction.North, SearchDirection(Direction.North, currentX, currentY - 1));
             retValue.Add(Direction.South, SearchDirection(Direction.South, currentX, currentY + 1));
@@ -724,7 +724,7 @@ namespace RogueGame{
             int currentX = startX, currentY = startY;
             MapSpace? retValue = null;
 
-            RefreshMapLocations(CurrentPlayer.Location!);
+            RefreshMapLocations();
 
             currentY = (currentY > MAP_HT) ? MAP_HT : currentY;
             currentY = (currentY < 0) ? 0 : currentY;
@@ -792,7 +792,7 @@ namespace RogueGame{
         /// <returns></returns>
         public List<MapSpace> GetSurrounding(int x, int y)
         {
-            RefreshMapLocations(CurrentPlayer.Location!);
+            RefreshMapLocations();
 
             List<MapSpace> surrounding = (from MapSpace space in levelMap
                                         where Math.Abs(space.X - x) <= 1
@@ -809,7 +809,7 @@ namespace RogueGame{
         /// <returns></returns>
         public List<MapSpace> FindOpenSpaces(bool hallways)
         {
-            RefreshMapLocations(CurrentPlayer.Location!);
+            RefreshMapLocations();
 
             // TODO:  This function needs to be replaced with GetOpenSpace.
             string charList = hallways ? (HALLWAY.ToString() + ROOM_INT.ToString()) : ROOM_INT.ToString();
@@ -831,7 +831,7 @@ namespace RogueGame{
         /// <returns></returns>
         public MapSpace GetOpenSpace(bool hallways)
         {
-            RefreshMapLocations(CurrentPlayer.Location!);
+            RefreshMapLocations();
 
             // TODO:  This needs to be updated to remove search of DisplayCharacter.
             string charList = hallways ? (HALLWAY.ToString() + ROOM_INT.ToString()) : ROOM_INT.ToString();
@@ -892,7 +892,7 @@ namespace RogueGame{
         {
             bool retValue = false;
 
-            RefreshMapLocations(CurrentPlayer.Location!);
+            RefreshMapLocations();
 
             foreach (MapSpace space in GetSurrounding(xPos, yPos))
             {
@@ -994,7 +994,7 @@ namespace RogueGame{
 
             // Refresh monster and player positions.  Better to do it here, once, than
             // throughout the program.
-            RefreshMapLocations(CurrentPlayer.Location);
+            RefreshMapLocations();
 
             // Iterate through the two-dimensional array and use StringBuilder to 
             // concatenate the proper characters into rows and columns for display.
@@ -1043,17 +1043,21 @@ namespace RogueGame{
             return retList;
         }
 
-        public void RefreshMapLocations(MapSpace PlayerLocation)
+        public void RefreshMapLocations()
         {
-            // Refresh monster and player positions.
-            for (int y = 0; y <= MAP_HT; y++)
-                for (int x = 0; x <= MAP_WD; x++)
-                {
-                    if(levelMap[x, y] != null) { 
-                        levelMap[x, y].ItemCharacter = null;
-                        levelMap[x, y].DisplayCharacter = null;
-                    }
-                }                    
+            MapSpace PlayerLocation = CurrentPlayer.Location!;
+
+            // Clear existing spaces on map.
+            List<MapSpace> spaces = (from MapSpace space in levelMap
+                                     where space.ItemCharacter != null
+                                     || space.DisplayCharacter != null
+                                     select space).ToList();
+
+            foreach (MapSpace space in spaces)
+            {
+                space.ItemCharacter = null;
+                space.DisplayCharacter = null;
+            }               
 
             // Put player on map.
             if(PlayerLocation != null)
@@ -1084,7 +1088,7 @@ namespace RogueGame{
 
             // Refresh monster and player positions.  Better to do it here, once, than
             // throughout the program.
-            RefreshMapLocations(CurrentPlayer.Location);
+            RefreshMapLocations();
 
             // Iterate through the two-dimensional array and use StringBuilder to 
             // concatenate the proper characters into rows and columns for display.

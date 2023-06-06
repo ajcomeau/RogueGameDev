@@ -476,8 +476,13 @@ namespace RogueGame
         {
             Inventory returnVal;
 
-            // Clone a new object from template.
-            returnVal = new Inventory(InventoryItems[rand.Next(InventoryItems.Count)]);
+            // Clone a new object from template.  Exclude gold and amulet.
+            List<Inventory> invSelect = (from Inventory item in InventoryItems
+                                         where item.ItemCategory != InvCategory.Gold 
+                                         && item.ItemCategory != InvCategory.Amulet
+                                         select item).ToList();
+
+            returnVal = new Inventory(invSelect[rand.Next(invSelect.Count)]);
             returnVal.Location = Location;
 
             return returnVal;
