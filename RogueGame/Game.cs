@@ -270,16 +270,16 @@ namespace RogueGame
                 {
                     // Movement keys
                     case KEY_WEST:
-                        MoveCharacter(CurrentPlayer, MapLevel.Direction.West);
+                        MovePlayer(CurrentPlayer, MapLevel.Direction.West);
                         break;
                     case KEY_NORTH:
-                        MoveCharacter(CurrentPlayer, MapLevel.Direction.North);
+                        MovePlayer(CurrentPlayer, MapLevel.Direction.North);
                         break;
                     case KEY_EAST:
-                        MoveCharacter(CurrentPlayer, MapLevel.Direction.East);
+                        MovePlayer(CurrentPlayer, MapLevel.Direction.East);
                         break;
                     case KEY_SOUTH:
-                        MoveCharacter(CurrentPlayer, MapLevel.Direction.South);
+                        MovePlayer(CurrentPlayer, MapLevel.Direction.South);
                         break;
                     case KEY_S:     // Search
                         startTurn = true;
@@ -569,10 +569,11 @@ namespace RogueGame
         /// </summary>
         /// <param name="player">Player object to be moved</param>
         /// <param name="direct">Direction enumeration reference</param>
-        public void MoveCharacter(Player player, MapLevel.Direction direct)
+        public void MovePlayer(Player player, MapLevel.Direction direct)
         {
             char visibleCharacter;
-            bool canMove, foundItem = false, turnComplete = false;
+            bool canMove, stopMoving = false, turnComplete = false;
+            Inventory? invFound = null;
             Dictionary<MapLevel.Direction, MapSpace> adjacent =
                 CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
@@ -584,10 +585,10 @@ namespace RogueGame
             {
                 // Inspect target character
                 visibleCharacter = adjacent[direct].PriorityChar();
+                invFound = CurrentMap.DetectInventory(adjacent[direct]);
 
                 // The player can move if the visible character is within a room or a hallway and there's no monster there.
-                canMove = (MapLevel.SpacesAllowed.Contains(visibleCharacter) || adjacent[direct].ContainsItem()) &&
-                    CurrentMap.DetectMonster(adjacent[direct]) == null;
+                canMove = MapLevel.SpacesAllowed.Contains(visibleCharacter) || invFound != null;
 
                 if (canMove)
                 {
@@ -599,11 +600,10 @@ namespace RogueGame
                         CurrentMap.DiscoverRoom(player.Location.X, player.Location.Y);
 
                     // Discover the spaces surrounding the player and note if something is found.
-                    foundItem = CurrentMap.DiscoverSurrounding(player.Location.X, player.Location.Y);
+                    stopMoving = CurrentMap.DiscoverSurrounding(player.Location.X, player.Location.Y);
 
                     // Respond to items on map.
-                    if (player.Location.ContainsItem())
-                        cStatus = AddInventory();
+                    if (invFound != null) cStatus = AddInventory();
 
                     // Player turn completed.
                     turnComplete = true;
@@ -627,7 +627,7 @@ namespace RogueGame
                 // hallway spaces indicate a junction which needs to stop FastPlay.
                 adjacent = CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
-            } while (!foundItem && CanAutoMove(player.Location, adjacent[direct]));
+            } while (!stopMoving && CanAutoMove(player.Location, adjacent[direct]));
         }
 
         private void Attack(Player Attacker, Monster Defender)
@@ -687,7 +687,8 @@ namespace RogueGame
                     // for one that's available and closest to the player.
                     foreach (KeyValuePair<MapLevel.Direction, MapSpace> adjSpace in adjacent)
                     {
-                        if (MapLevel.SpacesAllowed.Contains(adjSpace.Value.PriorityChar()) || adjSpace.Value.ContainsItem())
+                        if (MapLevel.SpacesAllowed.Contains(adjSpace.Value.PriorityChar()) || 
+                            CurrentMap.DetectInventory(adjSpace.Value) != null)
                         {
                             tentativeDistance = Math.Abs(adjSpace.Value.X - CurrentPlayer.Location.X)
                                 + Math.Abs(adjSpace.Value.Y - CurrentPlayer.Location.Y);
@@ -723,10 +724,8 @@ namespace RogueGame
                 // The monster can move if the visible character is within a room or a hallway
                 // and there's nobody else there.
 
-                canMove = 
-                    (MapLevel.SpacesAllowed.Contains(visibleCharacter) || adjacent[direct].ContainsItem())
-                    & adjacent[direct] != CurrentPlayer.Location
-                    & CurrentMap.DetectMonster(adjacent[direct]) == null;
+                canMove = canMove = MapLevel.SpacesAllowed.Contains(visibleCharacter) || 
+                    CurrentMap.DetectInventory(adjacent[direct]) != null;
 
                 if (canMove)
                     monster.Location = adjacent[direct];
@@ -764,7 +763,7 @@ namespace RogueGame
             // If the player is in a hallway, they must stop at any junctions.
             return FastPlay
                 & CurrentMap.DetectMonster(Target) == null // No monster
-                & !Target.ContainsItem()  
+                & CurrentMap.DetectInventory(Target) == null // No mnventory  
                 & Target.MapCharacter == Origin.MapCharacter 
                 & MapLevel.SpacesAllowed.Contains(Target.PriorityChar())
                 & CurrentMap.SearchAdjacent(MapLevel.HALLWAY, Origin.X, Origin.Y).Count < 3;
@@ -867,7 +866,7 @@ namespace RogueGame
                 
                 if (items.Count > 0)
                 {
-                    if(CurrentPlayer.Location!.MapInventory == null)
+                    if(CurrentMap.DetectInventory(CurrentPlayer.Location!) == null)
                     {
                         if (items[0].InvItem.ItemCategory == Inventory.InvCategory.Ammunition
                             && items[0].InvItem.IsGroupable)

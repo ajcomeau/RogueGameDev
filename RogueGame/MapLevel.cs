@@ -153,14 +153,6 @@ namespace RogueGame{
         /// Array to hold map definition.
         /// </summary>
         private MapSpace[,] levelMap = new MapSpace[80, 25];
-        
-        /// <summary>
-        /// Make map available to other classes.
-        /// </summary>
-        public MapSpace[,] LevelMap
-        {
-            get { return levelMap; }
-        }
 
         /// <summary>
         /// Current game level
@@ -803,28 +795,6 @@ namespace RogueGame{
         }
 
         /// <summary>
-        /// Return a list of all open spaces on the map by checking the map character.
-        /// </summary>
-        /// <param name="hallways"></param>
-        /// <returns></returns>
-        public List<MapSpace> FindOpenSpaces(bool hallways)
-        {
-            RefreshMapLocations();
-
-            // TODO:  This function needs to be replaced with GetOpenSpace.
-            string charList = hallways ? (HALLWAY.ToString() + ROOM_INT.ToString()) : ROOM_INT.ToString();
-
-            List<MapSpace> spaces = (from MapSpace space in levelMap
-                                     where charList.Contains(space.MapCharacter)
-                                     && space.ItemCharacter == null
-                                     && space.DisplayCharacter == null
-                                     select space).ToList();
-
-            return spaces;
-        }
-
-
-        /// <summary>
         /// Return a random open space on the map.
         /// </summary>
         /// <param name="hallways"></param>
@@ -911,8 +881,7 @@ namespace RogueGame{
                 // Ignore player's space.
                 if (!retValue) 
                     if (space.X != xPos || space.Y != yPos)
-                        retValue = space.Occupied() ||
-                            (!GlideSpaces.Contains(space.PriorityChar()));
+                        retValue = (!GlideSpaces.Contains(space.PriorityChar()));
             }
 
             return retValue;
@@ -1029,7 +998,8 @@ namespace RogueGame{
             List<MapSpace> retList = new List<MapSpace>();
 
             // Add the current player's location.
-            retList.Add(CurrentPlayer.Location!);
+            if(CurrentPlayer.Location != null)
+                retList.Add(CurrentPlayer.Location);
 
             // Add the monsters.
             foreach (Monster monster in ActiveMonsters)
@@ -1044,10 +1014,10 @@ namespace RogueGame{
 
         public void RefreshMapLocations()
         {
-            MapSpace PlayerLocation = CurrentPlayer.Location!;
+            MapSpace? PlayerLocation = CurrentPlayer.Location;
 
             // Clear existing spaces on map.
-            foreach (MapSpace space in CurrentMapItems())
+            foreach (MapSpace space in levelMap)
             {
                 space.ItemCharacter = null;
                 space.DisplayCharacter = null;
@@ -1151,10 +1121,6 @@ namespace RogueGame{
         /// <summary>
         /// Inventory items found on the map.
         /// </summary>
-        public Inventory? MapInventory { get; set; }
-        /// <summary>
-        /// Does the player need to search to reveal?
-        /// </summary>
         public bool SearchRequired { get; set; }
         /// <summary>
         /// Has the player discovered this space?
@@ -1166,22 +1132,6 @@ namespace RogueGame{
         public bool Visible { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
-
-        /// <summary>
-        /// Constructor to create blank space for map
-        /// </summary>
-        public MapSpace()
-        {
-            this.MapCharacter = ' ';
-            this.AltMapCharacter = null;
-            this.ItemCharacter = null;
-            this.DisplayCharacter = null;
-            this.SearchRequired = false;
-            this.Visible = true;
-            this.Discovered = false;
-            X = 0;
-            Y = 0;
-        }
 
         /// <summary>
         /// Constructor to create new MapSpace, reusing settings from the previous one.
@@ -1260,31 +1210,7 @@ namespace RogueGame{
                 retValue = this.MapCharacter;
 
             return retValue;
-        }
-
-        /// <summary>
-        /// Determine if there's something on the map space.
-        /// </summary>
-        /// <returns></returns>
-        public bool Occupied()
-        {
-            //TODO: Replace with List reading function.
-            char priorityChar = PriorityChar();
-
-            return (priorityChar != this.MapCharacter 
-                && priorityChar != this.AltMapCharacter
-                && priorityChar != Player.CHARACTER);
-        }
-
-        /// <summary>
-        /// Determine if the space contains an inventory item or gold.
-        /// </summary>
-        /// <returns></returns>
-        public bool ContainsItem()
-        {
-            // TODO: Replace with list reading function.
-            return(this.ItemCharacter != null ||  this.MapInventory != null);
-        }        
+        }       
     }
 }
 

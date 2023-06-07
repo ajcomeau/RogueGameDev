@@ -288,17 +288,6 @@ namespace RogueGame
             this.ZapFunction = (Zap != null) ? Zap : null;
         }
 
-
-        /// <summary>
-        /// Coonstructor for blank inventory item
-        /// </summary>
-        public Inventory()
-        {
-            // Contructor for blank item.
-            this.RealName = "";
-            this.DisplayCharacter = '0';
-        }
-
         /// <summary>
         /// Generates grouped inventory listing for inventory display screen.
         /// </summary>
