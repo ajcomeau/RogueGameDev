@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            lblStatusMsg = new Label();
             lblStats = new Label();
             toolTip1 = new ToolTip(components);
             lblArray = new Label();
@@ -37,18 +36,9 @@
             btnStart = new Button();
             txtName = new TextBox();
             lblQuestion = new Label();
+            listStatus = new ListBox();
             pnlName.SuspendLayout();
             SuspendLayout();
-            // 
-            // lblStatusMsg
-            // 
-            lblStatusMsg.AutoSize = true;
-            lblStatusMsg.Font = new Font("Consolas", 14F, FontStyle.Bold, GraphicsUnit.Point);
-            lblStatusMsg.Location = new Point(13, 9);
-            lblStatusMsg.Margin = new Padding(4, 0, 4, 0);
-            lblStatusMsg.Name = "lblStatusMsg";
-            lblStatusMsg.Size = new Size(0, 22);
-            lblStatusMsg.TabIndex = 0;
             // 
             // lblStats
             // 
@@ -64,13 +54,12 @@
             // 
             // lblArray
             // 
-            lblArray.BorderStyle = BorderStyle.FixedSingle;
-            lblArray.Dock = DockStyle.Fill;
+            lblArray.Dock = DockStyle.Bottom;
             lblArray.Font = new Font("Consolas", 15.75F, FontStyle.Regular, GraphicsUnit.Point);
-            lblArray.Location = new Point(0, 0);
+            lblArray.Location = new Point(0, 100);
             lblArray.Margin = new Padding(4, 0, 4, 0);
             lblArray.Name = "lblArray";
-            lblArray.Size = new Size(1156, 798);
+            lblArray.Size = new Size(1144, 698);
             lblArray.TabIndex = 10;
             // 
             // pnlName
@@ -112,16 +101,31 @@
             lblQuestion.TabIndex = 0;
             lblQuestion.Text = "What is your rogue's name?";
             // 
+            // listStatus
+            // 
+            listStatus.BackColor = Color.Black;
+            listStatus.BorderStyle = BorderStyle.None;
+            listStatus.Dock = DockStyle.Top;
+            listStatus.Font = new Font("Consolas", 12F, FontStyle.Bold, GraphicsUnit.Point);
+            listStatus.ForeColor = Color.FromArgb(255, 128, 0);
+            listStatus.FormattingEnabled = true;
+            listStatus.HorizontalScrollbar = true;
+            listStatus.ItemHeight = 19;
+            listStatus.Location = new Point(0, 0);
+            listStatus.Name = "listStatus";
+            listStatus.Size = new Size(1144, 760);
+            listStatus.TabIndex = 12;
+            // 
             // DungeonMain
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Black;
-            ClientSize = new Size(1156, 798);
+            ClientSize = new Size(1144, 798);
             Controls.Add(pnlName);
             Controls.Add(lblStats);
-            Controls.Add(lblStatusMsg);
             Controls.Add(lblArray);
+            Controls.Add(listStatus);
             Font = new Font("Consolas", 10F, FontStyle.Bold, GraphicsUnit.Point);
             ForeColor = Color.FromArgb(255, 128, 0);
             KeyPreview = true;
@@ -136,8 +140,6 @@
         }
 
         #endregion
-
-        private Label lblStatusMsg;
         private Label lblStats;
         private ToolTip toolTip1;
         private Label lblArray;
@@ -145,5 +147,6 @@
         private Button btnStart;
         private TextBox txtName;
         private Label lblQuestion;
+        private ListBox listStatus;
     }
 }

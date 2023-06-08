@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 
 namespace RogueGame
@@ -16,9 +17,9 @@ namespace RogueGame
             if (txtName.TextLength > 0)
             {
                 currentGame = new Game(txtName.Text);
+                listStatus.DataSource = currentGame.StatusList;
                 pnlName.Visible = false;
                 lblArray.Text = currentGame.ScreenDisplay;
-                lblStatusMsg.Text = currentGame.StatusMessage;
                 lblStats.Text = currentGame.StatsDisplay();
             }
             else
@@ -37,8 +38,9 @@ namespace RogueGame
 
                 lblArray.Text = currentGame.ScreenDisplay;
 
-                lblStatusMsg.Text = currentGame.StatusMessage;
                 lblStats.Text = currentGame.StatsDisplay();
+                listStatus.SelectedIndex = 0;
+                listStatus.SelectedIndex = -1;
             }
         }
     }

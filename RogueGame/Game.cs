@@ -1,6 +1,7 @@
 ﻿using RogueGame;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing.Imaging;
@@ -105,8 +106,9 @@ namespace RogueGame
         /// <summary>
         /// Status message for top of screen.
         /// </summary>
-        private string cStatus;  
-
+        private string cStatus;
+        public BindingList<string> StatusList = new BindingList<string>();
+        
         /// <summary>
         /// Random number generator
         /// </summary>
@@ -171,11 +173,11 @@ namespace RogueGame
             // Set starting turn and show welcome message.
             this.CurrentTurn = 1;
             this.GameMode = DisplayMode.Primary;
-            cStatus = $"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ... (Press ? for list of commands.)";
+            UpdateStatus($"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ... (Press ? for list of commands.)", false);
 
             // Set the current screen display.
             this.ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText();
-          
+            
         }
 
         /// <summary>
@@ -206,7 +208,6 @@ namespace RogueGame
                     // For ESC, clear the return function and restore the game map.
                     ReturnFunction = null;
                     RestoreMap();
-                    cStatus = "";
                 }
                 keyHandled = true;
             }
@@ -221,23 +222,22 @@ namespace RogueGame
                         if (CurrentPlayer.Location!.MapCharacter == MapLevel.STAIRWAY)
                             ChangeLevel(1);
                         else
-                            cStatus = "There's no stairway here.";
+                            UpdateStatus("There's no stairway here.", false);
                         break;
                     case KEY_UPLEVEL:       // Going upstairs.
                         startTurn = true;
                         if (CurrentPlayer.Location!.MapCharacter == MapLevel.STAIRWAY)
                             ChangeLevel(-1);
                         else
-                            cStatus = "There's no stairway here.";
+                            UpdateStatus("There's no stairway here.", false);
                         break;
                     case KEY_HELP:  // Show help screen
                         GameMode = DisplayMode.Help;
                         ScreenDisplay = HelpScreen();
-                        cStatus = "Here is a list of commands you can use.";
                         break;
                     case KEY_F: // Fast Play
                         FastPlay = !FastPlay;
-                        cStatus = FastPlay ? "Fast Play mode ON." : "Fast Play mode OFF";
+                        UpdateStatus(FastPlay ? "Fast Play mode ON." : "Fast Play mode OFF", false);
                         break;
                     default:
                         break;
@@ -251,7 +251,7 @@ namespace RogueGame
                 {
                     case KEY_D:         // Dev mode ON / OFF
                         DevMode = !DevMode;
-                        cStatus = DevMode ? "Developer Mode ON" : "Developer Mode OFF";
+                        UpdateStatus(DevMode ? "Developer Mode ON" : "Developer Mode OFF", false);
                         break;
                     case KEY_N:         // New map
                         if (DevMode)
@@ -291,11 +291,10 @@ namespace RogueGame
                         break;
                     case KEY_I:     // Show inventory
                         DisplayInventory();
-                        cStatus = "Here is your current inventory. Press ESC to exit.";
+                        UpdateStatus("Dispalying inventory. Press ESC to exit.", false);
                         break;
                     case KEY_ESC:  // Restore map
                         RestoreMap();
-                        cStatus = "";
                         break;
                     case KEY_D:     // Drop item
                         DropInventory(null);
@@ -319,6 +318,14 @@ namespace RogueGame
                 default:
                     break;
             }
+        }
+
+        private void UpdateStatus(string Status, bool Confirm)
+        {
+            if (Confirm)
+                MessageBox.Show(Status);
+            else
+                StatusList.Insert(0, Status);
 
         }
 
@@ -344,7 +351,7 @@ namespace RogueGame
                 {
                     CurrentPlayer.Immobile = CurrentPlayer.Immobile <= CurrentTurn ? 0 : CurrentPlayer.Immobile;
 
-                    if (CurrentPlayer.Immobile == 0) cStatus = cStatus + " You can move again.";
+                    if (CurrentPlayer.Immobile == 0) UpdateStatus(cStatus + " You can move again.", false);
                 }
             } while (CurrentPlayer.Immobile > CurrentTurn);
         }
@@ -449,7 +456,7 @@ namespace RogueGame
                     && CurrentPlayer.HungerState > Player.HungerLevel.Dead)
                 {
                     CurrentPlayer.HungerTurn += Player.HUNGER_TURNS;
-                    cStatus = $"You are starting to feel {CurrentPlayer.HungerState.ToString().ToLower()}";
+                    UpdateStatus($"You are starting to feel {CurrentPlayer.HungerState.ToString().ToLower()}", false);
                 }
             }
 
@@ -459,7 +466,7 @@ namespace RogueGame
                 if (rand.Next(1, 101) < FAINT_PCT)
                 {
                     CurrentPlayer.Immobile = CurrentTurn + rand.Next(1, MAX_TURN_LOSS + 1);
-                    cStatus = "You fainted from lack of food.";
+                    UpdateStatus("You fainted from lack of food.", true);
                 }
             }
             // If the player is now dead, signal the game over.
@@ -507,7 +514,7 @@ namespace RogueGame
             // Search if we roll within probability constant.
             if (rand.Next(1, 101) <= SEARCH_PCT)
             {
-                cStatus = "Searching ...";
+                UpdateStatus("Searching ...", false);
                 spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y);
 
                 foreach (MapSpace space in spaces)
@@ -520,7 +527,6 @@ namespace RogueGame
                 }
 
             }
-            else cStatus = "";
         }
 
         /// <summary>
@@ -534,12 +540,12 @@ namespace RogueGame
             if (Change < 0)
             {
                 allowPass = CurrentPlayer.HasAmulet && CurrentLevel > 1;
-                cStatus = allowPass ? "" : "You cannot go that way.";
+                UpdateStatus(allowPass ? "" : "You cannot go that way.", false);
             }
             else if (Change > 0) 
             {
                 allowPass = CurrentLevel < MAX_LEVEL;
-                cStatus = allowPass ? "" : "You have reached the bottom level. You must go the other way.";            
+                UpdateStatus(allowPass ? "" : "You have reached the bottom level. You must go the other way.", false);            
             }
 
             if (allowPass)
@@ -549,8 +555,6 @@ namespace RogueGame
                 CurrentLevel += Change;
                 CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
                 CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
-                                
-                cStatus = "";
             }
         }
 
@@ -578,8 +582,6 @@ namespace RogueGame
                 CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
             // Move character if possible.
-            // Clear the status.
-            cStatus = "";
 
             do
             {
@@ -603,7 +605,7 @@ namespace RogueGame
                     stopMoving = CurrentMap.DiscoverSurrounding(player.Location.X, player.Location.Y);
 
                     // Respond to items on map.
-                    if (invFound != null) cStatus = AddInventory();
+                    if (invFound != null) UpdateStatus(AddInventory(), false);
 
                     // Player turn completed.
                     turnComplete = true;
@@ -627,7 +629,7 @@ namespace RogueGame
                 // hallway spaces indicate a junction which needs to stop FastPlay.
                 adjacent = CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
-            } while (!stopMoving && CanAutoMove(player.Location, adjacent[direct]));
+            } while (!stopMoving && invFound == null && CanAutoMove(player.Location, adjacent[direct]));
         }
 
         private void Attack(Player Attacker, Monster Defender)
@@ -642,10 +644,10 @@ namespace RogueGame
             // Up to 50% of the monster's HP.
             if (hitSuccess)
             {
-                cStatus = $"You hit the {Defender.MonsterName.ToLower()}.";
+                UpdateStatus($"You hit the {Defender.MonsterName.ToLower()}.", false);
                 damage = rand.Next(1, (int)(Defender.MaxHP / 2) + 1);
             }
-            else cStatus = $"You missed the {Defender.MonsterName.ToLower()}.";
+            else UpdateStatus($"You missed the {Defender.MonsterName.ToLower()}.", false);
 
             Defender.HPDamage += damage;
 
@@ -653,7 +655,7 @@ namespace RogueGame
             if(Defender.CurrentHP < 1)
             {
                 CurrentMap.ActiveMonsters.Remove(Defender);
-                cStatus = $"You defeated the {Defender.MonsterName.ToLower()}.";
+                UpdateStatus($"You defeated the {Defender.MonsterName.ToLower()}.", false);
             }
         }
 
@@ -794,12 +796,12 @@ namespace RogueGame
                     // If there's something edible, show the inventory
                     // and let the player select it.  Set to return and exit.
                     DisplayInventory();
-                    cStatus = "Please select something to eat.";
+                    UpdateStatus("Please select something to eat.", false);
                     ReturnFunction = Eat;
                 }
                 else
                     // Otherwise, they'll be hungry for awhile.
-                    cStatus = "You don't have anything to eat.";
+                    UpdateStatus("You don't have anything to eat.", false);
             }
             else
             {
@@ -815,7 +817,7 @@ namespace RogueGame
                     // TODO: In this case, it makes more sense to complete this here than in a delegate function. Continue to evaluate as other inventory is implemented.
                     if (items[0].ItemCategory != Inventory.InvCategory.Food)
                     { 
-                        cStatus = "You can't eat THAT!";
+                        UpdateStatus("You can't eat THAT!", false);
                         retValue = false;
                     }
                     else
@@ -825,14 +827,14 @@ namespace RogueGame
                         CurrentPlayer.HungerState = Player.HungerLevel.Satisfied;
                         CurrentPlayer.PlayerInventory.Remove(items[0]);
                         RestoreMap();
-                        cStatus = "Mmmm, that hit the spot.";
+                        UpdateStatus("Mmmm, that hit the spot.", false);
                         retValue = true;
                     }
                 }
                 else
                 {
                     // Process non-existent option.
-                    cStatus = "Please select something to eat.";
+                    UpdateStatus("Please select something to eat.", false);
                     RestoreMap();
                     retValue = false;
                 }
@@ -855,7 +857,7 @@ namespace RogueGame
             if (GameMode != DisplayMode.Inventory)
             {
                 DisplayInventory();
-                cStatus = "Please select an item to drop.";
+                UpdateStatus("Please select an item to drop.", false);
                 ReturnFunction = DropInventory;
             }
             else
@@ -877,13 +879,13 @@ namespace RogueGame
                             CurrentPlayer.PlayerInventory =
                                 CurrentPlayer.PlayerInventory.Where(x => x.RealName != items[0].InvItem.RealName).ToList();
                                                         
-                            cStatus = $"You dropped {Inventory.ListingDescription(items[0].Count, items[0].InvItem)}.";
+                            UpdateStatus($"You dropped {Inventory.ListingDescription(items[0].Count, items[0].InvItem)}.", false);
                         }
                         else
                         {
                             items[0].InvItem.Amount = 1;
                             CurrentPlayer.PlayerInventory.Remove(items[0].InvItem);
-                            cStatus = $"You dropped {Inventory.ListingDescription(1, items[0].InvItem)}.";
+                            UpdateStatus($"You dropped {Inventory.ListingDescription(1, items[0].InvItem)}.", false);
                         }
 
                         items[0].InvItem.Location = CurrentPlayer.Location;
@@ -893,13 +895,13 @@ namespace RogueGame
                     }
                     else
                     {
-                        cStatus = "There is already an item there.";
+                        UpdateStatus("There is already an item there.", false);
                         retValue = false;
                     }
                 }
                 else
                 {
-                    cStatus = "Please select an inventory item to drop.";
+                    UpdateStatus("Please select an inventory item to drop.", false);
                     RestoreMap();
                     retValue = false;
                 }
@@ -934,7 +936,7 @@ namespace RogueGame
                     int goldAmt = rand.Next(MapLevel.MIN_GOLD_AMT, MapLevel.MAX_GOLD_AMT + 1);
                     CurrentPlayer.Gold += goldAmt;
                     CurrentMap.MapInventory.Remove(foundItem);
-                    cStatus = $"You picked up {goldAmt} pieces of gold.";
+                    retValue = $"You picked up {goldAmt} pieces of gold.";
                 }
                 else
                 {
