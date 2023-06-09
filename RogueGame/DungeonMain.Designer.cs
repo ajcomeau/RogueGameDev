@@ -54,14 +54,13 @@
             // 
             // lblArray
             // 
-            lblArray.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            lblArray.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lblArray.Font = new Font("Consolas", 14F, FontStyle.Regular, GraphicsUnit.Point);
             lblArray.Location = new Point(14, 167);
             lblArray.Margin = new Padding(4, 0, 4, 0);
             lblArray.Name = "lblArray";
             lblArray.Size = new Size(1118, 572);
             lblArray.TabIndex = 10;
-            lblArray.TextAlign = ContentAlignment.TopCenter;
             // 
             // pnlName
             // 
