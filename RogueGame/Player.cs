@@ -171,6 +171,9 @@ namespace RogueGame
             this.PlayerInventory.Add(Inventory.GetInventoryItem("a mace")!);
             this.PlayerInventory.Add(Inventory.GetInventoryItem("a short bow")!);
 
+            // Have player wear the armor.
+            this.Armor = SearchInventory(Inventory.InvCategory.Armor);
+
             // Add batch of arrows
             for (int i = 1; i <= rand.Next(1, Inventory.MAX_AMMO_BATCH + 1); i++)
                 this.PlayerInventory.Add(Inventory.GetInventoryItem("an arrow")!);
@@ -185,11 +188,23 @@ namespace RogueGame
         /// </summary>
         /// <param name="ItemName">Real name of item.</param>
         /// <returns></returns>
-        public bool SearchInventory(string ItemName)
+        public Inventory? SearchInventory(string ItemName)
         {
             return (from Inventory item in PlayerInventory
                     where item.RealName == ItemName
-                    select item).Count() > 0;
+                    select item).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Get first inventory item of a specific category.
+        /// </summary>
+        /// <param name="Category"></param>
+        /// <returns></returns>
+        public Inventory? SearchInventory(Inventory.InvCategory Category)
+        {
+            return (from Inventory item in PlayerInventory
+                    where item.ItemCategory == Category
+                    select item).FirstOrDefault();
         }
     }
 }

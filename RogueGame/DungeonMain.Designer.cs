@@ -54,21 +54,22 @@
             // 
             // lblArray
             // 
-            lblArray.Dock = DockStyle.Bottom;
-            lblArray.Font = new Font("Consolas", 15.75F, FontStyle.Regular, GraphicsUnit.Point);
-            lblArray.Location = new Point(0, 100);
+            lblArray.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            lblArray.Font = new Font("Consolas", 14F, FontStyle.Regular, GraphicsUnit.Point);
+            lblArray.Location = new Point(14, 167);
             lblArray.Margin = new Padding(4, 0, 4, 0);
             lblArray.Name = "lblArray";
-            lblArray.Size = new Size(1144, 698);
+            lblArray.Size = new Size(1118, 572);
             lblArray.TabIndex = 10;
+            lblArray.TextAlign = ContentAlignment.TopCenter;
             // 
             // pnlName
             // 
-            pnlName.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            pnlName.Anchor = AnchorStyles.Bottom;
             pnlName.Controls.Add(btnStart);
             pnlName.Controls.Add(txtName);
             pnlName.Controls.Add(lblQuestion);
-            pnlName.Location = new Point(118, 711);
+            pnlName.Location = new Point(200, 742);
             pnlName.Name = "pnlName";
             pnlName.Size = new Size(727, 44);
             pnlName.TabIndex = 11;
@@ -76,7 +77,7 @@
             // btnStart
             // 
             btnStart.BackColor = SystemColors.ActiveCaptionText;
-            btnStart.Location = new Point(548, 9);
+            btnStart.Location = new Point(600, 9);
             btnStart.Name = "btnStart";
             btnStart.Size = new Size(75, 23);
             btnStart.TabIndex = 2;
@@ -88,7 +89,7 @@
             // 
             txtName.BackColor = SystemColors.ControlText;
             txtName.ForeColor = Color.FromArgb(255, 128, 0);
-            txtName.Location = new Point(265, 10);
+            txtName.Location = new Point(317, 10);
             txtName.Name = "txtName";
             txtName.Size = new Size(277, 23);
             txtName.TabIndex = 1;
@@ -97,23 +98,23 @@
             // 
             lblQuestion.Location = new Point(17, 13);
             lblQuestion.Name = "lblQuestion";
-            lblQuestion.Size = new Size(242, 21);
+            lblQuestion.Size = new Size(271, 21);
             lblQuestion.TabIndex = 0;
             lblQuestion.Text = "What is your rogue's name?";
             // 
             // listStatus
             // 
+            listStatus.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             listStatus.BackColor = Color.Black;
             listStatus.BorderStyle = BorderStyle.None;
-            listStatus.Dock = DockStyle.Top;
             listStatus.Font = new Font("Consolas", 12F, FontStyle.Bold, GraphicsUnit.Point);
             listStatus.ForeColor = Color.FromArgb(255, 128, 0);
             listStatus.FormattingEnabled = true;
             listStatus.HorizontalScrollbar = true;
             listStatus.ItemHeight = 19;
-            listStatus.Location = new Point(0, 0);
+            listStatus.Location = new Point(12, 12);
             listStatus.Name = "listStatus";
-            listStatus.Size = new Size(1144, 760);
+            listStatus.Size = new Size(1120, 152);
             listStatus.TabIndex = 12;
             // 
             // DungeonMain
@@ -130,6 +131,7 @@
             ForeColor = Color.FromArgb(255, 128, 0);
             KeyPreview = true;
             Margin = new Padding(4);
+            MinimumSize = new Size(1160, 837);
             Name = "DungeonMain";
             Text = "Dungeon Map";
             KeyDown += DungeonMain_KeyDown;

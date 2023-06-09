@@ -536,18 +536,22 @@ namespace RogueGame
         private void ChangeLevel(int Change)
         {
             bool allowPass = false;
+            string failMessage = "";
 
+            // Player can go down a level until the final level.
+            // They can only go up if they have the Amulet.
             if (Change < 0)
             {
                 allowPass = CurrentPlayer.HasAmulet && CurrentLevel > 1;
-                UpdateStatus(allowPass ? "" : "You cannot go that way.", false);
+                failMessage = "You can't go that way.";
             }
-            else if (Change > 0) 
+            else if (Change > 0)
             {
                 allowPass = CurrentLevel < MAX_LEVEL;
-                UpdateStatus(allowPass ? "" : "You have reached the bottom level. You must go the other way.", false);            
-            }
+                failMessage = "You have reached the final level. You must find the Amulet and return to the surface.";
+            }                
 
+            // Change the level or show the fail message.
             if (allowPass)
             {
                 CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer);
@@ -555,7 +559,11 @@ namespace RogueGame
                 CurrentLevel += Change;
                 CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
                 CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
+                UpdateStatus($"Welcome to Level {CurrentLevel}.", false);
             }
+            else
+                UpdateStatus(failMessage, false);
+
         }
 
         /// <summary>
@@ -943,7 +951,7 @@ namespace RogueGame
                     // Determine if there's room in inventory for the item.
                     // If it's groupable and the player already has it in a slot, add it.
                     // Otherwise, if there's an extra slot available, add it.
-                    addToInventory = (foundItem.IsGroupable && CurrentPlayer.SearchInventory(foundItem.RealName));
+                    addToInventory = (foundItem.IsGroupable && CurrentPlayer.SearchInventory(foundItem.RealName) != null);
                     if (!addToInventory) addToInventory =
                             Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory).Count + 1 <= Player.INVENTORY_LIMIT;
 
