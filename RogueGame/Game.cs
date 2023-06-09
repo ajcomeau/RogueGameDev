@@ -291,7 +291,7 @@ namespace RogueGame
                         break;
                     case KEY_I:     // Show inventory
                         DisplayInventory();
-                        UpdateStatus("Dispalying inventory. Press ESC to exit.", false);
+                        UpdateStatus("Displaying inventory. Press ESC to exit.", false);
                         break;
                     case KEY_ESC:  // Restore map
                         RestoreMap();
@@ -594,7 +594,7 @@ namespace RogueGame
             do
             {
                 // Inspect target character
-                visibleCharacter = adjacent[direct].PriorityChar();
+                visibleCharacter = CurrentMap.PriorityChar(adjacent[direct], false);
                 invFound = CurrentMap.DetectInventory(adjacent[direct]);
 
                 // The player can move if the visible character is within a room or a hallway and there's no monster there.
@@ -697,7 +697,7 @@ namespace RogueGame
                     // for one that's available and closest to the player.
                     foreach (KeyValuePair<MapLevel.Direction, MapSpace> adjSpace in adjacent)
                     {
-                        if (MapLevel.SpacesAllowed.Contains(adjSpace.Value.PriorityChar()) || 
+                        if (MapLevel.SpacesAllowed.Contains(CurrentMap.PriorityChar(adjSpace.Value, false)) || 
                             CurrentMap.DetectInventory(adjSpace.Value) != null)
                         {
                             tentativeDistance = Math.Abs(adjSpace.Value.X - CurrentPlayer.Location.X)
@@ -729,7 +729,7 @@ namespace RogueGame
                 direct270 = CurrentMap.GetDirection270(direct);
 
                 // Inspect target character
-                visibleCharacter = adjacent[direct].PriorityChar();
+                visibleCharacter = CurrentMap.PriorityChar(adjacent[direct], false);
 
                 // The monster can move if the visible character is within a room or a hallway
                 // and there's nobody else there.
@@ -775,7 +775,7 @@ namespace RogueGame
                 & CurrentMap.DetectMonster(Target) == null // No monster
                 & CurrentMap.DetectInventory(Target) == null // No mnventory  
                 & Target.MapCharacter == Origin.MapCharacter 
-                & MapLevel.SpacesAllowed.Contains(Target.PriorityChar())
+                & MapLevel.SpacesAllowed.Contains(CurrentMap.PriorityChar(Target, false))
                 & CurrentMap.SearchAdjacent(MapLevel.HALLWAY, Origin.X, Origin.Y).Count < 3;
         
         }

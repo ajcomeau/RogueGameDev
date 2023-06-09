@@ -647,8 +647,6 @@ namespace RogueGame{
         {
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
 
-            RefreshMapLocations();
-
             if (y - 1 >= 0 && levelMap[x, y - 1].MapCharacter == character)  // North
                 retValue.Add(Direction.North, levelMap[x, y - 1]);
 
@@ -673,8 +671,6 @@ namespace RogueGame{
         /// <returns>Dictionary of directions and characters found.</returns>
         public Dictionary<Direction, MapSpace> SearchAdjacent(int x, int y)
         {
-            RefreshMapLocations();
-
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
             retValue.Add(Direction.North, levelMap[x, y - 1]);
             retValue.Add(Direction.East, levelMap[x + 1, y]);
@@ -693,8 +689,6 @@ namespace RogueGame{
         public Dictionary<Direction, MapSpace> SearchAllDirections(int currentX, int currentY)
         {
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
-
-            RefreshMapLocations();
 
             retValue.Add(Direction.North, SearchDirection(Direction.North, currentX, currentY - 1));
             retValue.Add(Direction.South, SearchDirection(Direction.South, currentX, currentY + 1));
@@ -715,8 +709,6 @@ namespace RogueGame{
         {
             int currentX = startX, currentY = startY;
             MapSpace? retValue = null;
-
-            RefreshMapLocations();
 
             currentY = (currentY > MAP_HT) ? MAP_HT : currentY;
             currentY = (currentY < 0) ? 0 : currentY;
@@ -776,6 +768,27 @@ namespace RogueGame{
             return foundMonster;
         }
 
+        public char PriorityChar(MapSpace Space, bool ShowHidden)
+        {
+            Monster? monster = DetectMonster(Space);
+            Inventory? invItem = DetectInventory(Space);
+
+            char retValue;
+
+            if (monster != null)
+                retValue = monster.DisplayCharacter;
+            else if (Space == CurrentPlayer.Location)
+                retValue = Player.CHARACTER;
+            else if (invItem != null)
+                retValue = invItem.DisplayCharacter;
+            else if (Space.AltMapCharacter != null && !ShowHidden)
+                retValue = (char)Space.AltMapCharacter;
+            else
+                retValue = (char)Space.MapCharacter;
+
+            return retValue;
+        }
+
         /// <summary>
         /// Return a list of all spaces around given space in eight directions.
         /// </summary>
@@ -784,8 +797,6 @@ namespace RogueGame{
         /// <returns></returns>
         public List<MapSpace> GetSurrounding(int x, int y)
         {
-            RefreshMapLocations();
-
             List<MapSpace> surrounding = (from MapSpace space in levelMap
                                         where Math.Abs(space.X - x) <= 1
                                         && Math.Abs(space.Y - y) <= 1
@@ -801,14 +812,13 @@ namespace RogueGame{
         /// <returns></returns>
         public MapSpace GetOpenSpace(bool hallways)
         {
-            RefreshMapLocations();
-
             string charList = hallways ? (HALLWAY.ToString() + ROOM_INT.ToString()) : ROOM_INT.ToString();
 
             List<MapSpace> spaces = (from MapSpace space in levelMap
                                      where charList.Contains(space.MapCharacter)
-                                     && space.ItemCharacter == null
-                                     && space.DisplayCharacter == null
+                                     && DetectInventory(space) == null
+                                     && DetectMonster(space) == null
+                                     && space != CurrentPlayer.Location
                                      select space).ToList();
 
             return spaces[rand.Next(0, spaces.Count)];
@@ -861,8 +871,6 @@ namespace RogueGame{
         {
             bool retValue = false;
 
-            RefreshMapLocations();
-
             foreach (MapSpace space in GetSurrounding(xPos, yPos))
             {
                 // Mark the space as discovered.
@@ -881,7 +889,7 @@ namespace RogueGame{
                 // Ignore player's space.
                 if (!retValue) 
                     if (space.X != xPos || space.Y != yPos)
-                        retValue = (!GlideSpaces.Contains(space.PriorityChar()));
+                        retValue = (!GlideSpaces.Contains(PriorityChar(space, false)));
             }
 
             return retValue;
@@ -958,11 +966,6 @@ namespace RogueGame{
         public string MapCheck()
         { 
             StringBuilder sbReturn = new StringBuilder();
-            char? priorityChar;
-
-            // Refresh monster and player positions.  Better to do it here, once, than
-            // throughout the program.
-            RefreshMapLocations();
 
             // Iterate through the two-dimensional array and use StringBuilder to 
             // concatenate the proper characters into rows and columns for display.
@@ -970,17 +973,7 @@ namespace RogueGame{
             for (int y = 0; y <= MAP_HT; y++)
             {
                 for (int x = 0; x <= MAP_WD; x++)
-                {
-                    // Priority - DisplayCharacter, ItemCharacter, MapCharacter.
-                    if (levelMap[x, y].DisplayCharacter != null)
-                        priorityChar = levelMap[x, y].DisplayCharacter;
-                    else if (levelMap[x, y].ItemCharacter != null)
-                        priorityChar = levelMap[x, y].ItemCharacter;
-                    else
-                        priorityChar = levelMap[x, y].MapCharacter;
-
-                    sbReturn.Append(priorityChar);                    
-                }
+                    sbReturn.Append(PriorityChar(levelMap[x, y], true));                    
 
                 sbReturn.Append("\n");     // Start new line.           
             }
@@ -1012,31 +1005,6 @@ namespace RogueGame{
             return retList;
         }
 
-        public void RefreshMapLocations()
-        {
-            MapSpace? PlayerLocation = CurrentPlayer.Location;
-
-            // Clear existing spaces on map.
-            foreach (MapSpace space in levelMap)
-            {
-                space.ItemCharacter = null;
-                space.DisplayCharacter = null;
-            }               
-
-            // Put player on map.
-            if(PlayerLocation != null)
-                levelMap[PlayerLocation.X, PlayerLocation.Y].DisplayCharacter = Player.CHARACTER;
-
-            // Place monsters.
-            foreach (Monster monster in ActiveMonsters)
-                levelMap[monster.Location!.X, monster.Location.Y].DisplayCharacter = monster.DisplayCharacter;
-
-            // Place inventory
-            foreach (Inventory item in MapInventory)
-                levelMap[item.Location!.X, item.Location.Y].ItemCharacter = item.DisplayCharacter;
-
-        }
-
         /// <summary>
         /// Output the array to text for display.
         /// </summary>
@@ -1050,10 +1018,6 @@ namespace RogueGame{
             char? priorityChar, appendChar;
             bool inRoom = false;
 
-            // Refresh monster and player positions.  Better to do it here, once, than
-            // throughout the program.
-            RefreshMapLocations();
-
             // Iterate through the two-dimensional array and use StringBuilder to 
             // concatenate the proper characters into rows and columns for display.
 
@@ -1062,7 +1026,7 @@ namespace RogueGame{
                 for (int x = 0; x <= MAP_WD; x++)
                 {
                     // Get priority character
-                    priorityChar = levelMap[x, y].PriorityChar();
+                    priorityChar = PriorityChar(levelMap[x, y], false);
 
                     // Determine if player is actually in the room.
                     inRoom = (GetRegionNumber(x, y) == playerRegion &&
@@ -1111,14 +1075,6 @@ namespace RogueGame{
         /// </summary>
         public char? AltMapCharacter { get; set; }
         /// <summary>
-        /// Item sitting on map, usually gold.
-        /// </summary>
-        public char? ItemCharacter { get; set; }
-        /// <summary>
-        /// Player and monsters.
-        /// </summary>
-        public char? DisplayCharacter { get; set; }
-        /// <summary>
         /// Inventory items found on the map.
         /// </summary>
         public bool SearchRequired { get; set; }
@@ -1142,8 +1098,6 @@ namespace RogueGame{
         {
             this.MapCharacter = mapChar;
             this.AltMapCharacter = null; 
-            this.ItemCharacter = null;
-            this.DisplayCharacter = null;
             this.SearchRequired = false;
             this.X = oldSpace.X; 
             this.Y = oldSpace.Y; 
@@ -1161,8 +1115,6 @@ namespace RogueGame{
         {
             this.MapCharacter = mapChar;
             this.AltMapCharacter = null;
-            this.ItemCharacter = null;
-            this.DisplayCharacter = null;
             this.SearchRequired = false;
             this.Visible = true;
             this.Discovered = true;
@@ -1182,35 +1134,12 @@ namespace RogueGame{
         {
             this.MapCharacter = mapChar;
             this.AltMapCharacter = null;
-            this.ItemCharacter = null;
-            this.DisplayCharacter = null;
             this.SearchRequired = search;
             this.Visible = !hidden;
             this.Discovered = false;
             this.X = X;
             this.Y = Y;
-        }
-
-        /// <summary>
-        /// Return character to be displayed for space based on standard priority.
-        /// DisplayCharacter, ItemCharacter, MapInventory.DisplayCharacter AltMapCharacter, MapCharacter.
-        /// </summary>
-        /// <returns></returns>
-        public char PriorityChar()
-        {
-            char retValue;
-
-            if (this.DisplayCharacter != null)
-                retValue = (char)this.DisplayCharacter;
-            else if (this.ItemCharacter != null)
-                retValue = (char)this.ItemCharacter;
-            else if (this.AltMapCharacter != null)
-                retValue = (char)this.AltMapCharacter;
-            else
-                retValue = this.MapCharacter;
-
-            return retValue;
-        }       
+        }  
     }
 }
 
