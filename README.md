@@ -1,5 +1,16 @@
 # Rogue C#
 
+6/8/2023
+
+I adjusted the controls on the main form to accomodate other displays and this will hopefully resolve any problems.
+You might need to expand or maximize the form for proper viewing.  I have set a minimum size past which the form cannot
+shrink.
+
+On another machine, Visual Studio had a habit of losing the event settings for the main form after it was resized.
+The Start button stops working and none of the game keys worked.  If this is happening, just reselect the events for
+the Start button Click event and the KeyDown event on the form.
+
+
 6/5/2023
 
 Monsters are wandering around the map and you can attack them by running into them to get them out of your way.
