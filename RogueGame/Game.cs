@@ -554,9 +554,9 @@ namespace RogueGame
             // Change the level or show the fail message.
             if (allowPass)
             {
+                CurrentLevel += Change;
                 CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer);
                 CurrentMap.ShroudMap();
-                CurrentLevel += Change;
                 CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
                 CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
                 UpdateStatus($"Welcome to Level {CurrentLevel}.", false);
