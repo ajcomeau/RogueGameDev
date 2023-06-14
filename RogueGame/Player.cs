@@ -129,28 +129,15 @@ namespace RogueGame
         /// <summary>
         /// Current map space occupied
         /// </summary>
-        public MapSpace? Location { get; set; } 
+        public MapSpace? Location { get; set; }
         /// <summary>
-        /// Calculates user experience level based on experience points.
+        /// Player experience level based on experience points.
         /// </summary>
-        /// <returns>Experience level number</returns>
-        public int ExperienceLevel()
-        {
-            // Calculate player's experience level based on 
-            // experience points.
-
-            int returnLevel = 0;
-            int nextLevelReq = 5;
-
-            do { 
-                nextLevelReq *= 2; 
-                returnLevel += 1;
-            }
-            while (this.Experience > nextLevelReq);
-
-            return returnLevel;
-        }
-
+        public int ExpLevel { get; set; } = 1;
+        /// <summary>
+        /// Hit points at which to level up player next.
+        /// </summary>
+        public int NextExpLevelUp { get; set; } = 10;
         /// <summary>
         /// Primary constructor for creating new player when game starts.
         /// </summary>

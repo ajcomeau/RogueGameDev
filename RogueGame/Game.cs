@@ -35,6 +35,9 @@ namespace RogueGame
         private const int KEY_F = 70;
         private const int KEY_ESC = 27;
         private const int KEY_HELP = 191;
+        // Etc.
+        private const int HEAL_RATE = 12;  // Number of turns between each health regen.
+        private const int HP_LEVEL_INCREASE = 10; // Maximum HP to add with each exp. level.
         
         /// <summary>
         /// Probability of search revealing hidden doors, etc..
@@ -100,6 +103,10 @@ namespace RogueGame
         /// </summary>
         public bool FastPlay { get; set; }
         /// <summary>
+        /// How did the player die?
+        /// </summary>
+        public string? CauseOfDeath { get; set; }
+        /// <summary>
         /// Delgate used to return to function that enables an inventory item to be used.
         /// </summary>
         public Func<char?, bool>? ReturnFunction { get; set; } 
@@ -133,12 +140,12 @@ namespace RogueGame
             {
                 // Assemble stats display for the bottom of the screen.
                 retValue = $"Level: {CurrentLevel}  ";
-                retValue += $"HP: {CurrentPlayer.MaxHP}/{CurrentPlayer.CurrentHP}  ";
-                retValue += $"Strength: {CurrentPlayer.MaxStrength}/{CurrentPlayer.CurrentStrength}  ";
+                retValue += $"HP: {CurrentPlayer.CurrentHP}/{CurrentPlayer.MaxHP}  ";
+                retValue += $"Strength: {CurrentPlayer.CurrentStrength}/{CurrentPlayer.MaxStrength}  ";
                 retValue += $"Gold: {CurrentPlayer.Gold}  ";
                 retValue += $"Armor: {(CurrentPlayer.Armor != null ? CurrentPlayer.Armor.ArmorClass : 0)}  ";
                 retValue += $"Turn: {CurrentTurn}  ";
-                retValue += $"Exp: {CurrentPlayer.ExperienceLevel()}/{CurrentPlayer.Experience}";
+                retValue += $"Exp: {CurrentPlayer.ExpLevel}/{CurrentPlayer.Experience}";
 
                 
                 if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied)
@@ -410,12 +417,9 @@ namespace RogueGame
         /// <returns></returns>
         private string RIPScreen()
         {
-            string endingCause = "";
             string screen;
 
-            // If the player died from starvation, put that in the variable
-            if (CurrentPlayer.HungerState == Player.HungerLevel.Dead)
-                endingCause = "starvation";
+            if (CauseOfDeath == null) CauseOfDeath = "mysterious forces.";
 
             // Assemble the ASCII graphic and return it.
             screen = "\n\n\n\n\n\n\n\n" +
@@ -427,7 +431,7 @@ namespace RogueGame
             "\n                   ║                             ║" +
             $"\n                   ║{CenterString(CurrentPlayer.PlayerName, 29)}║" +
             "\n                   ║          Killed by          ║" +
-            $"\n                   ║{CenterString(endingCause,29)}║" +
+            $"\n                   ║{CenterString(CauseOfDeath,29)}║" +
             "\n                   ║                             ║" +
             $"\n                   ║{CenterString(CurrentPlayer.Gold.ToString() + " Au", 29)}║" +
             $"\n                   ║           {DateTime.Now.Year + " "}             ║" +
@@ -471,7 +475,30 @@ namespace RogueGame
             }
             // If the player is now dead, signal the game over.
             else if (CurrentPlayer.HungerState == Player.HungerLevel.Dead)
+            {
                 GameMode = DisplayMode.GameOver;
+                CauseOfDeath = "starvation";
+            }
+
+
+            // Regenerate hit points.
+            if (GameMode != DisplayMode.GameOver && CurrentTurn % HEAL_RATE == 0 && CurrentPlayer.HPDamage > 0)
+                CurrentPlayer.HPDamage -= rand.Next(1, (int)(CurrentPlayer.ExpLevel / 2 + 1));
+
+            if (CurrentPlayer.HPDamage < 0) CurrentPlayer.HPDamage = 0;
+
+            // Check for experience level increase.
+            if(CurrentPlayer.Experience >= CurrentPlayer.NextExpLevelUp)
+            {
+                CurrentPlayer.NextExpLevelUp *= 2;
+                CurrentPlayer.ExpLevel += 1;
+                CurrentPlayer.MaxHP += rand.Next(1, HP_LEVEL_INCREASE + 1);
+                
+                if (CurrentPlayer.HPDamage > 0)
+                    CurrentPlayer.HPDamage -= rand.Next(1, CurrentPlayer.HPDamage);
+                
+                UpdateStatus($"Welcome to Level {CurrentPlayer.ExpLevel}.", false);                
+            }
 
         }
 
@@ -525,7 +552,6 @@ namespace RogueGame
                         space.AltMapCharacter = null;
                     }
                 }
-
             }
         }
 
@@ -559,7 +585,6 @@ namespace RogueGame
                 CurrentMap.ShroudMap();
                 CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
                 CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
-                UpdateStatus($"Welcome to Level {CurrentLevel}.", false);
             }
             else
                 UpdateStatus(failMessage, false);
@@ -649,6 +674,9 @@ namespace RogueGame
             bool hitSuccess = rand.Next(1, 101) > 50;
             int damage = 0;
 
+            // Either way, if the monster wasn't angry before, it sure is now.
+            Defender.CurrentState = Monster.Activity.Angered;
+
             // Up to 50% of the monster's HP.
             if (hitSuccess)
             {
@@ -664,6 +692,34 @@ namespace RogueGame
             {
                 CurrentMap.ActiveMonsters.Remove(Defender);
                 UpdateStatus($"You defeated the {Defender.MonsterName.ToLower()}.", false);
+                CurrentPlayer.Experience += Defender.ExpReward + (int)(Defender.MaxHP / 6);
+            }
+        }
+
+        private void Attack(Monster Attacker, Player Defender)
+        {
+
+            // Basic attack method to get monsters out of the way.  In progress.
+
+            // Start with a 50% chance of landing a punch.
+            bool hitSuccess = rand.Next(1, 101) > 50;
+            int damage = 0;
+
+            // Up to 50% of the monster's HP.
+            if (hitSuccess)
+            {
+                UpdateStatus($"The {Attacker.MonsterName.ToLower()} hit you.", false);
+                damage = rand.Next(Attacker.MinAttackDmg, Attacker.MaxAttackDmg + 1);
+            }
+            else UpdateStatus($"The {Attacker.MonsterName.ToLower()} missed you.", false);
+
+            Defender.HPDamage += damage;
+
+            // If the player has been defeated, end the game.
+            if (Defender.CurrentHP < 1)
+            {
+                GameMode = DisplayMode.GameOver;
+                CauseOfDeath = Attacker.MonsterName.ToLower() + " attack.";
             }
         }
 
@@ -676,8 +732,8 @@ namespace RogueGame
             MapSpace destinationSpace = monster.Location!;
 
             // Move monster if possible.
-
             timeToMove = (monster.CurrentState == Monster.Activity.Wandering ||
+                monster.CurrentState == Monster.Activity.Angered ||
                 rand.Next(1, 101) >= monster.Inertia);
 
             if (timeToMove)
@@ -745,14 +801,15 @@ namespace RogueGame
                         // The monster just tried to run into another monster.  For now, just change direction.
                         // TODO:  This might need to result in an attack.
                         monster.Direction = rand.Next(1, 101) > 50 ? direct270 : direct90;
-                    else if (adjacent[direct] == CurrentPlayer.Location)
-                        // The monster just tried to run into the player.
-                        monster.Direction = rand.Next(1, 101) > 50 ? direct270 : direct90;
-                    else { 
+                    else if (adjacent[direct] == CurrentPlayer.Location && monster.CurrentState == Monster.Activity.Angered)
+                        // Attack the player
+                        Attack(monster, CurrentPlayer);
+                    else
+                    {
                         // Change direction and decide on a current state.
                         monster.Direction = rand.Next(1, 101) > 50 ? direct270 : direct90;
                         if (rand.Next(1, 101) < monster.Inertia) { monster.CurrentState = Monster.Activity.Resting; }
-                }
+                    }
                 }
             }
 
@@ -836,6 +893,8 @@ namespace RogueGame
                         CurrentPlayer.PlayerInventory.Remove(items[0]);
                         RestoreMap();
                         UpdateStatus("Mmmm, that hit the spot.", false);
+                        // Reward a strength point if needed.
+                        if (CurrentPlayer.StrengthMod > 0) CurrentPlayer.StrengthMod--;
                         retValue = true;
                     }
                 }
