@@ -113,21 +113,12 @@ namespace RogueGame
         /// <summary>
         /// Status message for top of screen.
         /// </summary>
-        private string cStatus;
         public BindingList<string> StatusList = new BindingList<string>();
         
         /// <summary>
         /// Random number generator
         /// </summary>
         public static Random rand = new Random();
-
-        /// <summary>
-        /// Read-only property to return current status message.
-        /// </summary>
-        public string StatusMessage
-        {
-            get { return cStatus; }
-        }
 
         /// <summary>
         /// Get current player stats display for bottom of screen.
@@ -330,9 +321,11 @@ namespace RogueGame
         private void UpdateStatus(string Status, bool Confirm)
         {
             if (Confirm)
-                MessageBox.Show(Status);
-            else
+            {
                 StatusList.Insert(0, Status);
+                MessageBox.Show(Status);
+            }
+            else StatusList.Insert(0, Status);
 
         }
 
@@ -358,7 +351,7 @@ namespace RogueGame
                 {
                     CurrentPlayer.Immobile = CurrentPlayer.Immobile <= CurrentTurn ? 0 : CurrentPlayer.Immobile;
 
-                    if (CurrentPlayer.Immobile == 0) UpdateStatus(cStatus + " You can move again.", false);
+                    if (CurrentPlayer.Immobile == 0) UpdateStatus("You can move again.", false);
                 }
             } while (CurrentPlayer.Immobile > CurrentTurn);
         }
@@ -705,7 +698,7 @@ namespace RogueGame
             bool hitSuccess = rand.Next(1, 101) > 50;
             int damage = 0;
 
-            // Up to 50% of the monster's HP.
+            // Random HP between monster's min and max attack damage.
             if (hitSuccess)
             {
                 UpdateStatus($"The {Attacker.MonsterName.ToLower()} hit you.", false);
