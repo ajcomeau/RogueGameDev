@@ -1,5 +1,19 @@
 # Rogue C#
 
+6/14/2023
+
+I started out just working on the player stats display at the bottom of the screen. Then I wanted to really test them
+so now the monsters are fighting back.  The attacks are still basic although monsters do have minimum and maximum attack
+damage properties where the player is just taking up to half the monster's hit points randomly.
+
+The player's hit points also regenerate now, with the speed of regeneration dependent on the level.  I'm still tuning that
+to see what works.  Step carefully through those dungeons, though.  Hobgoblins still seem to be especially nasty on the first
+level, even with a basic attack, and I've already died in th game a few times.  
+
+See the latest writeup at:
+https://www.comeausoftware.com/c-sharp/rogue-csharp-monsters-strike-back/
+
+
 6/8/2023
 
 I adjusted the controls on the main form to accomodate other displays and this will hopefully resolve any problems.
