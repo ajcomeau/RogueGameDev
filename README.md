@@ -10,6 +10,9 @@ The player's hit points also regenerate now, with the speed of regeneration depe
 to see what works.  Step carefully through those dungeons, though.  Hobgoblins still seem to be especially nasty on the first
 level, even with a basic attack, and I've already died in th game a few times.  
 
+See the latest writeup at:
+https://www.comeausoftware.com/c-sharp/rogue-csharp-monsters-strike-back/
+
 
 6/8/2023
 
