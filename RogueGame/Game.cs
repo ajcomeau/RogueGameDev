@@ -442,55 +442,57 @@ namespace RogueGame
         /// </summary>
         private void EvaluatePlayer()
         {
-            // If the player's scheduled to get hungry on the current turn, update the properties.
-            if (CurrentPlayer.HungerTurn == CurrentTurn)
+            if (GameMode != DisplayMode.GameOver)
             {
-                CurrentPlayer.HungerState = (CurrentPlayer.HungerState > 0)
-                    ? --CurrentPlayer.HungerState : 0;
-
-                // If the player is now hungry, weak or faint, add some turns.
-                if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied
-                    && CurrentPlayer.HungerState > Player.HungerLevel.Dead)
+                // If the player's scheduled to get hungry on the current turn, update the properties.
+                if (CurrentPlayer.HungerTurn == CurrentTurn)
                 {
-                    CurrentPlayer.HungerTurn += Player.HUNGER_TURNS;
-                    UpdateStatus($"You are starting to feel {CurrentPlayer.HungerState.ToString().ToLower()}", false);
-                }
-            }
+                    CurrentPlayer.HungerState = (CurrentPlayer.HungerState > 0)
+                        ? --CurrentPlayer.HungerState : 0;
 
-            // If the player is FAINT, decide if they should faint on this move.
-            if (CurrentPlayer.HungerState == Player.HungerLevel.Faint && CurrentPlayer.Immobile == 0)
-            {
-                if (rand.Next(1, 101) < FAINT_PCT)
+                    // If the player is now hungry, weak or faint, add some turns.
+                    if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied
+                        && CurrentPlayer.HungerState > Player.HungerLevel.Dead)
+                    {
+                        CurrentPlayer.HungerTurn += Player.HUNGER_TURNS;
+                        UpdateStatus($"You are starting to feel {CurrentPlayer.HungerState.ToString().ToLower()}", false);
+                    }
+                }
+
+                // If the player is FAINT, decide if they should faint on this move.
+                if (CurrentPlayer.HungerState == Player.HungerLevel.Faint && CurrentPlayer.Immobile == 0)
                 {
-                    CurrentPlayer.Immobile = CurrentTurn + rand.Next(1, MAX_TURN_LOSS + 1);
-                    UpdateStatus("You fainted from lack of food.", true);
+                    if (rand.Next(1, 101) < FAINT_PCT)
+                    {
+                        CurrentPlayer.Immobile = CurrentTurn + rand.Next(1, MAX_TURN_LOSS + 1);
+                        UpdateStatus("You fainted from lack of food.", true);
+                    }
                 }
-            }
-            // If the player is now dead, signal the game over.
-            else if (CurrentPlayer.HungerState == Player.HungerLevel.Dead)
-            {
-                GameMode = DisplayMode.GameOver;
-                CauseOfDeath = "starvation";
-            }
+                // If the player is now dead, signal the game over.
+                else if (CurrentPlayer.HungerState == Player.HungerLevel.Dead)
+                {
+                    GameMode = DisplayMode.GameOver;
+                    CauseOfDeath = "starvation";
+                }
 
+                // Regenerate hit points.
+                if (CurrentTurn % HEAL_RATE == 0 && CurrentPlayer.HPDamage > 0)
+                    CurrentPlayer.HPDamage -= rand.Next(1, (int)(CurrentPlayer.ExpLevel / 2 + 1));
 
-            // Regenerate hit points.
-            if (GameMode != DisplayMode.GameOver && CurrentTurn % HEAL_RATE == 0 && CurrentPlayer.HPDamage > 0)
-                CurrentPlayer.HPDamage -= rand.Next(1, (int)(CurrentPlayer.ExpLevel / 2 + 1));
+                if (CurrentPlayer.HPDamage < 0) CurrentPlayer.HPDamage = 0;
 
-            if (CurrentPlayer.HPDamage < 0) CurrentPlayer.HPDamage = 0;
+                // Check for experience level increase.
+                if (CurrentPlayer.Experience >= CurrentPlayer.NextExpLevelUp)
+                {
+                    CurrentPlayer.NextExpLevelUp *= 2;
+                    CurrentPlayer.ExpLevel += 1;
+                    CurrentPlayer.MaxHP += rand.Next(1, HP_LEVEL_INCREASE + 1);
 
-            // Check for experience level increase.
-            if(CurrentPlayer.Experience >= CurrentPlayer.NextExpLevelUp)
-            {
-                CurrentPlayer.NextExpLevelUp *= 2;
-                CurrentPlayer.ExpLevel += 1;
-                CurrentPlayer.MaxHP += rand.Next(1, HP_LEVEL_INCREASE + 1);
-                
-                if (CurrentPlayer.HPDamage > 0)
-                    CurrentPlayer.HPDamage -= rand.Next(1, CurrentPlayer.HPDamage);
-                
-                UpdateStatus($"Welcome to Level {CurrentPlayer.ExpLevel}.", false);                
+                    if (CurrentPlayer.HPDamage > 0)
+                        CurrentPlayer.HPDamage -= rand.Next(1, CurrentPlayer.HPDamage);
+
+                    UpdateStatus($"Welcome to Level {CurrentPlayer.ExpLevel}.", false);
+                }
             }
 
         }
@@ -603,8 +605,8 @@ namespace RogueGame
         {
             char visibleCharacter;
             bool canMove, stopMoving = false, turnComplete = false;
-            Inventory? invFound = null;
-            Dictionary<MapLevel.Direction, MapSpace> adjacent =
+            Inventory? invFound = null; Monster? monster = null;
+            Dictionary <MapLevel.Direction, MapSpace> adjacent =
                 CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
             // Move character if possible.
@@ -614,9 +616,11 @@ namespace RogueGame
                 // Inspect target character
                 visibleCharacter = CurrentMap.PriorityChar(adjacent[direct], false);
                 invFound = CurrentMap.DetectInventory(adjacent[direct]);
+                monster = CurrentMap.DetectMonster(adjacent[direct]);
 
                 // The player can move if the visible character is within a room or a hallway and there's no monster there.
-                canMove = MapLevel.SpacesAllowed.Contains(visibleCharacter) || invFound != null;
+                canMove = MapLevel.SpacesAllowed.Contains(visibleCharacter) ||
+                    (invFound != null && monster == null);
 
                 if (canMove)
                 {
@@ -636,11 +640,11 @@ namespace RogueGame
                     // Player turn completed.
                     turnComplete = true;
                 }
-                else if (CurrentMap.DetectMonster(adjacent[direct]) != null)
+                else if (monster != null)
                 {
-                    Monster opponent = (from Monster monster in CurrentMap.ActiveMonsters
-                                                    where monster.Location == adjacent[direct]
-                                                    select monster).First();
+                    Monster opponent = (from Monster monst in CurrentMap.ActiveMonsters
+                                                    where monst.Location == adjacent[direct]
+                                                    select monst).First();
 
                     Attack(CurrentPlayer, opponent);
 
@@ -712,7 +716,8 @@ namespace RogueGame
             if (Defender.CurrentHP < 1)
             {
                 GameMode = DisplayMode.GameOver;
-                CauseOfDeath = Attacker.MonsterName.ToLower() + " attack.";
+                CauseOfDeath = ("AEIOU".Contains(Attacker.MonsterName.Substring(0, 1))) ? "an " : "a ";
+                CauseOfDeath += Attacker.MonsterName.ToLower();
             }
         }
 
