@@ -229,7 +229,7 @@ namespace RogueGame{
             // size of its cell region, minus one space, to allow for hallways between rooms.
             
             int roomWidth = 0, roomHeight = 0, roomAnchorX = 0, roomAnchorY = 0;
-            MapSpace amulet, stairway;
+            MapSpace stairway;
 
             // Clear map by creating new array of map spaces.
             levelMap = new MapSpace[80, 25];

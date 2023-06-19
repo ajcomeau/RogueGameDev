@@ -33,6 +33,8 @@ namespace RogueGame
         private const int KEY_E = 69;
         private const int KEY_I = 73;
         private const int KEY_F = 70;
+        private const int KEY_T = 84;
+        private const int KEY_W = 87;
         private const int KEY_ESC = 27;
         private const int KEY_HELP = 191;
         // Etc.
@@ -55,7 +57,14 @@ namespace RogueGame
         /// Maximum turns to lose when fainting, etc..
         /// </summary>
         private const int MAX_TURN_LOSS = 5;
+        /// <summary>
+        /// Max number of spaces for monster to detect and pursue player.
+        /// </summary>
         private const int MAX_PURSUIT = 7;
+        /// <summary>
+        /// Probability that wearables will be cursed.
+        /// </summary>
+        private const int ITEM_CURSE_PROB = 15;
         /// <summary>
         /// Lists modes to be used for displaying different screens.
         /// </summary>
@@ -237,6 +246,14 @@ namespace RogueGame
                         FastPlay = !FastPlay;
                         UpdateStatus(FastPlay ? "Fast Play mode ON." : "Fast Play mode OFF", false);
                         break;
+                    case KEY_T: // Remove armor
+                        startTurn = true;
+                        RemoveArmor();
+                        break;
+                    case KEY_W: // Wear armor
+                        startTurn = true;
+                        WearArmor(null);
+                        break;
                     default:
                         break;
                 }
@@ -316,6 +333,27 @@ namespace RogueGame
                 default:
                     break;
             }
+        }
+
+        /// <summary>
+        /// Remove current armor from player.
+        /// </summary>
+        private void RemoveArmor()
+        {
+            string status = "";
+            Inventory? armor = CurrentPlayer.Armor;
+
+            if (armor != null && !armor.IsCursed)
+            {
+                CurrentPlayer.Armor = null;
+                status = $"You removed {armor.RealName}";
+            }
+            else if (armor != null && armor.IsCursed)
+                status = "You try to remove the armor but it's cursed.";
+            else
+                status = "You aren't wearing any armor.";
+
+            UpdateStatus(status, false);
         }
 
         private void UpdateStatus(string Status, bool Confirm)
@@ -494,7 +532,6 @@ namespace RogueGame
                     UpdateStatus($"Welcome to Level {CurrentPlayer.ExpLevel}.", false);
                 }
             }
-
         }
 
         /// <summary>
@@ -503,12 +540,18 @@ namespace RogueGame
         private void DisplayInventory()
         {
             // Switch the screen to the player's inventory.
-
             GameMode = DisplayMode.Inventory;
             ScreenDisplay = "\n\n";
 
-            foreach(InventoryLine line in Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory))
-                ScreenDisplay += line.Description + "\n";
+            foreach (InventoryLine line in Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory))
+                if (line.InvItem == CurrentPlayer.Armor)
+                    ScreenDisplay += line.Description + " (being worn)\n";  // current armor
+                else if (CurrentPlayer.RightHand != null && line.InvItem == CurrentPlayer.RightHand)
+                    ScreenDisplay += line.Description + " (on right hand)\n";  // ring
+                else if (CurrentPlayer.LeftHand != null && line.InvItem == CurrentPlayer.LeftHand)
+                    ScreenDisplay += line.Description + " (on left hand)\n";  // ring
+                else
+                    ScreenDisplay += line.Description + "\n";
         }
 
         /// <summary>
@@ -833,6 +876,71 @@ namespace RogueGame
                 & MapLevel.SpacesAllowed.Contains(CurrentMap.PriorityChar(Target, false))
                 & CurrentMap.SearchAdjacent(MapLevel.HALLWAY, Origin.X, Origin.Y).Count < 3;
         
+        }
+
+        /// <summary>
+        /// Wear specified armor.
+        /// </summary>
+        /// <param name="ListItem">Selected list item</param>
+        /// <returns>True / False indicating if item was eaten</returns>
+        private bool WearArmor(char? ListItem)
+        {
+            bool retValue = false;
+            List<Inventory> items;
+
+            if (GameMode != DisplayMode.Inventory)
+            {
+                // Verify the player has armor in inventory.
+                items = (from inv in CurrentPlayer.PlayerInventory
+                         where inv.ItemCategory == Inventory.InvCategory.Armor
+                         select inv).ToList();
+
+                if (items.Count > 0)
+                {
+                    // If there's armor, show the inventory
+                    // and let the player select it.  Set to return and exit.
+                    DisplayInventory();
+                    UpdateStatus("Please select an armor to wear.", false);
+                    ReturnFunction = WearArmor;
+                }
+                else
+                    // Otherwise, they're stuck with whatever they have.
+                    UpdateStatus("You don't have any armor in inventory.", false);
+            }
+            else
+            {
+                // Get the selected item.
+                items = (from InventoryLine in Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
+                         where InventoryLine.ID == ListItem
+                         select InventoryLine.InvItem).ToList();
+
+                if (items.Count > 0)
+                {
+                    if (items[0].ItemCategory != Inventory.InvCategory.Armor)
+                    {
+                        UpdateStatus("You can't wear that.", false);
+                        retValue = false;
+                    }
+                    else
+                    {
+                        // If the player selects a valid item, add it as their armor and decide if it's cursed.
+                        CurrentPlayer.Armor = items[0];
+                        CurrentPlayer.Armor.IsCursed = rand.Next(1, 101) <= ITEM_CURSE_PROB ? true : false;
+                        RestoreMap();
+                        UpdateStatus($"You are now wearing {items[0].RealName}.", false);
+                        retValue = true;
+                    }
+                }
+                else
+                {
+                    // Process non-existent option.
+                    UpdateStatus("Please select some armor to wear.", false);
+                    RestoreMap();
+                    retValue = false;
+                }
+            }
+
+            return retValue;
         }
 
 
