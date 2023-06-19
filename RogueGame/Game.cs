@@ -759,6 +759,7 @@ namespace RogueGame
             if (Defender.CurrentHP < 1)
             {
                 GameMode = DisplayMode.GameOver;
+                UpdateStatus($"The {Attacker.MonsterName.ToLower()} killed you.", false);
                 CauseOfDeath = ("AEIOU".Contains(Attacker.MonsterName.Substring(0, 1))) ? "an " : "a ";
                 CauseOfDeath += Attacker.MonsterName.ToLower();
             }

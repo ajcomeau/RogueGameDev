@@ -47,7 +47,7 @@ namespace RogueGame
         private static List<Inventory> invItems = new List<Inventory>()
         {
             new Inventory(InvCategory.Food, 1, "some food", "some food", "rations of food", '♣', 20, null),
-            new Inventory(InvCategory.Food, 2, "a mango", "a mango", "mangoes", '♣', 20, null),
+            new Inventory(InvCategory.Food, 2, "a mango", "a mango", "mangoes", '♣', 20, null),            
             new Inventory(InvCategory.Armor, 3, "studded leather armor", "studded leather armor", "studded leather armor", true, false, false, false, 3, 1, 0, 0, 0, 0, 0, 15, '◘', null, null, null),
             new Inventory(InvCategory.Armor, 4, "leather armor", "leather armor", "leather armor", true, false, false, false, 2, 1, 0, 0, 0, 0, 0, 20, '◘', null, null, null),
             new Inventory(InvCategory.Armor, 5, "ring mail", "ring mail", "ring mail", true, false, false, false, 3, 1, 0, 0, 0, 0, 0, 15, '◘', null, null, null),
