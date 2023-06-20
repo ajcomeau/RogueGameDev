@@ -47,20 +47,27 @@ namespace RogueGame
         private static List<Inventory> invItems = new List<Inventory>()
         {
             new Inventory(InvCategory.Food, 1, "some food", "some food", "rations of food", '♣', 20, null),
-            new Inventory(InvCategory.Food, 2, "a mango", "a mango", "mangoes", '♣', 20, null),            
-            new Inventory(InvCategory.Armor, 3, "studded leather armor", "studded leather armor", "studded leather armor", true, false, false, false, 3, 1, 0, 0, 0, 0, 0, 15, '◘', null, null, null),
-            new Inventory(InvCategory.Armor, 4, "leather armor", "leather armor", "leather armor", true, false, false, false, 2, 1, 0, 0, 0, 0, 0, 20, '◘', null, null, null),
-            new Inventory(InvCategory.Armor, 5, "ring mail", "ring mail", "ring mail", true, false, false, false, 3, 1, 0, 0, 0, 0, 0, 15, '◘', null, null, null),
-            new Inventory(InvCategory.Armor, 6, "scale mail", "scale mail", "scale mail", true, false, false, false, 4, 1, 0, 0, 0, 0, 0, 13, '◘', null, null, null),
-            new Inventory(InvCategory.Armor, 7, "chain mail", "chain mail", "chain mail", true, false, false, false, 5, 1, 0, 0, 0, 0, 0, 12, '◘', null, null, null),
-            new Inventory(InvCategory.Armor, 8, "splint mail", "splint mail", "splint mail", true, false, false, false, 6, 1, 0, 0, 0, 0, 0, 10, '◘', null, null, null),
-            new Inventory(InvCategory.Armor, 9, "banded mail", "banded mail", "banded mail", true, false, false, false, 6, 1, 0, 0, 0, 0, 0, 10, '◘', null, null, null),
-            new Inventory(InvCategory.Armor, 10, "plate mail", "plate mail", "plate mail", true, false, false, false, 7, 1, 0, 0, 0, 0, 0, 5, '◘', null, null, null),
-            new Inventory(InvCategory.Weapon, 11, "a mace", "a mace", "a mace", true, false, true, false, 0, 0, 1, 1, 2, 8, -3, 10, '↑', null, null, null),
-            new Inventory(InvCategory.Weapon, 12, "a short bow", "a short bow", "a short bow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑', null, null, null),
-            new Inventory(InvCategory.Ammunition, 13, "an arrow", "an arrow", "arrows", true, true, true, false, 0, 0, 0, 0, 1, 1, 3, 10, '↑', null, null, null),
-            new Inventory(InvCategory.Amulet, 14, "The Amulet", "The Amulet", "The Amulet", true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 0, MapLevel.AMULET, null, null, null),
-            new Inventory(InvCategory.Gold, 15, "gold", "gold", "gold", true, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, '*', null, null, null )
+            new Inventory(InvCategory.Food, 2, "a mango", "a mango", "mangoes", '♣', 20, null),
+            new Inventory(InvCategory.Armor, 3, "studded leather armor", "studded leather armor", "studded leather armor", true, false, false, false, 3, 1, 0, 0, 0, 0, 0, 15, '◘', null, null),
+            new Inventory(InvCategory.Armor, 4, "leather armor", "leather armor", "leather armor", true, false, false, false, 2, 1, 0, 0, 0, 0, 0, 20, '◘', null, null),
+            new Inventory(InvCategory.Armor, 5, "ring mail", "ring mail", "ring mail", true, false, false, false, 3, 1, 0, 0, 0, 0, 0, 15, '◘', null, null),
+            new Inventory(InvCategory.Armor, 6, "scale mail", "scale mail", "scale mail", true, false, false, false, 4, 1, 0, 0, 0, 0, 0, 13, '◘', null, null),
+            new Inventory(InvCategory.Armor, 7, "chain mail", "chain mail", "chain mail", true, false, false, false, 5, 1, 0, 0, 0, 0, 0, 12, '◘', null, null),
+            new Inventory(InvCategory.Armor, 8, "splint mail", "splint mail", "splint mail", true, false, false, false, 6, 1, 0, 0, 0, 0, 0, 10, '◘', null, null),
+            new Inventory(InvCategory.Armor, 9, "banded mail", "banded mail", "banded mail", true, false, false, false, 6, 1, 0, 0, 0, 0, 0, 10, '◘', null, null),
+            new Inventory(InvCategory.Armor, 10, "plate mail", "plate mail", "plate mail", true, false, false, false, 7, 1, 0, 0, 0, 0, 0, 5, '◘', null, null),
+            new Inventory(InvCategory.Weapon, 11, "a mace", "a mace", "a mace", true, false, true, false, 0, 0, 1, 1, 2, 8, -3, 10, '↑', null, null),
+            new Inventory(InvCategory.Weapon, 12, "a short bow", "a short bow", "a short bow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑', null, null),
+            new Inventory(InvCategory.Weapon, 13, "a crossbow", "a crossbow", "a crossbow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑', null, null),
+            new Inventory(InvCategory.Weapon, 14, "a dagger", "a dagger", "a dagger", true, false, true, false, 0, 0, 0, 1, 1, 4, 2, 10, '↑', null, null),
+            new Inventory(InvCategory.Weapon, 15, "a long sword", "a long sword", "a long sword", true, false, true, false, 0, 0, 0, 1, 3, 12, -10, 10, '↑', null, null),
+            new Inventory(InvCategory.Weapon, 16, "a spear", "a spear", "a spear", true, false, true, false, 0, 0, 0, 1, 1, 8, -2, 10, '↑', null, null),
+            new Inventory(InvCategory.Weapon, 17, "a two-handed sword", "a two-handed sword", "a two-handed sword", true, false, true, false, 0, 0, 0, 1, 4, 16, -14, 10, '↑', null, null),
+            new Inventory(InvCategory.Ammunition, 18, "an arrow", "an arrow", "arrows", true, true, true, false, 0, 0, 0, 0, 1, 1, 4, 10, '↑', null, null),
+            new Inventory(InvCategory.Ammunition, 19, "a crossbow bolt", "a crossbow bolt", "crossbow bolts", true, true, true, false, 0, 0, 0, 0, 1,2, 8, 10, '↑', null, null),
+            new Inventory(InvCategory.Ammunition, 20, "a dart", "a dart", "darts", true, true, true, false, 0, 0, 0, 0, 1, 1, 2, 10, '↑', null, null),
+            new Inventory(InvCategory.Amulet, 21, "The Amulet", "The Amulet", "The Amulet", true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 0, MapLevel.AMULET, null, null),
+            new Inventory(InvCategory.Gold, 22, "gold", "gold", "gold", true, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, '*', null, null )
         };
 
         /// <summary>
@@ -160,10 +167,6 @@ namespace RogueGame
         /// </summary>
         public MapSpace Location { get; set; }
         /// <summary>
-        /// Delegate function for throwing item.
-        /// </summary>
-        public Func<Player, MapLevel.Direction, bool>? ThrowFunction { get; set; }
-        /// <summary>
         /// Delegate function if item can be used to zap.
         /// </summary>
         public Func<Player, MapLevel.Direction, bool>? ZapFunction { get; set; }
@@ -197,7 +200,6 @@ namespace RogueGame
             this.ThrowingBonus = Original.ThrowingBonus;
             this.AppearancePct = Original.AppearancePct;
             this.DisplayCharacter = Original.DisplayCharacter;
-            this.ThrowFunction = Original.ThrowFunction;
             this.ZapFunction = Original.ZapFunction;
             this.MainFunction = Original.MainFunction;
         }
@@ -230,7 +232,7 @@ namespace RogueGame
         public Inventory(InvCategory InvType, int PriorityID, string CodeName, string RealName, string PluralName, bool Identified,
             bool Groupable, bool Wieldable, bool Cursed, int ArmorClass, int Increment, int DamageInc, int AccuracyInc,
             int MinDamage, int MaxDamage, int ThrowingBonus, int AppearancePct, char DisplayChar, Func<Player, Inventory?, bool>? mainFunction, 
-            Func<Player, MapLevel.Direction, bool>? Throw = null, Func<Player, MapLevel.Direction, bool>? Zap = null)
+            Func<Player, MapLevel.Direction, bool>? Zap = null)
         {
             // Apply parameters
             this.ItemCategory = InvType; 
@@ -252,7 +254,6 @@ namespace RogueGame
             this.AppearancePct = AppearancePct;
             this.DisplayCharacter = DisplayChar;
             this.MainFunction = mainFunction;
-            this.ThrowFunction = (Throw != null) ? Throw : null;
             this.ZapFunction = (Zap != null) ? Zap : null;
         }
 
@@ -291,7 +292,6 @@ namespace RogueGame
 
             // Delegates
             this.MainFunction = (mainFunction != null) ? mainFunction : null;
-            this.ThrowFunction = (Throw != null) ? Throw : null;
             this.ZapFunction = (Zap != null) ? Zap : null;
         }
 
