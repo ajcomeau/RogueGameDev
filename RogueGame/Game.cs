@@ -707,21 +707,29 @@ namespace RogueGame
 
         private void Attack(Player Attacker, Monster Defender)
         {
+            int hitChance;
+            bool hitSuccess;
+            int damage = 0, minDamage = 1, maxDamage = 4;
+            Inventory? weapon = CurrentPlayer.Wielding;
 
-            // Basic attack method to get monsters out of the way.  In progress.
-
-            // Start with a 50% chance of landing a punch.
-            bool hitSuccess = rand.Next(1, 101) > 50;
-            int damage = 0;
+            // Chance of landing a punch - 30% + 5% * XP level - 5% * monster armor class.
+            hitChance = 30 + (5 * CurrentPlayer.ExpLevel) - (5 * Defender.ArmorClass);
+            hitSuccess = rand.Next(1, 101) <= hitChance;
 
             // Either way, if the monster wasn't angry before, it sure is now.
             Defender.CurrentState = Monster.Activity.Angered;
+
+            if(weapon != null)
+            {
+                minDamage = weapon.MinDamage; 
+                maxDamage = weapon!.MaxDamage;
+            }
 
             // Up to 50% of the monster's HP.
             if (hitSuccess)
             {
                 UpdateStatus($"You hit the {Defender.MonsterName.ToLower()}.", false);
-                damage = rand.Next(1, (int)(Defender.MaxHP / 2) + 1);
+                damage = rand.Next(minDamage, maxDamage + 1);
             }
             else UpdateStatus($"You missed the {Defender.MonsterName.ToLower()}.", false);
 
@@ -738,12 +746,20 @@ namespace RogueGame
 
         private void Attack(Monster Attacker, Player Defender)
         {
+            int hitChance, armorRating, damage = 0;
+            bool hitSuccess;
+            Inventory? armor = CurrentPlayer.Armor;
 
-            // Basic attack method to get monsters out of the way.  In progress.
+            // Chance of landing a punch - 30% + 5% * monster min hit points  - 5% * player armor class
+            // (protection rings will be factored in later)
 
-            // Start with a 50% chance of landing a punch.
-            bool hitSuccess = rand.Next(1, 101) > 50;
-            int damage = 0;
+            if (armor != null)
+                armorRating = armor.ArmorClass;
+            else
+                armorRating = 1;
+
+            hitChance = 30 + (Attacker.MinStartingHP * 5) - (armorRating * 5);
+            hitSuccess = rand.Next(1, 101) <= hitChance;           
 
             // Random HP between monster's min and max attack damage.
             if (hitSuccess)
@@ -768,9 +784,10 @@ namespace RogueGame
         public void MoveMonster(Monster monster)
         {
             char visibleCharacter;
-            int tentativeDistance;
+            int tentativeDistance, playerDistance;
             bool timeToMove, canMove;
             MapLevel.Direction direct, direct90, direct270;
+            MapLevel.Direction? playerDirection = null;
             MapSpace destinationSpace = monster.Location!;
 
             // Move monster if possible.
@@ -784,12 +801,20 @@ namespace RogueGame
                 Dictionary<MapLevel.Direction, MapSpace> adjacent =
                     CurrentMap.SearchAdjacent(monster.Location!.X, monster.Location.Y);
 
-                // Get the current distance of the player from the monster.
-                int playerDistance = Math.Abs(CurrentPlayer.Location!.X - monster.Location.X)
-                    + Math.Abs(CurrentPlayer.Location.Y - monster.Location.Y);
+                // If the player is in an adjacent space, get the direction.
+                if (adjacent.ContainsValue(CurrentPlayer.Location!)){
+                    playerDistance = 1;
+                    playerDirection = adjacent.Where(p => p.Value == CurrentPlayer.Location!).FirstOrDefault().Key;
+                }
+                else {
+                    // Get the current distance of the player from the monster.
+                    playerDistance = Math.Abs(CurrentPlayer.Location!.X - monster.Location.X)
+                        + Math.Abs(CurrentPlayer.Location.Y - monster.Location.Y);
+                }
 
-                // If the monster has not chosen a direction, find out if the player is near.
-                if (playerDistance <= MAX_PURSUIT && monster.Aggressive)
+                if (playerDirection != null && (monster.CurrentState == Monster.Activity.Angered || monster.Aggressive))
+                    monster.Direction = playerDirection;
+                else if (playerDistance <= MAX_PURSUIT && monster.Aggressive)
                 {
                     // If the player is within pursuit distance, search the adjacent spaces
                     // for one that's available and closest to the player.
@@ -843,7 +868,7 @@ namespace RogueGame
                         // The monster just tried to run into another monster.  For now, just change direction.
                         // TODO:  This might need to result in an attack.
                         monster.Direction = rand.Next(1, 101) > 50 ? direct270 : direct90;
-                    else if (adjacent[direct] == CurrentPlayer.Location && monster.CurrentState == Monster.Activity.Angered)
+                    else if (adjacent[direct] == CurrentPlayer.Location)
                         // Attack the player
                         Attack(monster, CurrentPlayer);
                     else
