@@ -56,16 +56,16 @@ namespace RogueGame
             new Inventory(InvCategory.Armor, 8, "splint mail", "splint mail", "splint mail", true, false, false, false, 6, 1, 0, 0, 0, 0, 0, 10, '◘', null, null),
             new Inventory(InvCategory.Armor, 9, "banded mail", "banded mail", "banded mail", true, false, false, false, 6, 1, 0, 0, 0, 0, 0, 10, '◘', null, null),
             new Inventory(InvCategory.Armor, 10, "plate mail", "plate mail", "plate mail", true, false, false, false, 7, 1, 0, 0, 0, 0, 0, 5, '◘', null, null),
-            new Inventory(InvCategory.Weapon, 11, "a mace", "a mace", "a mace", true, false, true, false, 0, 0, 1, 1, 2, 8, -3, 10, '↑', null, null),
-            new Inventory(InvCategory.Weapon, 12, "a short bow", "a short bow", "a short bow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑', null, null),
-            new Inventory(InvCategory.Weapon, 13, "a crossbow", "a crossbow", "a crossbow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑', null, null),
-            new Inventory(InvCategory.Weapon, 14, "a dagger", "a dagger", "a dagger", true, false, true, false, 0, 0, 0, 1, 1, 4, 2, 10, '↑', null, null),
-            new Inventory(InvCategory.Weapon, 15, "a long sword", "a long sword", "a long sword", true, false, true, false, 0, 0, 0, 1, 3, 12, -10, 10, '↑', null, null),
-            new Inventory(InvCategory.Weapon, 16, "a spear", "a spear", "a spear", true, false, true, false, 0, 0, 0, 1, 1, 8, -2, 10, '↑', null, null),
-            new Inventory(InvCategory.Weapon, 17, "a two-handed sword", "a two-handed sword", "a two-handed sword", true, false, true, false, 0, 0, 0, 1, 4, 16, -14, 10, '↑', null, null),
-            new Inventory(InvCategory.Ammunition, 18, "an arrow", "an arrow", "arrows", true, true, true, false, 0, 0, 0, 0, 1, 1, 4, 10, '↑', null, null),
-            new Inventory(InvCategory.Ammunition, 19, "a crossbow bolt", "a crossbow bolt", "crossbow bolts", true, true, true, false, 0, 0, 0, 0, 1,2, 8, 10, '↑', null, null),
-            new Inventory(InvCategory.Ammunition, 20, "a dart", "a dart", "darts", true, true, true, false, 0, 0, 0, 0, 1, 1, 2, 10, '↑', null, null),
+            new Inventory(InvCategory.Weapon, 11, "mace", "mace", "mace", true, false, true, false, 0, 0, 1, 1, 2, 8, -3, 10, '↑', null, null),
+            new Inventory(InvCategory.Weapon, 12, "short bow", "short bow", "short bow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑', null, null),
+            new Inventory(InvCategory.Weapon, 13, "crossbow", "crossbow", "crossbow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑', null, null),
+            new Inventory(InvCategory.Weapon, 14, "dagger", "dagger", "dagger", true, false, true, false, 0, 0, 0, 1, 1, 4, 2, 10, '↑', null, null),
+            new Inventory(InvCategory.Weapon, 15, "long sword", "long sword", "long sword", true, false, true, false, 0, 0, 0, 1, 3, 12, -10, 10, '↑', null, null),
+            new Inventory(InvCategory.Weapon, 16, "spear", "spear", "spear", true, false, true, false, 0, 0, 0, 1, 1, 8, -2, 10, '↑', null, null),
+            new Inventory(InvCategory.Weapon, 17, "two-handed sword", "two-handed sword", "two-handed sword", true, false, true, false, 0, 0, 0, 1, 4, 16, -14, 10, '↑', null, null),
+            new Inventory(InvCategory.Ammunition, 18, "arrow", "arrow", "arrows", true, true, true, false, 0, 0, 0, 0, 1, 1, 4, 10, '↑', null, null),
+            new Inventory(InvCategory.Ammunition, 19, "crossbow bolt", "crossbow bolt", "crossbow bolts", true, true, true, false, 0, 0, 0, 0, 1,2, 8, 10, '↑', null, null),
+            new Inventory(InvCategory.Ammunition, 20, "dart", "dart", "darts", true, true, true, false, 0, 0, 0, 0, 1, 1, 2, 10, '↑', null, null),
             new Inventory(InvCategory.Amulet, 21, "The Amulet", "The Amulet", "The Amulet", true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 0, MapLevel.AMULET, null, null),
             new Inventory(InvCategory.Gold, 22, "gold", "gold", "gold", true, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, '*', null, null )
         };
@@ -371,7 +371,7 @@ namespace RogueGame
                     retValue = Number == 1 ? Item.RealName : Number.ToString() + " " + Item.PluralName;
                     break;
                 case InvCategory.Weapon:
-                    retValue = Item.RealName;
+                    retValue = Game.AddEnglishArticle(Item.RealName);
                     break;
                 case InvCategory.Ring:
                 case InvCategory.Scroll:

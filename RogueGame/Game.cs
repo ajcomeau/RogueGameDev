@@ -314,6 +314,9 @@ namespace RogueGame
                     case KEY_D:     // Drop item
                         DropInventory(null);
                         break;
+                    case KEY_W:
+                        Wield(null);  // Wield item
+                        break;
                     default:
                         break;
                 }
@@ -333,6 +336,74 @@ namespace RogueGame
                 default:
                     break;
             }
+        }
+
+        private bool Wield(char? ListItem)
+        {
+            bool retValue = false;
+            List<Inventory> items;
+
+            if (GameMode != DisplayMode.Inventory)
+            {
+                // Verify the player has something they can eat.
+                items = (from inv in CurrentPlayer.PlayerInventory
+                         where inv.ItemCategory == Inventory.InvCategory.Weapon ||
+                         inv.ItemCategory == Inventory.InvCategory.Ammunition
+                         select inv).ToList();
+
+                if (items.Count > 0)
+                {
+                    // If there's something edible, show the inventory
+                    // and let the player select it.  Set to return and exit.
+                    DisplayInventory();
+                    UpdateStatus("Please select an item to wield.", false);
+                    ReturnFunction = Wield;
+                }
+                else
+                    // Otherwise, they'll be hungry for awhile.
+                    UpdateStatus("You don't have anything that can be used as a weapon.", false);
+            }
+            else
+            {
+                // Get the selected item.
+                items = (from InventoryLine in Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
+                         where InventoryLine.ID == ListItem
+                         select InventoryLine.InvItem).ToList();
+
+                if (items.Count > 0)
+                {
+                    // Call the appropriate delegate and remove the item
+                    // from inventory.
+                    if (items[0].ItemCategory != Inventory.InvCategory.Weapon &&
+                        items[0].ItemCategory != Inventory.InvCategory.Ammunition)
+                    {
+                        UpdateStatus($"You should reconsider. {CapitalFirstLetter(items[0].RealName)} is not an effective weapon.", false);
+                        retValue = false;
+                    }
+                    else
+                    {
+                        CurrentPlayer.Wielding = items[0];
+                        RestoreMap();
+
+                        if (items[0].IsGroupable)
+                            UpdateStatus($"You are now wielding some {items[0].PluralName}.", false);
+                        else
+                            UpdateStatus($"You are now wielding {AddEnglishArticle(items[0].PluralName)}.", false);
+
+                        retValue = true;
+                    }
+                }
+                else
+                {
+                    // Process non-existent option.
+                    UpdateStatus("Please select something to wield.", false);
+                    RestoreMap();
+                    retValue = false;
+                }
+
+            }
+
+            return retValue;
         }
 
         /// <summary>
@@ -546,6 +617,8 @@ namespace RogueGame
             foreach (InventoryLine line in Inventory.InventoryDisplay(CurrentPlayer.PlayerInventory))
                 if (line.InvItem == CurrentPlayer.Armor)
                     ScreenDisplay += line.Description + " (being worn)\n";  // current armor
+                else if (CurrentPlayer.Wielding != null && line.InvItem == CurrentPlayer.Wielding)
+                    ScreenDisplay += line.Description + " (wielding)\n";  // weapon
                 else if (CurrentPlayer.RightHand != null && line.InvItem == CurrentPlayer.RightHand)
                     ScreenDisplay += line.Description + " (on right hand)\n";  // ring
                 else if (CurrentPlayer.LeftHand != null && line.InvItem == CurrentPlayer.LeftHand)
@@ -776,7 +849,7 @@ namespace RogueGame
             {
                 GameMode = DisplayMode.GameOver;
                 UpdateStatus($"The {Attacker.MonsterName.ToLower()} killed you.", false);
-                CauseOfDeath = ("AEIOU".Contains(Attacker.MonsterName.Substring(0, 1))) ? "an " : "a ";
+                CauseOfDeath = (AddEnglishArticle(Attacker.MonsterName));
                 CauseOfDeath += Attacker.MonsterName.ToLower();
             }
         }
@@ -916,22 +989,27 @@ namespace RogueGame
 
             if (GameMode != DisplayMode.Inventory)
             {
-                // Verify the player has armor in inventory.
-                items = (from inv in CurrentPlayer.PlayerInventory
-                         where inv.ItemCategory == Inventory.InvCategory.Armor
-                         select inv).ToList();
-
-                if (items.Count > 0)
-                {
-                    // If there's armor, show the inventory
-                    // and let the player select it.  Set to return and exit.
-                    DisplayInventory();
-                    UpdateStatus("Please select an armor to wear.", false);
-                    ReturnFunction = WearArmor;
-                }
+                if (CurrentPlayer.Armor != null)
+                    UpdateStatus("You are already wearing armor. You must take it off first.", false);
                 else
-                    // Otherwise, they're stuck with whatever they have.
-                    UpdateStatus("You don't have any armor in inventory.", false);
+                {
+                    // Verify the player has armor in inventory.
+                    items = (from inv in CurrentPlayer.PlayerInventory
+                             where inv.ItemCategory == Inventory.InvCategory.Armor
+                             select inv).ToList();
+
+                    if (items.Count > 0)
+                    {
+                        // If there's armor, show the inventory
+                        // and let the player select it.  Set to return and exit.
+                        DisplayInventory();
+                        UpdateStatus("Please select an armor to wear.", false);
+                        ReturnFunction = WearArmor;
+                    }
+                    else
+                        // Otherwise, they're stuck with whatever they have.
+                        UpdateStatus("You don't have any armor in inventory.", false);
+                }
             }
             else
             {
@@ -1121,14 +1199,14 @@ namespace RogueGame
         {
             // Inventory management.
             int itemAmount = 1;
-            bool addToInventory = false;          
+            bool addToInventory = false;
             List<Inventory> tempInventory = CurrentPlayer.PlayerInventory;
             Inventory? foundItem = CurrentMap.DetectInventory(CurrentPlayer.Location!);
             string retValue = "";
 
             if (foundItem != null)
-            { 
-                if(foundItem.ItemCategory == Inventory.InvCategory.Gold)
+            {
+                if (foundItem.ItemCategory == Inventory.InvCategory.Gold)
                 {
                     // Add the gold at the current location to the player's purse and remove
                     // it from the map.
@@ -1160,7 +1238,7 @@ namespace RogueGame
                         retValue = $"You picked up {Inventory.ListingDescription(itemAmount, foundItem)}.";
                         CurrentMap.MapInventory.Remove(foundItem);
 
-                        if(foundItem.ItemCategory == Inventory.InvCategory.Amulet) 
+                        if (foundItem.ItemCategory == Inventory.InvCategory.Amulet)
                         {
                             CurrentPlayer.HasAmulet = true;
                             retValue = "You found the Amulet of Yendor!  It has been added to your inventory.";
@@ -1175,6 +1253,24 @@ namespace RogueGame
             }
 
             return retValue;
+        }
+
+        public static string CapitalFirstLetter(string Text)
+        {
+            if (Text.Length == 0)
+                return "";
+            else if (Text.Length == 1)
+                return Text.ToUpper();
+            else
+                return Text[0].ToString().ToUpper() + Text[1..];
+        }
+
+        public static string AddEnglishArticle(string Text)
+        {
+            if ("AEIOU".Contains(Text.Substring(0, 1)))
+                return $"an {Text}";
+            else
+                return $"a {Text}";            
         }
 
     }

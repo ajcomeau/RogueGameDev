@@ -155,15 +155,16 @@ namespace RogueGame
             // Add inventory items
             this.PlayerInventory.Add(Inventory.GetInventoryItem("some food")!);
             this.PlayerInventory.Add(Inventory.GetInventoryItem("studded leather armor")!);
-            this.PlayerInventory.Add(Inventory.GetInventoryItem("a mace")!);
-            this.PlayerInventory.Add(Inventory.GetInventoryItem("a short bow")!);
+            this.PlayerInventory.Add(Inventory.GetInventoryItem("mace")!);
+            this.PlayerInventory.Add(Inventory.GetInventoryItem("short bow")!);
 
-            // Have player wear the armor.
+            // Have player wear the armor and wield the mace.
             this.Armor = SearchInventory(Inventory.InvCategory.Armor);
+            this.Wielding = SearchInventory("mace");
 
             // Add batch of arrows
             for (int i = 1; i <= rand.Next(1, Inventory.MAX_AMMO_BATCH + 1); i++)
-                this.PlayerInventory.Add(Inventory.GetInventoryItem("an arrow")!);
+                this.PlayerInventory.Add(Inventory.GetInventoryItem("arrow")!);
 
             // Check for null items in list and remove
             this.PlayerInventory = this.PlayerInventory.Where(x => x != null).ToList();
