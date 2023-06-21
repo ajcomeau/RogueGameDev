@@ -170,8 +170,8 @@ namespace RogueGame
         /// <param name="specialAttackPct">Probability of monster using special attack</param>
         /// <param name="specialAttack">Special attack function</param>
         /// <param name="aggressive">Does the monster initiate attacks on sight?</param>
+        /// <param name="inertia">How likely is the monster to continue moving?</param>
         /// <param name="canRegenerate">Is the monster currently angry and persisting in an atack?</param>
-        /// <param name="monsterInventory">Inventory list</param>
         public Monster(string monsterName, int minStartingHP, int maxStartingHP,  
             int armorClass, int expReward, int minLevel, int maxLevel, int appearancePct, 
             int minAttackDmg, int maxAttackDmg, char displayCharacter, int specialAttackPct, 

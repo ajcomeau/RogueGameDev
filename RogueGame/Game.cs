@@ -867,9 +867,8 @@ namespace RogueGame
             MapSpace destinationSpace = monster.Location!;
 
             // Move monster if possible.
-            timeToMove = (monster.CurrentState == Monster.Activity.Wandering ||
-                monster.CurrentState == Monster.Activity.Angered ||
-                rand.Next(1, 101) >= monster.Inertia);
+            timeToMove = (monster.CurrentState == Monster.Activity.Wandering &&
+                rand.Next(1, 101) >= monster.Inertia) || monster.CurrentState == Monster.Activity.Angered;
 
             if (timeToMove)
             {
@@ -888,6 +887,7 @@ namespace RogueGame
                         + Math.Abs(CurrentPlayer.Location.Y - monster.Location.Y);
                 }
 
+                // Move toward the player if they are close enough or if the monster is angry.
                 if (playerDirection != null && (monster.CurrentState == Monster.Activity.Angered || monster.Aggressive))
                     monster.Direction = playerDirection;
                 else if (playerDistance <= MAX_PURSUIT && monster.Aggressive)
@@ -896,7 +896,7 @@ namespace RogueGame
                     // for one that's available and closest to the player.
                     foreach (KeyValuePair<MapLevel.Direction, MapSpace> adjSpace in adjacent)
                     {
-                        if (MapLevel.SpacesAllowed.Contains(CurrentMap.PriorityChar(adjSpace.Value, false)) || 
+                        if (MapLevel.SpacesAllowed.Contains(CurrentMap.PriorityChar(adjSpace.Value, false)) ||
                             CurrentMap.DetectInventory(adjSpace.Value) != null)
                         {
                             tentativeDistance = Math.Abs(adjSpace.Value.X - CurrentPlayer.Location.X)
@@ -912,6 +912,9 @@ namespace RogueGame
                         }
                     }
                 }
+                else if (playerDistance > MAX_PURSUIT)
+                    // If the player is far off, just go to wandering.
+                    monster.CurrentState = Monster.Activity.Wandering;
 
                 // If the monster is still feeling aimless, just pick one except 'None'.
                 if (monster.Direction == null)
@@ -932,8 +935,7 @@ namespace RogueGame
 
                 // The monster can move if the visible character is within a room or a hallway
                 // and there's nobody else there.
-
-                canMove = canMove = MapLevel.SpacesAllowed.Contains(visibleCharacter) || 
+                canMove = MapLevel.SpacesAllowed.Contains(visibleCharacter) || 
                     CurrentMap.DetectInventory(adjacent[direct]) != null;
 
                 if (canMove)
@@ -951,10 +953,14 @@ namespace RogueGame
                     {
                         // Change direction and decide on a current state.
                         monster.Direction = rand.Next(1, 101) > 50 ? direct270 : direct90;
-                        if (rand.Next(1, 101) < monster.Inertia) { monster.CurrentState = Monster.Activity.Resting; }
+                        if (rand.Next(1, 101) < monster.Inertia) monster.CurrentState = Monster.Activity.Resting;
                     }
                 }
             }
+            else
+                // If the monster couldn't move, it might be resting. Decide if it should come out of nap time.
+                if (rand.Next(1, 101) > monster.Inertia) monster.CurrentState = Monster.Activity.Wandering;
+
 
 
         }
