@@ -500,15 +500,18 @@ namespace RogueGame
         /// <returns></returns>
         private string HelpScreen()
         {
-            return "\n\nArrows - movement\n\n" +
-                "d - drop inventory\n\n" +
-                "e - eat\n\n" +
-                "s - search for hidden doorways\n\n" +
-                "i - show inventory\n\n" +
-                "F - Fast Play mode ON / OFF\n\n" +
-                "> - go down a staircase\n\n" +
+            return "Arrows - movement\n\n" +
+                "d - drop inventory\n" +
+                "e - eat\n" +
+                "i - show inventory\n" +
+                "s - search for hidden doorways\n" +
+                "w - wield new weapon\n\n" +
+                "F - Fast Play mode ON / OFF\n" +
+                "T - remove armor\n" +
+                "W - wear armor\n\n" +
+                "> - go down a staircase\n" +
                 "< - go up a staircase(requires Amulet from level 26)\n\n" +
-                "ESC - return to map.\n\n" +
+                "ESC - return to map.\n" +
                 "CTRL-D - Developer mode.  See entire map.\n" +
                 "CTRL-N - Change out map for new one in dev mode.";
         }
