@@ -1,5 +1,16 @@
 # Rogue C#
 
+6/22/2023
+
+The fight mechanics are present but might need some tweaking.  It seems to get too easy after the first couple of experience
+levels.
+
+The rest of the armor types, weapons and ammunition have been loaded.  The inventory display will identify which is being worn and wielded.
+The appropriate commands are available on the help menu.
+
+I'm working on code names for items that require identification.  Two scrolls have been added, Identify and Magic Mapping, but they're not
+doing anything yet and there's no read command yet.  The program does successfully assign code names, however.
+
 6/14/2023
 
 I started out just working on the player stats display at the bottom of the screen. Then I wanted to really test them
