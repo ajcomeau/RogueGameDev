@@ -25,8 +25,8 @@ namespace RogueGame
         /// </summary>
         private static List<Monster> monsterIncubator = new List<Monster>()
         {
-            new Monster("Aquator"       , 5, 40, 5, 9, 7, 15, 50, 0, 0, 'A', 0, null, true, 50, false),
-            new Monster("Bat"           , 1, 8, 2, 1, 1, 5, 50, 1, 2, 'B', 0, null, true, 50, false),
+            new Monster("Aquator"       , 5, 40, 5, 9, 7, 15, 50, 0, 0, 'A', 50, null, true, 50, false),
+            new Monster("Bat"           , 1, 8, 4, 1, 1, 5, 50, 1, 2, 'B', 0, null, true, 50, false),
             new Monster("Centaur"       , 4, 32, 5, 15, 8, 17, 50, 3, 12, 'C', 0, null, true, 50, false),
             new Monster("Dragon"        , 10, 80, 10, 6800, 22, 26, 50, 5, 46, 'D', 0, null, true,  50, false),
             new Monster("Emu"           , 1, 8, 2, 5, 2, 11, 50, 1, 2, 'E', 0, null, true,  50, false),
@@ -241,6 +241,8 @@ namespace RogueGame
             else return null;
                 
         }
+
+        
 
     }
 }

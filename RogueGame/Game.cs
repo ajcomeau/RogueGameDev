@@ -169,6 +169,8 @@ namespace RogueGame
             this.CurrentLevel = 1;            
             // Create new player.
             this.CurrentPlayer = new Player(PlayerName);
+            // Initialize inventory with code names
+            Inventory.InitializeInventory();
             // Generate the new map, add player and shroud the map.
             this.CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer);
             this.CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
@@ -220,7 +222,7 @@ namespace RogueGame
             }
 
             // Shift combinations
-            if (Shift & !keyHandled)
+            if (Shift & !keyHandled & GameMode == DisplayMode.Primary)
             {
                 switch (KeyVal)
                 {
@@ -260,7 +262,7 @@ namespace RogueGame
                 keyHandled = true;
             }
 
-            if (Control & !keyHandled)
+            if (Control & !keyHandled & GameMode == DisplayMode.Primary)
             {
                 switch (KeyVal)
                 {
@@ -279,7 +281,7 @@ namespace RogueGame
             }
 
             // Basics 
-            if (!keyHandled)
+            if (!keyHandled & GameMode == DisplayMode.Primary)
             {
                 switch (KeyVal)
                 {
@@ -795,13 +797,14 @@ namespace RogueGame
             // Either way, if the monster wasn't angry before, it sure is now.
             Defender.CurrentState = Monster.Activity.Angered;
 
+            // Get weapon damage rating, default to bare hands (1-4)
             if(weapon != null)
             {
                 minDamage = weapon.MinDamage; 
-                maxDamage = weapon!.MaxDamage;
+                maxDamage = weapon.MaxDamage;
             }
 
-            // Up to 50% of the monster's HP.
+            // Random HP damage within weapon potential.
             if (hitSuccess)
             {
                 UpdateStatus($"You hit the {Defender.MonsterName.ToLower()}.", false);
@@ -852,8 +855,7 @@ namespace RogueGame
             {
                 GameMode = DisplayMode.GameOver;
                 UpdateStatus($"The {Attacker.MonsterName.ToLower()} killed you.", false);
-                CauseOfDeath = (AddEnglishArticle(Attacker.MonsterName));
-                CauseOfDeath += Attacker.MonsterName.ToLower();
+                CauseOfDeath = (AddEnglishArticle(Attacker.MonsterName.ToLower()));
             }
         }
 
