@@ -1,5 +1,9 @@
 # Rogue C#
 
+6/29/2023
+
+See https://www.comeausoftware.com/c-sharp/rogue-csharp-building-on-the-foundation/ for the latest writeup.
+
 6/22/2023
 
 The fight mechanics are present but might need some tweaking.  It seems to get too easy after the first couple of experience
