@@ -47,31 +47,58 @@ namespace RogueGame
         /// </summary>
         private static List<Inventory> invItems = new List<Inventory>()
         {
-            new Inventory(InvCategory.Food, 1, "some food", "some food", "rations of food", '♣', 20, null),
-            new Inventory(InvCategory.Food, 2, "a mango", "a mango", "mangoes", '♣', 20, null),
-            new Inventory(InvCategory.Scroll, 3, "", "Identify", "Identify",false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 15, '♪', null, null),
-            new Inventory(InvCategory.Scroll, 4, "", "Magic Mapping", "Magic Mapping",false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 15, '♪', null, null),
-            new Inventory(InvCategory.Armor, 5, "studded leather armor", "studded leather armor", "studded leather armor", true, false, false, false, 3, 1, 0, 0, 0, 0, 0, 15, '◘', null, null),
-            new Inventory(InvCategory.Armor, 6, "leather armor", "leather armor", "leather armor", true, false, false, false, 2, 1, 0, 0, 0, 0, 0, 20, '◘', null, null),
-            new Inventory(InvCategory.Armor, 7, "ring mail", "ring mail", "ring mail", true, false, false, false, 3, 1, 0, 0, 0, 0, 0, 15, '◘', null, null),
-            new Inventory(InvCategory.Armor, 8, "scale mail", "scale mail", "scale mail", true, false, false, false, 4, 1, 0, 0, 0, 0, 0, 13, '◘', null, null),
-            new Inventory(InvCategory.Armor, 9, "chain mail", "chain mail", "chain mail", true, false, false, false, 5, 1, 0, 0, 0, 0, 0, 12, '◘', null, null),
-            new Inventory(InvCategory.Armor, 10, "splint mail", "splint mail", "splint mail", true, false, false, false, 6, 1, 0, 0, 0, 0, 0, 10, '◘', null, null),
-            new Inventory(InvCategory.Armor, 11, "banded mail", "banded mail", "banded mail", true, false, false, false, 6, 1, 0, 0, 0, 0, 0, 10, '◘', null, null),
-            new Inventory(InvCategory.Armor, 12, "plate mail", "plate mail", "plate mail", true, false, false, false, 7, 1, 0, 0, 0, 0, 0, 5, '◘', null, null),
-            new Inventory(InvCategory.Weapon, 13, "mace", "mace", "mace", true, false, true, false, 0, 0, 1, 1, 2, 8, -3, 10, '↑', null, null),
-            new Inventory(InvCategory.Weapon, 14, "short bow", "short bow", "short bow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑', null, null),
-            new Inventory(InvCategory.Weapon, 15, "crossbow", "crossbow", "crossbow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑', null, null),
-            new Inventory(InvCategory.Weapon, 16, "dagger", "dagger", "dagger", true, false, true, false, 0, 0, 0, 1, 1, 4, 2, 10, '↑', null, null),
-            new Inventory(InvCategory.Weapon, 17, "long sword", "long sword", "long sword", true, false, true, false, 0, 0, 0, 1, 3, 12, -10, 10, '↑', null, null),
-            new Inventory(InvCategory.Weapon, 18, "spear", "spear", "spear", true, false, true, false, 0, 0, 0, 1, 1, 8, -2, 10, '↑', null, null),
-            new Inventory(InvCategory.Weapon, 19, "two-handed sword", "two-handed sword", "two-handed sword", true, false, true, false, 0, 0, 0, 1, 4, 16, -14, 10, '↑', null, null),
-            new Inventory(InvCategory.Ammunition, 20, "arrow", "arrow", "arrows", true, true, true, false, 0, 0, 0, 0, 1, 1, 4, 10, '↑', null, null),
-            new Inventory(InvCategory.Ammunition, 21, "crossbow bolt", "crossbow bolt", "crossbow bolts", true, true, true, false, 0, 0, 0, 0, 1,2, 8, 10, '↑', null, null),
-            new Inventory(InvCategory.Ammunition, 22, "dart", "dart", "darts", true, true, true, false, 0, 0, 0, 0, 1, 1, 2, 10, '↑', null, null),
-            new Inventory(InvCategory.Amulet, 23, "The Amulet", "The Amulet", "The Amulet", true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 0, MapLevel.AMULET, null, null),
-            new Inventory(InvCategory.Gold, 24, "gold", "gold", "gold", true, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, '*', null, null )
+            new Inventory(InvCategory.Food, 1, "some food", "some food", "rations of food", '♣', 20),
+            new Inventory(InvCategory.Food, 2, "a mango", "a mango", "mangoes", '♣', 20),
+            new Inventory(InvCategory.Scroll, 3, "", "Identify", "Identify", false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 15, '♪'),
+            new Inventory(InvCategory.Scroll, 4, "", "Magic Mapping", "Magic Mapping", false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 15, '♪'),
+            new Inventory(InvCategory.Armor, 5, "studded leather armor", "studded leather armor", "studded leather armor", true, false, false, false, 3, 1, 0, 0, 0, 0, 0, 15, '◘'),
+            new Inventory(InvCategory.Armor, 6, "leather armor", "leather armor", "leather armor", true, false, false, false, 2, 1, 0, 0, 0, 0, 0, 20, '◘'),
+            new Inventory(InvCategory.Armor, 7, "ring mail", "ring mail", "ring mail", true, false, false, false, 3, 0, 0, 0, 0, 0, 0, 15, '◘'),
+            new Inventory(InvCategory.Armor, 8, "scale mail", "scale mail", "scale mail", true, false, false, false, 4, 0, 0, 0, 0, 0, 0, 13, '◘'),
+            new Inventory(InvCategory.Armor, 9, "chain mail", "chain mail", "chain mail", true, false, false, false, 5, 0, 0, 0, 0, 0, 0, 12, '◘'),
+            new Inventory(InvCategory.Armor, 10, "splint mail", "splint mail", "splint mail", true, false, false, false, 6, 0, 0, 0, 0, 0, 0, 10, '◘'),
+            new Inventory(InvCategory.Armor, 11, "banded mail", "banded mail", "banded mail", true, false, false, false, 6, 0, 0, 0, 0, 0, 0, 10, '◘'),
+            new Inventory(InvCategory.Armor, 12, "plate mail", "plate mail", "plate mail", true, false, false, false, 7, 0, 0, 0, 0, 0, 0, 5, '◘'),
+            new Inventory(InvCategory.Weapon, 13, "mace", "mace", "mace", true, false, true, false, 0, 0, 1, 1, 2, 8, -3, 10, '↑'),
+            new Inventory(InvCategory.Weapon, 14, "short bow", "short bow", "short bow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑'),
+            new Inventory(InvCategory.Weapon, 15, "crossbow", "crossbow", "crossbow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑'),
+            new Inventory(InvCategory.Weapon, 16, "dagger", "dagger", "dagger", true, false, true, false, 0, 0, 0, 1, 1, 4, 2, 10, '↑'),
+            new Inventory(InvCategory.Weapon, 17, "long sword", "long sword", "long sword", true, false, true, false, 0, 0, 0, 1, 3, 12, -10, 10, '↑'),
+            new Inventory(InvCategory.Weapon, 18, "spear", "spear", "spear", true, false, true, false, 0, 0, 0, 1, 1, 8, -2, 10, '↑'),
+            new Inventory(InvCategory.Weapon, 19, "two-handed sword", "two-handed sword", "two-handed sword", true, false, true, false, 0, 0, 0, 1, 4, 16, -14, 10, '↑'),
+            new Inventory(InvCategory.Ammunition, 20, "arrow", "arrow", "arrows", true, true, true, false, 0, 0, 0, 0, 1, 1, 4, 10, '↑'),
+            new Inventory(InvCategory.Ammunition, 21, "crossbow bolt", "crossbow bolt", "crossbow bolts", true, true, true, false, 0, 0, 0, 0, 1,2, 8, 10, '↑'),
+            new Inventory(InvCategory.Ammunition, 22, "dart", "dart", "darts", true, true, true, false, 0, 0, 0, 0, 1, 1, 2, 10, '↑'),
+            new Inventory(InvCategory.Amulet, 23, "The Amulet", "The Amulet", "The Amulet", true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 0, MapLevel.AMULET),
+            new Inventory(InvCategory.Gold, 24, "gold", "gold", "gold", true, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, '*')
         };
+
+        /// <summary>
+        /// Read-only collection of inventory templates.
+        /// </summary>
+        public static ReadOnlyCollection<Inventory> InventoryItems => invItems.AsReadOnly();
+
+
+        public static void InitializeInventory()
+        {
+            List<Tuple<InvCategory, string>> names = new List<Tuple<InvCategory, string>>();
+            Tuple<InvCategory, string> code;
+
+            // For every inventory template that is marked as non-identified, select a random
+            // code name from the same category and then remove it from the list.
+
+            foreach (Inventory item in InventoryItems)
+            {
+                if (!item.IsIdentified)
+                {
+                    names = CodeNames.Where(c => c.Item1 == item.ItemCategory).ToList();
+                    code = names[rand.Next(0, names.Count)];
+                    item.CodeName = code.Item2;
+                    CodeNames.Remove(code);
+                }
+            }
+        }
+
 
         /// <summary>
         /// List to contain potential code names for non-identified items.
@@ -98,7 +125,7 @@ namespace RogueGame
             new Tuple<InvCategory, string>(InvCategory.Ring, "stibotantalite"),
             new Tuple<InvCategory, string>(InvCategory.Ring, "tiger-eye"),
             new Tuple<InvCategory, string>(InvCategory.Ring, "turquoise"),            
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Forsan et haec olim meminisse iuvabit."), // Perhaps even things things will be pleasing to remember one day.
+            new Tuple<InvCategory, string>(InvCategory.Scroll, "Forsan et haec olim meminisse iuvabit."), // Perhaps even these things will be pleasing to remember one day.
             new Tuple<InvCategory, string>(InvCategory.Scroll, "Ab antiquo"), // From antiquity
             new Tuple<InvCategory, string>(InvCategory.Scroll, "Acta deos numquam mortalia fallunt."), // Mortal deeds never deceive the gods.
             new Tuple<InvCategory, string>(InvCategory.Scroll, "Ad astra per aspera"), // To the stars through difficulties
@@ -106,7 +133,7 @@ namespace RogueGame
             new Tuple<InvCategory, string>(InvCategory.Scroll, "Audentes fortuna iuvat."), // Fortune favors the brave.
             new Tuple<InvCategory, string>(InvCategory.Scroll, "Audi, vide, tace."), // Hear, see, be silent.
             new Tuple<InvCategory, string>(InvCategory.Scroll, "Aurum potestas est."),  // Gold is power.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Carpe noctem."), // Sieze the night.
+            new Tuple<InvCategory, string>(InvCategory.Scroll, "Carpe noctem."), // Seize the night.
             new Tuple<InvCategory, string>(InvCategory.Scroll, "Charta pardonationis utlagariae"), // A letter of pardon for the outlaw.
             new Tuple<InvCategory, string>(InvCategory.Scroll, "Comedamus et bibamus, cras enim moriemur."), // Let us eat and drink for tomorrow we die.
             new Tuple<InvCategory, string>(InvCategory.Scroll, "Cuncti adsint meritaeque expectent praemia palmae."), // Let all come who by merit deserve the most reward
@@ -150,13 +177,21 @@ namespace RogueGame
             new Tuple<InvCategory, string>(InvCategory.Staff, "oak"),
             new Tuple<InvCategory, string>(InvCategory.Staff, "dogwood"),
             new Tuple<InvCategory, string>(InvCategory.Staff, "fir"),
-            new Tuple<InvCategory, string>(InvCategory.Staff, "acacia")
+            new Tuple<InvCategory, string>(InvCategory.Staff, "acacia"),
+            new Tuple<InvCategory, string>(InvCategory.Potion, "crimson"),
+            new Tuple<InvCategory, string>(InvCategory.Potion, "blue"),
+            new Tuple<InvCategory, string>(InvCategory.Potion, "green"),
+            new Tuple<InvCategory, string>(InvCategory.Potion, "brown"),
+            new Tuple<InvCategory, string>(InvCategory.Potion, "orange"),
+            new Tuple<InvCategory, string>(InvCategory.Potion, "jade"),
+            new Tuple<InvCategory, string>(InvCategory.Potion, "pale"),
+            new Tuple<InvCategory, string>(InvCategory.Potion, "electric blue"),
+            new Tuple<InvCategory, string>(InvCategory.Potion, "pink"),
+            new Tuple<InvCategory, string>(InvCategory.Potion, "clear"),
+            new Tuple<InvCategory, string>(InvCategory.Potion, "black"),
         };
 
-        /// <summary>
-        /// Read-only collection of inventory templates.
-        /// </summary>
-        public static ReadOnlyCollection<Inventory> InventoryItems => invItems.AsReadOnly();
+
         /// <summary>
         /// Maximum turns gained from food ration.
         /// </summary>
@@ -250,15 +285,6 @@ namespace RogueGame
         /// </summary>
         public MapSpace Location { get; set; }
         /// <summary>
-        /// Delegate function if item can be used to zap.
-        /// </summary>
-        public Func<Player, MapLevel.Direction, bool>? ZapFunction { get; set; }
-        /// <summary>
-        /// Default delegate function.
-        /// </summary>
-        public Func<Player, Inventory?, bool>? MainFunction { get; set; }
-
-        /// <summary>
         /// Clone a new object off of another. To be used with inventory object templates.
         /// </summary>
         /// <param name="Original">Original object to be cloned.</param>
@@ -283,8 +309,6 @@ namespace RogueGame
             this.ThrowingBonus = Original.ThrowingBonus;
             this.AppearancePct = Original.AppearancePct;
             this.DisplayCharacter = Original.DisplayCharacter;
-            this.ZapFunction = Original.ZapFunction;
-            this.MainFunction = Original.MainFunction;
         }
 
         // TODO:  Create category-specific constructors.
@@ -314,8 +338,7 @@ namespace RogueGame
         /// <param name="Zap">Delegate function for staffs and wands</param>
         public Inventory(InvCategory InvType, int PriorityID, string CodeName, string RealName, string PluralName, bool Identified,
             bool Groupable, bool Wieldable, bool Cursed, int ArmorClass, int Increment, int DamageInc, int AccuracyInc,
-            int MinDamage, int MaxDamage, int ThrowingBonus, int AppearancePct, char DisplayChar, Func<Player, Inventory?, bool>? mainFunction, 
-            Func<Player, MapLevel.Direction, bool>? Zap = null)
+            int MinDamage, int MaxDamage, int ThrowingBonus, int AppearancePct, char DisplayChar)
         {
             // Apply parameters
             this.ItemCategory = InvType; 
@@ -336,8 +359,6 @@ namespace RogueGame
             this.ThrowingBonus = ThrowingBonus;
             this.AppearancePct = AppearancePct;
             this.DisplayCharacter = DisplayChar;
-            this.MainFunction = mainFunction;
-            this.ZapFunction = (Zap != null) ? Zap : null;
         }
 
         /// <summary>
@@ -354,8 +375,7 @@ namespace RogueGame
         /// <param name="Throw">Delegate function when thrown</param>
         /// <param name="Zap">Delegate function for staffs and wands</param>
         public Inventory(InvCategory InvType, int PriorityID, string CodeName, string RealName, string PluralName, char DisplayChar, 
-            int AppearancePct, Func<Player, Inventory?, bool>? mainFunction, Func<Player, MapLevel.Direction, bool>? Throw = null, 
-            Func<Player, MapLevel.Direction, bool>? Zap = null)
+            int AppearancePct)
         {
             // Apply parameters and most common settings
             this.ItemCategory = InvType;
@@ -372,30 +392,6 @@ namespace RogueGame
 
             // If the two names are the same or the type is greater than 6, it's identified.
             this.IsIdentified = (this.RealName == this.CodeName || (int)this.ItemCategory > 5);
-
-            // Delegates
-            this.MainFunction = (mainFunction != null) ? mainFunction : null;
-            this.ZapFunction = (Zap != null) ? Zap : null;
-        }
-
-        public static void InitializeInventory()
-        {
-            List<Tuple<InvCategory, string>> names = new List<Tuple<InvCategory, string>>();
-            Tuple<InvCategory, string> code;
-
-            // For every inventory template that is marked as non-identified, select a random
-            // code name from the same category and then remove it from the list.
-
-            foreach (Inventory item in invItems)
-            {
-                if (!item.IsIdentified)
-                {
-                    names = CodeNames.Where(c => c.Item1 == item.ItemCategory).ToList();
-                    code = names[rand.Next(0, names.Count)];
-                    item.CodeName = code.Item2;
-                    CodeNames.Remove(code);
-                }
-            }
         }
 
         /// <summary>
@@ -471,16 +467,23 @@ namespace RogueGame
                         retValue = Number.ToString() + " " + Item.PluralName;
                     break;
                 case InvCategory.Ammunition:
-                    retValue = Number == 1 ? Item.RealName : Number.ToString() + " " + Item.PluralName;
+                    retValue = Number == 1 ? Game.AddEnglishArticle(Item.RealName) : Number.ToString() + " " + Item.PluralName;
                     break;
                 case InvCategory.Weapon:
                     retValue = Game.AddEnglishArticle(Item.RealName);
                     break;
                 case InvCategory.Ring:
-                case InvCategory.Scroll:
+                case InvCategory.Potion:
                 case InvCategory.Wand:
                 case InvCategory.Staff:
-                case InvCategory.Potion:
+                    if (Item.IsIdentified)
+                        retValue = Number == 1 ? "a " + Item.ItemCategory.ToString().ToLower() + " of " + Item.RealName
+                            : Number.ToString() + " " + Item.ItemCategory.ToString().ToLower() + "s of " + Item.RealName;
+                    else
+                        retValue = Number == 1 ? "a " + Item.CodeName + " " + Item.ItemCategory.ToString().ToLower()
+                            : Number.ToString() + " " + Item.CodeName + " " + Item.ItemCategory.ToString().ToLower() + "s";
+                    break;
+                case InvCategory.Scroll:
                     if (Item.IsIdentified)
                         retValue = Number == 1 ? "a " + Item.ItemCategory.ToString().ToLower() + " of " + Item.RealName 
                             : Number.ToString() + " " + Item.ItemCategory.ToString().ToLower() + "s of " + Item.RealName;
@@ -488,7 +491,6 @@ namespace RogueGame
                         retValue = Number == 1 ? "a " + Item.ItemCategory.ToString().ToLower() + " called \"" + Item.CodeName + "\""
                             : Number.ToString() + " " + Item.ItemCategory.ToString().ToLower() + "s called \"" + Item.CodeName + "\"";
                     break;
-
                 default:
                     retValue = Item.RealName;
                     break;
@@ -599,5 +601,6 @@ namespace RogueGame
         public Inventory InvItem;
         public string Description;
     }
+
 
 }
