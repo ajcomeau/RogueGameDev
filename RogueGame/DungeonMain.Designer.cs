@@ -37,6 +37,7 @@
             txtName = new TextBox();
             lblQuestion = new Label();
             listStatus = new ListBox();
+            lblPrompt = new Label();
             pnlName.SuspendLayout();
             SuspendLayout();
             // 
@@ -65,18 +66,19 @@
             // pnlName
             // 
             pnlName.Anchor = AnchorStyles.Bottom;
+            pnlName.Controls.Add(lblPrompt);
             pnlName.Controls.Add(btnStart);
             pnlName.Controls.Add(txtName);
             pnlName.Controls.Add(lblQuestion);
-            pnlName.Location = new Point(200, 742);
+            pnlName.Location = new Point(200, 717);
             pnlName.Name = "pnlName";
-            pnlName.Size = new Size(727, 44);
+            pnlName.Size = new Size(727, 69);
             pnlName.TabIndex = 11;
             // 
             // btnStart
             // 
             btnStart.BackColor = SystemColors.ActiveCaptionText;
-            btnStart.Location = new Point(600, 9);
+            btnStart.Location = new Point(613, 31);
             btnStart.Name = "btnStart";
             btnStart.Size = new Size(75, 23);
             btnStart.TabIndex = 2;
@@ -88,14 +90,14 @@
             // 
             txtName.BackColor = SystemColors.ControlText;
             txtName.ForeColor = Color.FromArgb(255, 128, 0);
-            txtName.Location = new Point(317, 10);
+            txtName.Location = new Point(330, 32);
             txtName.Name = "txtName";
             txtName.Size = new Size(277, 23);
             txtName.TabIndex = 1;
             // 
             // lblQuestion
             // 
-            lblQuestion.Location = new Point(17, 13);
+            lblQuestion.Location = new Point(30, 35);
             lblQuestion.Name = "lblQuestion";
             lblQuestion.Size = new Size(271, 21);
             lblQuestion.TabIndex = 0;
@@ -115,6 +117,15 @@
             listStatus.Name = "listStatus";
             listStatus.Size = new Size(1120, 152);
             listStatus.TabIndex = 12;
+            // 
+            // lblPrompt
+            // 
+            lblPrompt.AutoSize = true;
+            lblPrompt.Location = new Point(30, 5);
+            lblPrompt.Name = "lblPrompt";
+            lblPrompt.Size = new Size(264, 17);
+            lblPrompt.TabIndex = 3;
+            lblPrompt.Text = "Click Start to begin a new game.";
             // 
             // DungeonMain
             // 
@@ -149,5 +160,6 @@
         private TextBox txtName;
         private Label lblQuestion;
         private ListBox listStatus;
+        private Label lblPrompt;
     }
 }
