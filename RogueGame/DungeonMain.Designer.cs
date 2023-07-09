@@ -33,11 +33,11 @@
             toolTip1 = new ToolTip(components);
             lblArray = new Label();
             pnlName = new Panel();
+            lblPrompt = new Label();
             btnStart = new Button();
             txtName = new TextBox();
             lblQuestion = new Label();
             listStatus = new ListBox();
-            lblPrompt = new Label();
             pnlName.SuspendLayout();
             SuspendLayout();
             // 
@@ -74,6 +74,15 @@
             pnlName.Name = "pnlName";
             pnlName.Size = new Size(727, 69);
             pnlName.TabIndex = 11;
+            // 
+            // lblPrompt
+            // 
+            lblPrompt.AutoSize = true;
+            lblPrompt.Location = new Point(213, 5);
+            lblPrompt.Name = "lblPrompt";
+            lblPrompt.Size = new Size(264, 17);
+            lblPrompt.TabIndex = 3;
+            lblPrompt.Text = "Click Start to begin a new game.";
             // 
             // btnStart
             // 
@@ -117,15 +126,6 @@
             listStatus.Name = "listStatus";
             listStatus.Size = new Size(1120, 152);
             listStatus.TabIndex = 12;
-            // 
-            // lblPrompt
-            // 
-            lblPrompt.AutoSize = true;
-            lblPrompt.Location = new Point(30, 5);
-            lblPrompt.Name = "lblPrompt";
-            lblPrompt.Size = new Size(264, 17);
-            lblPrompt.TabIndex = 3;
-            lblPrompt.Text = "Click Start to begin a new game.";
             // 
             // DungeonMain
             // 

@@ -749,9 +749,17 @@ namespace RogueGame
             do
             {
                 // Inspect target character
-                visibleCharacter = CurrentMap.PriorityChar(adjacent[direct], false);
-                invFound = CurrentMap.DetectInventory(adjacent[direct]);
-                monster = CurrentMap.DetectMonster(adjacent[direct]);
+                if (adjacent.ContainsKey(direct)) { 
+                    visibleCharacter = CurrentMap.PriorityChar(adjacent[direct], false);
+                    invFound = CurrentMap.DetectInventory(adjacent[direct]);
+                    monster = CurrentMap.DetectMonster(adjacent[direct]);
+                }
+                else
+                {
+                    visibleCharacter = MapLevel.EMPTY;
+                    invFound = null;
+                    monster = null;
+                }
 
                 // The player can move if the visible character is within a room or a hallway and there's no monster there.
                 canMove = MapLevel.SpacesAllowed.Contains(visibleCharacter) ||
@@ -805,7 +813,7 @@ namespace RogueGame
             Inventory? weapon = CurrentPlayer.Wielding;
 
             // Chance of landing a punch - 30% + (5% * XP level) - (5% * monster armor class).
-            hitChance = 30 + (5 * CurrentPlayer.ExpLevel) - (5 * Defender.ArmorClass);
+            hitChance = 50 + (5 * CurrentPlayer.ExpLevel) - (5 * Defender.ArmorClass);
             hitSuccess = rand.Next(1, 101) <= hitChance;
 
             // Either way, if the monster wasn't angry before, it sure is now.
@@ -851,7 +859,7 @@ namespace RogueGame
             else
                 armorRating = 1;
 
-            hitChance = 30 + (Attacker.MinStartingHP * 5) - (armorRating * 5);
+            hitChance = 50 + (Attacker.MinStartingHP * 5) - (armorRating * 5);
             hitSuccess = rand.Next(1, 101) <= hitChance;           
 
             // Random HP between monster's min and max attack damage.
@@ -881,6 +889,7 @@ namespace RogueGame
             MapLevel.Direction direct, direct90, direct270;
             MapLevel.Direction? playerDirection = null;
             MapSpace destinationSpace = monster.Location!;
+            Inventory? foundInventory;
 
             // Move monster if possible.
             timeToMove = (monster.CurrentState == Monster.Activity.Wandering &&
@@ -946,13 +955,21 @@ namespace RogueGame
                 direct90 = CurrentMap.GetDirection90(direct);
                 direct270 = CurrentMap.GetDirection270(direct);
 
-                // Inspect target character
-                visibleCharacter = CurrentMap.PriorityChar(adjacent[direct], false);
+                if (adjacent.ContainsKey(direct))
+                {
+                    // Inspect target character
+                    visibleCharacter = CurrentMap.PriorityChar(adjacent[direct], false);
+                    foundInventory = CurrentMap.DetectInventory(adjacent[direct]);
+                }
+                else
+                {
+                    visibleCharacter = MapLevel.EMPTY;
+                    foundInventory = null;
+                }
 
                 // The monster can move if the visible character is within a room or a hallway
                 // and there's nobody else there.
-                canMove = MapLevel.SpacesAllowed.Contains(visibleCharacter) || 
-                    CurrentMap.DetectInventory(adjacent[direct]) != null;
+                canMove = MapLevel.SpacesAllowed.Contains(visibleCharacter) || foundInventory != null;
 
                 if (canMove)
                     monster.Location = adjacent[direct];

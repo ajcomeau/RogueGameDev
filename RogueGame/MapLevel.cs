@@ -47,7 +47,7 @@ namespace RogueGame{
         public const char STAIRWAY = '≣';
         public const char GOLD = '*';
         public const char AMULET = '♀';
-        private const char EMPTY = ' ';
+        public const char EMPTY = ' ';
         /// <summary>
         /// Width of region holding single room.
         /// </summary>
@@ -672,11 +672,20 @@ namespace RogueGame{
         /// <returns>Dictionary of directions and characters found.</returns>
         public Dictionary<Direction, MapSpace> SearchAdjacent(int x, int y)
         {
+            // For each direction, add the existing mapspace if available.
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
-            retValue.Add(Direction.North, levelMap[x, y - 1]);
-            retValue.Add(Direction.East, levelMap[x + 1, y]);
-            retValue.Add(Direction.South, levelMap[x, y + 1]);
-            retValue.Add(Direction.West, levelMap[x - 1, y]);
+         
+            if (y - 1 >= 0)  // North
+                retValue.Add(Direction.North, levelMap[x, y - 1]);
+
+            if (x + 1 <= MAP_WD) // East
+                retValue.Add(Direction.East, levelMap[x + 1, y]);
+
+            if (y + 1 <= MAP_HT)  // South
+                retValue.Add(Direction.South, levelMap[x, y + 1]);
+
+            if ((x - 1) >= 0)  // West
+                retValue.Add(Direction.West, levelMap[x - 1, y]);
 
             return retValue;
         }

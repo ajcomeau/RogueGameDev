@@ -32,7 +32,7 @@ namespace RogueGame
             new Monster("Emu"           , 1, 8, 2, 5, 2, 11, 50, 1, 2, 'E', 0, null, true,  50, false),
             new Monster("Flytrap"       , 8, 64, 9, 80, 15, 20, 50, 0, 0, 'F', 0, null, true, 50,  false),
             new Monster("Griffin"       , 13, 104, 5, 7, 12, 20, 50, 7, 27, 'G', 0, null, true, 50, false),
-            new Monster("Hobgoblin"     , 1, 8, 3, 3, 1, 10, 50, 25, 25, 'H', 0, null, true, 50, false),
+            new Monster("Hobgoblin"     , 1, 8, 3, 3, 1, 10, 50, 1, 8, 'H', 0, null, true, 50, false),
             new Monster("Ice Monster"   , 1, 8, 2, 120, 3, 12, 50, 0, 0, 'I', 0, null, true, 50, false),
             new Monster("Jabberwock"    , 15, 120, 9, 2, 20, 26, 50, 4, 32, 'J', 0, null, true, 50, false),
             new Monster("Kestral"       , 1, 8, 2, 1, 1, 6, 50, 1, 4, 'K', 0, null, true, 50, false),
