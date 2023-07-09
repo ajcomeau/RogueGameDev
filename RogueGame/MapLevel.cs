@@ -460,7 +460,7 @@ namespace RogueGame{
             MapSpace hallwaySpace, newSpace;
             Dictionary<Direction, MapSpace> adjacentChars;
             Dictionary<Direction, MapSpace> surroundingChars;
-            bool hallwayDug = false;
+            bool hallwayDug = false, hallwayLimit = false;
 
             // Iterate through the list of hallway endings (deadends) until all are resolved one way or another.
             // Count backwards so we can remove processed items.
@@ -475,6 +475,7 @@ namespace RogueGame{
                     direction90 = GetDirection90(hallDirection);
                     direction270 = GetDirection270(hallDirection);
                     hallwayDug = false;
+                    hallwayLimit = hallwaySpace.X < 2 || hallwaySpace.Y < 2 || hallwaySpace.X > MAP_WD || hallwaySpace.Y > MAP_HT;
 
                     // Look for distant hallways in three directions.  If one is found, connect to it.
                     if (hallDirection != Direction.None)
@@ -496,7 +497,7 @@ namespace RogueGame{
                             surroundingChars[direction270].MapCharacter == HALLWAY))
                             hallwayDug = DrawHallway(hallwaySpace, surroundingChars[direction270], direction270);
 
-                        if (!hallwayDug)
+                        if (!hallwayDug && ! hallwayLimit)
                         {
                             // If there's no hallway to connect to, just add another space where possible for the
                             // next iteration to pick up on.
