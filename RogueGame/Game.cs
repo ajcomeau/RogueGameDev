@@ -836,12 +836,13 @@ namespace RogueGame
 
             Defender.HPDamage += damage;
 
-            // If the monster has been defeated, remove it from the map.
+            // If the monster has been defeated, remove it from the map and spawn another one.
             if(Defender.CurrentHP < 1)
             {
                 CurrentMap.ActiveMonsters.Remove(Defender);
                 UpdateStatus($"You defeated the {Defender.MonsterName.ToLower()}.", false);
-                CurrentPlayer.Experience += Defender.ExpReward + (int)(Defender.MaxHP / 6);
+                CurrentPlayer.Experience += Defender.ExpReward + (int)(Defender.MaxHP / 6);                
+                CurrentMap.AddMonsters(1);
             }
         }
 

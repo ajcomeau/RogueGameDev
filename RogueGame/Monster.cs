@@ -229,12 +229,14 @@ namespace RogueGame
         {
             int itemSelect = 0;
 
+            // Get list of available monsters for specified level.
             List<Monster> retList = (from Monster item in Monsters
                                         where item.MinLevel <= LevelNumber && item.MaxLevel >= LevelNumber
                                         select item).ToList();
 
             if (retList.Count > 0)
             {
+                // Select random monster from list and return.
                 itemSelect = Game.rand.Next(0, retList.Count);
                 return new Monster(retList[itemSelect]);
             }

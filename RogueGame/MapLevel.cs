@@ -173,8 +173,7 @@ namespace RogueGame{
             do
             {
                 MapGeneration();
-            } while (!VerifyMap()); 
-            
+            } while (!VerifyMap());             
         }
 
         /// <summary>
@@ -271,6 +270,9 @@ namespace RogueGame{
             // Create hallways 
             HallwayGeneration();
 
+            // Add nine monsters to start, regardless of number of actual rooms.
+            AddMonsters(9);
+
             // Add stairway
             stairway = GetOpenSpace(false);
             levelMap[stairway.X, stairway.Y] = new MapSpace(STAIRWAY, stairway.X, stairway.Y);
@@ -278,9 +280,31 @@ namespace RogueGame{
             // Add Amulet to final level.
             if (CurrentLevel == Game.MAX_LEVEL)
                 MapInventory.Add(Inventory.GetInventoryItem(Inventory.InvCategory.Amulet, GetOpenSpace(false)));
-
         }
 
+        public void AddMonsters(int Number)
+        {
+            Monster? spawned;
+            MapSpace itemSpace;
+
+            // Pick random monsters until its probability of appearing is 
+            // within the random limit generated.
+            for (int i = 1; i <= Number; i++)
+            {
+                do
+                {
+                    spawned = Monster.SpawnMonster(CurrentLevel);
+                } while (spawned != null && rand.Next(1, 101) <= spawned.AppearancePct);
+
+                // Place monster on map.
+                if (spawned != null)
+                {
+                    itemSpace = GetOpenSpace(true);
+                    spawned.Location = itemSpace;
+                    ActiveMonsters.Add(spawned);
+                }
+            }
+        }
 
         /// <summary>
         /// Create room on map based on inputs
@@ -304,10 +328,9 @@ namespace RogueGame{
             int maxInventoryItems = rand.Next(1, MAX_INVENTORY + 1);
             int mapInventory = 0;
             Inventory invItem;
-            Monster? spawned;
             MapSpace itemSpace;
 
-            // Create horizontal and vertical walls for room.
+            // Create horizontal and vertical walls for room and fill interior spaces.
             for (int y = northWallY; y <= southWallY; y++)
             {
                 for (int x = westWallX; x <= eastWallX; x++)
@@ -390,7 +413,7 @@ namespace RogueGame{
             {
                 // Search the room randomly for an empty interior room space
                 // and mark it as a gold deposit.
-                while (levelMap[openX, openY].MapCharacter != ROOM_INT)
+                while (PriorityChar(levelMap[openX, openY], true) != ROOM_INT)
                 {
                     openX = rand.Next(westWallX + 1, eastWallX);
                     openY = rand.Next(northWallY + 1, southWallY);
@@ -403,7 +426,7 @@ namespace RogueGame{
             while (mapInventory < maxInventoryItems)
             {
                 // Look for an interior space that hasn't been used by gold.
-                while (itemSpace.MapCharacter != ROOM_INT || CurrentMapItems().Contains(itemSpace))
+                while (PriorityChar(itemSpace, true) != ROOM_INT)
                 {
                     openX = rand.Next(westWallX + 1, eastWallX);
                     openY = rand.Next(northWallY + 1, southWallY);
@@ -424,29 +447,6 @@ namespace RogueGame{
                     MapInventory.Add(invItem);
 
                     mapInventory++;
-                }
-            }
-
-            // Add a monster to room based on probability.
-            if (rand.Next(1, 101) < SPAWN_MONSTER)
-            {
-                do
-                {
-                    spawned = Monster.SpawnMonster(CurrentLevel);
-                } while (spawned != null && rand.Next(1, 101) <= spawned.AppearancePct);
-
-                // Place monster on map.
-                if (spawned != null)
-                {
-                    do
-                    {
-                        openX = rand.Next(westWallX + 1, eastWallX);
-                        openY = rand.Next(northWallY + 1, southWallY);
-                        itemSpace = levelMap[openX, openY];
-                    } while (!CurrentMapItems().Contains(itemSpace));
-
-                    spawned.Location = itemSpace;
-                    ActiveMonsters.Add(spawned);
                 }
             }
         }
@@ -475,7 +475,10 @@ namespace RogueGame{
                     direction90 = GetDirection90(hallDirection);
                     direction270 = GetDirection270(hallDirection);
                     hallwayDug = false;
-                    hallwayLimit = hallwaySpace.X < 2 || hallwaySpace.Y < 2 || hallwaySpace.X > MAP_WD || hallwaySpace.Y > MAP_HT;
+                    // Bugfix - hallways were being drawn to edge and this was causing a problem with
+                    // SearchAdjacent(). This is part of the fix. 
+                    hallwayLimit = hallwaySpace.X < 2 || hallwaySpace.Y < 2 || 
+                        hallwaySpace.X > MAP_WD || hallwaySpace.Y > MAP_HT;
 
                     // Look for distant hallways in three directions.  If one is found, connect to it.
                     if (hallDirection != Direction.None)
@@ -497,7 +500,7 @@ namespace RogueGame{
                             surroundingChars[direction270].MapCharacter == HALLWAY))
                             hallwayDug = DrawHallway(hallwaySpace, surroundingChars[direction270], direction270);
 
-                        if (!hallwayDug && ! hallwayLimit)
+                        if (!hallwayDug && !hallwayLimit)
                         {
                             // If there's no hallway to connect to, just add another space where possible for the
                             // next iteration to pick up on.
@@ -599,7 +602,6 @@ namespace RogueGame{
                 space.Discovered = false;
                 space.Visible = false;
             }
-
         }
 
         /// <summary>
