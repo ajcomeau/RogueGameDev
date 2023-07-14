@@ -1,5 +1,10 @@
 # Rogue C#
 
+7/13/2023
+
+See https://www.comeausoftware.com/c-sharp/rogue-csharp-random-updates/ for the latest writeup on the Play Again feature and spawning of new
+monsters mid-level.
+
 6/29/2023
 
 See https://www.comeausoftware.com/c-sharp/rogue-csharp-building-on-the-foundation/ for the latest writeup.
