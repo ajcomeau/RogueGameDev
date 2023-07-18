@@ -518,6 +518,7 @@ namespace RogueGame
                 "d - drop inventory\n" +
                 "e - eat\n" +
                 "i - show inventory\n" +
+                "r - read scroll\n" +
                 "s - search for hidden doorways\n" +
                 "w - wield new weapon\n\n" +
                 "F - Fast Play mode ON / OFF\n" +
