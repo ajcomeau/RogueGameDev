@@ -210,6 +210,14 @@ namespace RogueGame
             bool startTurn = false, keyHandled = false;
             char lowerCase = char.ToLower((char)KeyVal);
 
+            if (KeyVal == KEY_ESC)
+            {
+                // For ESC, clear the return function and restore the game map.
+                ReturnFunction = null;
+                RestoreMap();
+                keyHandled = true;
+            }
+
             if (GameMode == DisplayMode.Inventory)
             {
                 // For letters, call the current return function.
@@ -217,12 +225,6 @@ namespace RogueGame
                 {
                     if (ReturnFunction != null)
                         ReturnFunction(lowerCase);
-                }
-                else if (KeyVal == KEY_ESC)
-                {
-                    // For ESC, clear the return function and restore the game map.
-                    ReturnFunction = null;
-                    RestoreMap();
                 }
                 keyHandled = true;
             }
