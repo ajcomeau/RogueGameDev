@@ -8,6 +8,7 @@ using System.Diagnostics.Eventing.Reader;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,6 +31,7 @@ namespace RogueGame
         private const int KEY_UPLEVEL = 188;
         private const int KEY_DOWNLEVEL = 190;
         // Command keys
+        private const int KEY_R = 82;
         private const int KEY_S = 83;
         private const int KEY_D = 68;
         private const int KEY_N = 78;
@@ -122,6 +124,7 @@ namespace RogueGame
         /// Delgate used to return to function that enables an inventory item to be used.
         /// </summary>
         public Func<char?, bool>? ReturnFunction { get; set; } 
+
         /// <summary>
         /// Status message for top of screen.
         /// </summary>
@@ -159,17 +162,6 @@ namespace RogueGame
 
             return retValue;
         }
-
-
-
-        /// <summary>
-        /// Inventory delegates
-        /// </summary>
-        /// <param name="scroll"></param>
-        /// <param name="target"></param>
-        /// <returns></returns>
-        public delegate string InventoryDelegate(Inventory scroll, Inventory target);
-
 
         /// <summary>
         /// Primary constructor for starting new game.
@@ -312,6 +304,10 @@ namespace RogueGame
                     case KEY_SOUTH:
                         MovePlayer(CurrentPlayer, MapLevel.Direction.South);
                         break;
+                    case KEY_R:     // Read
+                        startTurn = true;
+                        ReadScroll(null);
+                        break;
                     case KEY_S:     // Search
                         startTurn = true;
                         SearchForHidden();
@@ -416,6 +412,8 @@ namespace RogueGame
                     RestoreMap();
                     retValue = false;
                 }
+
+                ReturnFunction = null;
 
             }
 
@@ -1085,6 +1083,8 @@ namespace RogueGame
                     RestoreMap();
                     retValue = false;
                 }
+
+                ReturnFunction = null;
             }
 
             return retValue;
@@ -1159,10 +1159,12 @@ namespace RogueGame
                     retValue = false;
                 }
 
+                ReturnFunction = null;
             }
 
             return retValue;
         }
+
 
         /// <summary>
         /// Drop specified inventory on map.
@@ -1226,10 +1228,8 @@ namespace RogueGame
                     retValue = false;
                 }
 
+                ReturnFunction = null;
             }
-
-            if (GameMode != DisplayMode.Inventory)
-                this.ReturnFunction = null;
 
             return retValue;
         }
@@ -1298,11 +1298,7 @@ namespace RogueGame
             return retValue;
         }
 
-        public string ScrollOfIdentify(string test)
-        {
 
-            return "";
-        }
 
         public static string CapitalFirstLetter(string Text)
         {
@@ -1321,6 +1317,152 @@ namespace RogueGame
             else
                 return $"a {Text}";            
         }
+
+        private bool ReadScroll(char? ListItem)
+        {
+            bool retValue = false, readScroll = false;
+            List<Inventory> items;
+
+            if (GameMode != DisplayMode.Inventory)
+            {
+                // Verify the player has something they can read.
+                items = (from inv in CurrentPlayer.PlayerInventory
+                         where inv.ItemCategory == InvCategory.Scroll
+                         select inv).ToList();
+
+                if (items.Count > 0)
+                {
+                    // If there are any scrolls, show the inventory
+                    // and let the player select it.  Set to return and exit.
+                    DisplayInventory();
+                    UpdateStatus("Please select an item to read.", false);
+                    ReturnFunction = ReadScroll;
+                }
+                else
+                    // Otherwise, notify the player.
+                    UpdateStatus("You don't have any scrolls.", false);
+            }
+            else
+            {
+                // Get the selected item.
+                items = (from InventoryLine in InventoryDisplay(CurrentPlayer.PlayerInventory)
+                         where InventoryLine.ID == ListItem
+                         select InventoryLine.InvItem).ToList();
+
+                if (items.Count > 0)
+                {
+                    // Call the appropriate delegate and remove the item
+                    // from inventory.
+                    if (items[0].ItemCategory != InvCategory.Scroll)
+                    {
+                        UpdateStatus("There's nothing on it to read.", false);
+                        retValue = false;
+                    }
+                    else
+                    {
+                        // Route to the appropriate routine based on the name of the scroll.
+                        switch (items[0].RealName)
+                        {
+                            case "Identify":
+                                UpdateStatus("This is a Scroll of Identify.", true);
+                                if (!items[0].IsIdentified) SetInventoryAsIdentified(items[0].PriorityId);
+                                readScroll = ScrollOfIdentify(null);
+                                break;
+                            case "Magic Mapping":
+                                UpdateStatus("This scroll has a map on it!", false);
+                                if (!items[0].IsIdentified) SetInventoryAsIdentified(items[0].PriorityId);
+                                readScroll = CurrentMap.DiscoverMap();
+                                RestoreMap();
+                                break;
+                            default:
+                                break;
+                        }
+
+                        if (readScroll) CurrentPlayer.PlayerInventory.Remove(items[0]);
+
+                            
+                        retValue = true;
+                    }
+                }
+                else
+                {
+                    // Process non-existent option.
+                    UpdateStatus("Please select something to read.", false);
+                    RestoreMap();
+                    ReturnFunction = null;
+                    retValue = false;
+                }
+            }
+
+            return retValue;
+        }
+
+        public void SetInventoryAsIdentified(int PriorityID)
+        {
+            Inventory? template;
+            // Set the inventory template as identified
+            template = Inventory.InventoryItems.FirstOrDefault(x => x.PriorityId == PriorityID);
+            if (template != null) template.IsIdentified = true;
+
+            // Set all instances in the player's inventory as identified.
+            foreach (Inventory item in CurrentPlayer.PlayerInventory)
+            {
+                if (item.PriorityId == PriorityID)
+                    item.IsIdentified = true;
+            }
+        }
+
+        #region Scroll Methods
+
+        public bool ScrollOfMapping()
+        {
+            bool retValue = false;
+
+
+
+            return retValue;
+        }
+
+        public bool ScrollOfIdentify(char? ListItem)
+        {
+            List<InventoryLine> lines;
+            bool retValue = false;
+
+            if (ReturnFunction != ScrollOfIdentify)
+            {
+                UpdateStatus("Please select an item to identify.", false);
+                ReturnFunction = ScrollOfIdentify;
+                DisplayInventory();
+                retValue = true;
+            }
+            else
+            {
+                // Get the selected item.
+                lines = (from InventoryLine in InventoryDisplay(CurrentPlayer.PlayerInventory)
+                         where InventoryLine.ID == ListItem
+                         select InventoryLine).ToList();
+
+                if (lines.Count > 0)
+                {
+                    // Update inventory template to Identified and then update player's inventory.
+                    SetInventoryAsIdentified(lines[0].InvItem.PriorityId);
+                    UpdateStatus(Inventory.ListingDescription(lines[0].Count, lines[0].InvItem), false);
+                }
+                else
+                {
+                    // Process non-existent option.
+                    UpdateStatus("That item doesn't exist.", false);
+                }
+
+                ReturnFunction = null;
+                RestoreMap();
+            }
+
+            return retValue;
+        }
+
+
+        #endregion
 
     }
 }

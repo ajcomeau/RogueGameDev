@@ -907,6 +907,21 @@ namespace RogueGame{
             return retValue;
         }
 
+        public bool DiscoverMap()
+        {
+            bool retValue = false;
+
+            List<MapSpace> spaces = (from MapSpace space in levelMap
+                                     where MapDiscovery.Contains(space.MapCharacter)
+                                     select space).ToList();
+
+            spaces.ForEach(space => { space.Discovered = true; space.Visible = true;
+                space.SearchRequired = false; space.AltMapCharacter = null; });            
+
+            return retValue;
+        }
+
+
         /// <summary>
         /// Return region number 1 through 9 based on map point.
         /// </summary>

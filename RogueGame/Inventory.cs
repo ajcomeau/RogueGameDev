@@ -50,25 +50,25 @@ namespace RogueGame
             new Inventory(InvCategory.Food, 1, "some food", "some food", "rations of food", '♣', 20),
             new Inventory(InvCategory.Food, 2, "a mango", "a mango", "mangoes", '♣', 20),
             new Inventory(InvCategory.Scroll, 3, "", "Identify", "Identify", false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 15, '♪'),
-            new Inventory(InvCategory.Scroll, 4, "", "Magic Mapping", "Magic Mapping", false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 15, '♪'),
-            new Inventory(InvCategory.Armor, 5, "studded leather armor", "studded leather armor", "studded leather armor", true, false, false, false, 3, 1, 0, 0, 0, 0, 0, 15, '◘'),
-            new Inventory(InvCategory.Armor, 6, "leather armor", "leather armor", "leather armor", true, false, false, false, 2, 1, 0, 0, 0, 0, 0, 20, '◘'),
-            new Inventory(InvCategory.Armor, 7, "ring mail", "ring mail", "ring mail", true, false, false, false, 3, 0, 0, 0, 0, 0, 0, 15, '◘'),
-            new Inventory(InvCategory.Armor, 8, "scale mail", "scale mail", "scale mail", true, false, false, false, 4, 0, 0, 0, 0, 0, 0, 13, '◘'),
-            new Inventory(InvCategory.Armor, 9, "chain mail", "chain mail", "chain mail", true, false, false, false, 5, 0, 0, 0, 0, 0, 0, 12, '◘'),
-            new Inventory(InvCategory.Armor, 10, "splint mail", "splint mail", "splint mail", true, false, false, false, 6, 0, 0, 0, 0, 0, 0, 10, '◘'),
-            new Inventory(InvCategory.Armor, 11, "banded mail", "banded mail", "banded mail", true, false, false, false, 6, 0, 0, 0, 0, 0, 0, 10, '◘'),
-            new Inventory(InvCategory.Armor, 12, "plate mail", "plate mail", "plate mail", true, false, false, false, 7, 0, 0, 0, 0, 0, 0, 5, '◘'),
-            new Inventory(InvCategory.Weapon, 13, "mace", "mace", "mace", true, false, true, false, 0, 0, 1, 1, 2, 8, -3, 10, '↑'),
-            new Inventory(InvCategory.Weapon, 14, "short bow", "short bow", "short bow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑'),
-            new Inventory(InvCategory.Weapon, 15, "crossbow", "crossbow", "crossbow", true, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑'),
-            new Inventory(InvCategory.Weapon, 16, "dagger", "dagger", "dagger", true, false, true, false, 0, 0, 0, 1, 1, 4, 2, 10, '↑'),
-            new Inventory(InvCategory.Weapon, 17, "long sword", "long sword", "long sword", true, false, true, false, 0, 0, 0, 1, 3, 12, -10, 10, '↑'),
-            new Inventory(InvCategory.Weapon, 18, "spear", "spear", "spear", true, false, true, false, 0, 0, 0, 1, 1, 8, -2, 10, '↑'),
-            new Inventory(InvCategory.Weapon, 19, "two-handed sword", "two-handed sword", "two-handed sword", true, false, true, false, 0, 0, 0, 1, 4, 16, -14, 10, '↑'),
-            new Inventory(InvCategory.Ammunition, 20, "arrow", "arrow", "arrows", true, true, true, false, 0, 0, 0, 0, 1, 1, 4, 10, '↑'),
-            new Inventory(InvCategory.Ammunition, 21, "crossbow bolt", "crossbow bolt", "crossbow bolts", true, true, true, false, 0, 0, 0, 0, 1,2, 8, 10, '↑'),
-            new Inventory(InvCategory.Ammunition, 22, "dart", "dart", "darts", true, true, true, false, 0, 0, 0, 0, 1, 1, 2, 10, '↑'),
+            new Inventory(InvCategory.Scroll, 4, "", "Magic Mapping", "Magic Mapping", false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 15, '♪'),            
+            new Inventory(InvCategory.Armor, 5, "studded leather armor", "studded leather armor", "studded leather armor", false, false, false, false, 3, 1, 0, 0, 0, 0, 0, 15, '◘'),
+            new Inventory(InvCategory.Armor, 6, "leather armor", "leather armor", "leather armor", false, false, false, false, 2, 1, 0, 0, 0, 0, 0, 20, '◘'),
+            new Inventory(InvCategory.Armor, 7, "ring mail", "ring mail", "ring mail", false, false, false, false, 3, 0, 0, 0, 0, 0, 0, 15, '◘'),
+            new Inventory(InvCategory.Armor, 8, "scale mail", "scale mail", "scale mail", false, false, false, false, 4, 0, 0, 0, 0, 0, 0, 13, '◘'),
+            new Inventory(InvCategory.Armor, 9, "chain mail", "chain mail", "chain mail", false, false, false, false, 5, 0, 0, 0, 0, 0, 0, 12, '◘'),
+            new Inventory(InvCategory.Armor, 10, "splint mail", "splint mail", "splint mail", false, false, false, false, 6, 0, 0, 0, 0, 0, 0, 10, '◘'),
+            new Inventory(InvCategory.Armor, 11, "banded mail", "banded mail", "banded mail", false, false, false, false, 6, 0, 0, 0, 0, 0, 0, 10, '◘'),
+            new Inventory(InvCategory.Armor, 12, "plate mail", "plate mail", "plate mail", false, false, false, false, 7, 0, 0, 0, 0, 0, 0, 5, '◘'),
+            new Inventory(InvCategory.Weapon, 13, "mace", "mace", "mace", false, false, true, false, 0, 0, 1, 1, 2, 8, -3, 10, '↑'),
+            new Inventory(InvCategory.Weapon, 14, "short bow", "short bow", "short bow", false, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑'),
+            new Inventory(InvCategory.Weapon, 15, "crossbow", "crossbow", "crossbow", false, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, '↑'),
+            new Inventory(InvCategory.Weapon, 16, "dagger", "dagger", "dagger", false, false, true, false, 0, 0, 0, 1, 1, 4, 2, 10, '↑'),
+            new Inventory(InvCategory.Weapon, 17, "long sword", "long sword", "long sword", false, false, true, false, 0, 0, 0, 1, 3, 12, -10, 10, '↑'),
+            new Inventory(InvCategory.Weapon, 18, "spear", "spear", "spear", false, false, true, false, 0, 0, 0, 1, 1, 8, -2, 10, '↑'),
+            new Inventory(InvCategory.Weapon, 19, "two-handed sword", "two-handed sword", "two-handed sword", false, false, true, false, 0, 0, 0, 1, 4, 16, -14, 10, '↑'),
+            new Inventory(InvCategory.Ammunition, 20, "arrow", "arrow", "arrows", false, true, true, false, 0, 0, 0, 0, 1, 1, 4, 10, '↑'),
+            new Inventory(InvCategory.Ammunition, 21, "crossbow bolt", "crossbow bolt", "crossbow bolts", false, true, true, false, 0, 0, 0, 0, 1,2, 8, 10, '↑'),
+            new Inventory(InvCategory.Ammunition, 22, "dart", "dart", "darts", false, true, true, false, 0, 0, 0, 0, 1, 1, 2, 10, '↑'),
             new Inventory(InvCategory.Amulet, 23, "The Amulet", "The Amulet", "The Amulet", true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 0, MapLevel.AMULET),
             new Inventory(InvCategory.Gold, 24, "gold", "gold", "gold", true, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, '*')
         };
@@ -92,9 +92,12 @@ namespace RogueGame
                 if (!item.IsIdentified)
                 {
                     names = CodeNames.Where(c => c.Item1 == item.ItemCategory).ToList();
-                    code = names[rand.Next(0, names.Count)];
-                    item.CodeName = code.Item2;
-                    CodeNames.Remove(code);
+                    if (names.Count > 0)
+                    {
+                        code = names[rand.Next(0, names.Count)];
+                        item.CodeName = code.Item2;
+                        CodeNames.Remove(code);
+                    }
                 }
             }
         }
@@ -451,7 +454,7 @@ namespace RogueGame
         /// <returns></returns>
         public static string ListingDescription(int Number, Inventory Item)
         {
-            // Signle function to create inventory listing description for item and 
+            // Single function to create inventory listing description for item and 
             // handle all the grammatical adjustments.
 
             string increments = "";
