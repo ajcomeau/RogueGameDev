@@ -9,6 +9,8 @@ namespace RogueGame{
 
     internal class MapLevel
     {
+
+        #region Constant and Properties
         /// <summary>
         /// Enumeration used to establish relative directions.
         /// </summary>
@@ -162,6 +164,7 @@ namespace RogueGame{
         /// Reference to current player to get location and anything else needed.
         /// </summary>
         public Player CurrentPlayer { get; set; }
+        #endregion
 
         /// <summary>
         /// Constructor - generate a new map for this level.
@@ -912,8 +915,8 @@ namespace RogueGame{
             bool retValue = false;
 
             List<MapSpace> spaces = (from MapSpace space in levelMap
-                                     where MapDiscovery.Contains(space.MapCharacter)
-                                     select space).ToList();
+                                        where MapDiscovery.Contains(space.MapCharacter)
+                                        select space).ToList();
 
             spaces.ForEach(space => { space.Discovered = true; space.Visible = true;
                 space.SearchRequired = false; space.AltMapCharacter = null; });            

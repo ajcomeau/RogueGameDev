@@ -12,13 +12,13 @@ namespace RogueGame
 {
     internal class Monster
     {
+        #region Constants and Properties
+
         public enum Activity {
             Resting = 0,
             Wandering = 1,
             Angered = 2
-        }
-
-        
+        }        
         
         /// <summary>
         /// Monster templates - program grabs these at random to spawn new monsters on map.
@@ -151,7 +151,7 @@ namespace RogueGame
         public MapSpace? Destination { get; set; }
         public MapLevel.Direction? Direction { get; set; }
 
-
+        #endregion
 
         /// <summary>
         /// Main constructor for creating monster from scratch with defaults.

@@ -14,6 +14,7 @@ namespace RogueGame
     /// </summary>
     internal class Player
     {
+        #region Constants
         /// <summary>
         /// Starting hit points
         /// </summary>
@@ -45,7 +46,9 @@ namespace RogueGame
             Faint = 1,
             Dead = 0
         }
+        #endregion
 
+        #region Properties
         /// <summary>
         /// Name provided by player
         /// </summary>
@@ -170,7 +173,9 @@ namespace RogueGame
             this.PlayerInventory = this.PlayerInventory.Where(x => x != null).ToList();
 
         }
+        #endregion
 
+        #region Procedures
         /// <summary>
         /// Search the player's inventory for a specific item.
         /// </summary>
@@ -194,5 +199,6 @@ namespace RogueGame
                     where item.ItemCategory == Category
                     select item).FirstOrDefault();
         }
+        #endregion
     }
 }

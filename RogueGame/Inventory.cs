@@ -17,6 +17,7 @@ namespace RogueGame
     /// </summary>
     internal class Inventory
     {
+        #region Constants and Properties
         /// <summary>
         /// Inventory category
         /// </summary>
@@ -78,31 +79,6 @@ namespace RogueGame
         /// </summary>
         public static ReadOnlyCollection<Inventory> InventoryItems => invItems.AsReadOnly();
 
-
-        public static void InitializeInventory()
-        {
-            List<Tuple<InvCategory, string>> names = new List<Tuple<InvCategory, string>>();
-            Tuple<InvCategory, string> code;
-
-            // For every inventory template that is marked as non-identified, select a random
-            // code name from the same category and then remove it from the list.
-
-            foreach (Inventory item in InventoryItems)
-            {
-                if (!item.IsIdentified)
-                {
-                    names = CodeNames.Where(c => c.Item1 == item.ItemCategory).ToList();
-                    if (names.Count > 0)
-                    {
-                        code = names[rand.Next(0, names.Count)];
-                        item.CodeName = code.Item2;
-                        CodeNames.Remove(code);
-                    }
-                }
-            }
-        }
-
-
         /// <summary>
         /// List to contain potential code names for non-identified items.
         /// </summary>
@@ -127,7 +103,7 @@ namespace RogueGame
             new Tuple<InvCategory, string>(InvCategory.Ring, "sapphire"),
             new Tuple<InvCategory, string>(InvCategory.Ring, "stibotantalite"),
             new Tuple<InvCategory, string>(InvCategory.Ring, "tiger-eye"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "turquoise"),            
+            new Tuple<InvCategory, string>(InvCategory.Ring, "turquoise"),
             new Tuple<InvCategory, string>(InvCategory.Scroll, "Forsan et haec olim meminisse iuvabit."), // Perhaps even these things will be pleasing to remember one day.
             new Tuple<InvCategory, string>(InvCategory.Scroll, "Ab antiquo"), // From antiquity
             new Tuple<InvCategory, string>(InvCategory.Scroll, "Acta deos numquam mortalia fallunt."), // Mortal deeds never deceive the gods.
@@ -195,10 +171,11 @@ namespace RogueGame
         };
 
 
+
         /// <summary>
         /// Maximum turns gained from food ration.
         /// </summary>
-        public const int MAX_FOODVALUE = 1700; 
+        public const int MAX_FOODVALUE = 1700;
         /// <summary>
         /// Minimum turns gained from food ration.
         /// </summary>
@@ -214,7 +191,7 @@ namespace RogueGame
         /// <summary>
         /// Unique ID used for ordering.
         /// </summary>
-        public int PriorityId { get; set; } 
+        public int PriorityId { get; set; }
         /// <summary>
         /// Name if unidentified.
         /// </summary>
@@ -222,7 +199,7 @@ namespace RogueGame
         /// <summary>
         /// Identified name.
         /// </summary>
-        public string RealName { get; set; } 
+        public string RealName { get; set; }
         /// <summary>
         /// Plural of RealName
         /// </summary>
@@ -242,31 +219,31 @@ namespace RogueGame
         /// <summary>
         /// Can the item be wielded as a weapon?
         /// </summary>
-        public bool IsWieldable { get; set; } 
+        public bool IsWieldable { get; set; }
         /// <summary>
         /// Is the item cursed?
         /// </summary>
-        public bool IsCursed { get; set; }  
+        public bool IsCursed { get; set; }
         /// <summary>
         /// Armor class rating
         /// </summary>
-        public int ArmorClass { get; set; } 
+        public int ArmorClass { get; set; }
         /// <summary>
         /// Effectiveness bonus
         /// </summary>
-        public int Increment { get; set; } 
+        public int Increment { get; set; }
         /// <summary>
         /// Damage bonus
         /// </summary>
-        public int DmgIncrement { get; set; } 
+        public int DmgIncrement { get; set; }
         /// <summary>
         /// Accuracy bonus
         /// </summary>
-        public int AccIncrement { get; set; } 
+        public int AccIncrement { get; set; }
         /// <summary>
         /// Minimum damaage for weapon
         /// </summary>
-        public int MinDamage { get; set; } 
+        public int MinDamage { get; set; }
         /// <summary>
         /// Maximum damage for weapon
         /// </summary>
@@ -278,7 +255,7 @@ namespace RogueGame
         /// <summary>
         /// Probability of item being generated when selected randomly.
         /// </summary>
-        public int AppearancePct { get; set; } 
+        public int AppearancePct { get; set; }
         /// <summary>
         /// Symbol to be displayed.
         /// </summary>
@@ -287,6 +264,12 @@ namespace RogueGame
         /// Location of the item on the map.
         /// </summary>
         public MapSpace Location { get; set; }
+
+
+        #endregion
+
+        #region Procedures
+
         /// <summary>
         /// Clone a new object off of another. To be used with inventory object templates.
         /// </summary>
@@ -395,6 +378,29 @@ namespace RogueGame
 
             // If the two names are the same or the type is greater than 6, it's identified.
             this.IsIdentified = (this.RealName == this.CodeName || (int)this.ItemCategory > 5);
+        }
+
+        public static void InitializeInventory()
+        {
+            List<Tuple<InvCategory, string>> names = new List<Tuple<InvCategory, string>>();
+            Tuple<InvCategory, string> code;
+
+            // For every inventory template that is marked as non-identified, select a random
+            // code name from the same category and then remove it from the list.
+
+            foreach (Inventory item in InventoryItems)
+            {
+                if (!item.IsIdentified)
+                {
+                    names = CodeNames.Where(c => c.Item1 == item.ItemCategory).ToList();
+                    if (names.Count > 0)
+                    {
+                        code = names[rand.Next(0, names.Count)];
+                        item.CodeName = code.Item2;
+                        CodeNames.Remove(code);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -592,6 +598,7 @@ namespace RogueGame
             return returnVal;
         }
     }
+    #endregion
 
     /// <summary>
     /// Class used for constructing inventory display lines.
