@@ -1,5 +1,17 @@
 # Rogue C#
 
+## PDF Edition now available through LeanPub!
+
+June 2025: The Rogue C# series is now available for download in PDF format! I’m reviewing this series for continuation and if you’d like to support this work, 
+you can get this offline edition from LeanPub.com.
+
+This PDF includes all the content that you see on ComeauSoftware.com in one file for convenient offline reading. The downloadable edition also contains 
+a detailed Table of Contents and each chapter is linked back to the original articles for access to more resources and future updates.
+
+Visit the project page for more information:  https://www.comeausoftware.com/rogue-csharp-main/
+
+Get your offline copy on LeanPub.com: https://leanpub.com/roguecsharp
+
 7/13/2023
 
 See https://www.comeausoftware.com/c-sharp/rogue-csharp-random-updates/ for the latest writeup on the Play Again feature and spawning of new
