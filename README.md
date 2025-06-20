@@ -12,16 +12,16 @@ Visit the project page for more information:  https://www.comeausoftware.com/rog
 
 Get your offline copy on LeanPub.com: https://leanpub.com/roguecsharp
 
-7/13/2023
+### 7/13/2023
 
 See https://www.comeausoftware.com/c-sharp/rogue-csharp-random-updates/ for the latest writeup on the Play Again feature and spawning of new
 monsters mid-level.
 
-6/29/2023
+### 6/29/2023
 
 See https://www.comeausoftware.com/c-sharp/rogue-csharp-building-on-the-foundation/ for the latest writeup.
 
-6/22/2023
+### 6/22/2023
 
 The fight mechanics are present but might need some tweaking.  It seems to get too easy after the first couple of experience
 levels.
@@ -32,7 +32,7 @@ The appropriate commands are available on the help menu.
 I'm working on code names for items that require identification.  Two scrolls have been added, Identify and Magic Mapping, but they're not
 doing anything yet and there's no read command yet.  The program does successfully assign code names, however.
 
-6/14/2023
+### 6/14/2023
 
 I started out just working on the player stats display at the bottom of the screen. Then I wanted to really test them
 so now the monsters are fighting back.  The attacks are still basic although monsters do have minimum and maximum attack
@@ -46,7 +46,7 @@ See the latest writeup at:
 https://www.comeausoftware.com/c-sharp/rogue-csharp-monsters-strike-back/
 
 
-6/8/2023
+### 6/8/2023
 
 I adjusted the controls on the main form to accomodate other displays and this will hopefully resolve any problems.
 You might need to expand or maximize the form for proper viewing.  I have set a minimum size past which the form cannot
@@ -57,7 +57,7 @@ The Start button stops working and none of the game keys worked.  If this is hap
 the Start button Click event and the KeyDown event on the form.
 
 
-6/5/2023
+### 6/5/2023
 
 Monsters are wandering around the map and you can attack them by running into them to get them out of your way.
 The fight mechanics are really basic and the same for every monster.  I'll expand them later.
@@ -79,7 +79,7 @@ This meant changes throughout the program.  Mostly it works now but there is a g
 
 
 
-4/22/2023
+### 4/22/2023
 
 Food collection and hunger now works.  Eating is necessary for survival and the game includes an R.I.P. screen.  The following keys now work and I'll be adding a help screen this week.
 ```
@@ -101,12 +101,12 @@ ESC - return to map from inventory screen.
 ```
 CTRL-D will enter a developer mode that shows the entire map.  After this, CTRL-N will switch out a map for a new one.
 
-4/1/2023 - All 26 levels, the Amulet, fog of war and hidden doors are now online.  See the latest chapter at https://www.comeausoftware.com/c-sharp/rogue-csharp-hidden-doorways/.
+### 4/1/2023 - All 26 levels, the Amulet, fog of war and hidden doors are now online.  See the latest chapter at https://www.comeausoftware.com/c-sharp/rogue-csharp-hidden-doorways/.
 
-3/6/2023 - I've started adding some new code and have some new chapters online. 
+### 3/6/2023 - I've started adding some new code and have some new chapters online. 
 
-2/22/2023 - Still working on the writeup at ComeauSoftware.com.  See the latest video with a demo for the StringBuilder class at https://youtu.be/5eNpECYU1cY.  
+### 2/22/2023 - Still working on the writeup at ComeauSoftware.com.  See the latest video with a demo for the StringBuilder class at https://youtu.be/5eNpECYU1cY.  
 
-2/13/2023 - I've been working on the best way to present the lessons for this project online, writing them up and making some code improvements to what's been done so far.  As a result, I haven't moved beyond the hallway generation.  I hope to get the game moving forward again soon, though.  Don't forget to check out the course chapters already online - https://www.comeausoftware.com/tech-category/rogue-csharp/ 
+### 2/13/2023 - I've been working on the best way to present the lessons for this project online, writing them up and making some code improvements to what's been done so far.  As a result, I haven't moved beyond the hallway generation.  I hope to get the game moving forward again soon, though.  Don't forget to check out the course chapters already online - https://www.comeausoftware.com/tech-category/rogue-csharp/ 
 
-1/11/2023 - Initial randomized dungeon rooms working.
+### 1/11/2023 - Initial randomized dungeon rooms working.
