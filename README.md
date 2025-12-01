@@ -2,7 +2,7 @@
 
 ## PDF Edition now available through LeanPub!
 
-June 2025: The Rogue C# series is now available for download in PDF format! I’m reviewing this series for continuation and if you’d like to support this work, 
+June 2025: The Rogue C# tutorial series is now available for download in PDF format! I’m reviewing this series for continuation and if you’d like to support this work, 
 you can get this offline edition from LeanPub.com.
 
 This PDF includes all the content that you see on ComeauSoftware.com in one file for convenient offline reading. The downloadable edition also contains 
