@@ -11,7 +11,9 @@ a detailed Table of Contents and each chapter is linked back to the original art
 Visit the project page for more information:  https://www.comeausoftware.com/rogue-csharp-main/
 
 Get your offline copy ...
+
 On LeanPub.com: https://leanpub.com/roguecsharp
+
 On Amazon.com: https://amzn.to/4d65q8z
 
 ### 7/13/2023
