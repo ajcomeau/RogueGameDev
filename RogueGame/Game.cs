@@ -1,17 +1,4 @@
-﻿using RogueGame;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using static RogueGame.Inventory;
 
 namespace RogueGame
@@ -107,7 +94,7 @@ namespace RogueGame
         /// <summary>
         /// String showing current contents of the screen.
         /// </summary>
-        public string ScreenDisplay { get; set; }
+        public MapGlyph[,] ScreenDisplay { get; set; }
         /// <summary>
         /// Current display mode indicating which screen is showing
         /// </summary>
@@ -159,7 +146,6 @@ namespace RogueGame
                 retValue += $"Armor: {(CurrentPlayer.Armor != null ? CurrentPlayer.Armor.ArmorClass + CurrentPlayer.Armor.Increment : 0)}  ";
                 retValue += $"Turn: {CurrentTurn}  ";
                 retValue += $"Exp: {CurrentPlayer.ExpLevel}/{CurrentPlayer.Experience}";
-
                 
                 if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied)
                     retValue += $"  {CurrentPlayer.HungerState}     ";
@@ -178,7 +164,6 @@ namespace RogueGame
                 MessageBox.Show(Status);
             }
             else StatusList.Insert(0, Status);
-
         }
 
         /// <summary>
@@ -241,9 +226,11 @@ namespace RogueGame
         /// Returns help screen text.
         /// </summary>
         /// <returns></returns>
-        private string HelpScreen()
+        private MapGlyph[,] HelpScreen()
         {
-            return "Arrows - movement\n\n" +
+            string screenText = "";
+
+            screenText = "Arrows - movement\n\n" +
                 "d - drop inventory\n" +
                 "e - eat\n" +
                 "i - show inventory\n" +
@@ -259,13 +246,15 @@ namespace RogueGame
                 "ESC - return to map.\n" +
                 "CTRL-D - Developer mode.  See entire map.\n" +
                 "CTRL-N - Change out map for new one in dev mode.";
+
+            return ScreenDisplayFromText(screenText);
         }
 
         /// <summary>
         /// Creates and returns R.I.P. screen.
         /// </summary>
         /// <returns></returns>
-        private string RIPScreen()
+        private MapGlyph[,] RIPScreen()
         {
             string screen;
 
@@ -290,7 +279,7 @@ namespace RogueGame
             "\n                 __\\/ (\\//(\\/ \\(//)\\)\\/(//)\\)//(\\__" +
             "\n";
 
-            return screen;
+            return ScreenDisplayFromText(screen);
 
         }
 
@@ -491,13 +480,13 @@ namespace RogueGame
                 // Inspect target character
                 if (adjacent.ContainsKey(direct))
                 {
-                    visibleCharacter = CurrentMap.PriorityChar(adjacent[direct], false);
+                    visibleCharacter = CurrentMap.PriorityChar(adjacent[direct], false).DisplayChar;
                     invFound = CurrentMap.DetectInventory(adjacent[direct]);
                     monster = CurrentMap.DetectMonster(adjacent[direct]);
                 }
                 else
                 {
-                    visibleCharacter = MapLevel.EMPTY;
+                    visibleCharacter = MapLevel.EMPTY.DisplayChar;
                     invFound = null;
                     monster = null;
                 }
@@ -512,7 +501,7 @@ namespace RogueGame
                     player.Location = adjacent[direct];
 
                     // If this is a doorway, determine if the room is lighted.
-                    if (player.Location.MapCharacter == MapLevel.ROOM_DOOR)
+                    if (player.Location.MapCharacter.DisplayChar == MapLevel.ROOM_DOOR.DisplayChar)
                         CurrentMap.DiscoverRoom(player.Location.X, player.Location.Y);
 
                     // Discover the spaces surrounding the player and note if something is found.
@@ -665,7 +654,7 @@ namespace RogueGame
                     // for one that's available and closest to the player.
                     foreach (KeyValuePair<MapLevel.Direction, MapSpace> adjSpace in adjacent)
                     {
-                        if (MapLevel.SpacesAllowed.Contains(CurrentMap.PriorityChar(adjSpace.Value, false)) ||
+                        if (MapLevel.SpacesAllowed.Contains(CurrentMap.PriorityChar(adjSpace.Value, false).DisplayChar) ||
                             CurrentMap.DetectInventory(adjSpace.Value) != null)
                         {
                             tentativeDistance = Math.Abs(adjSpace.Value.X - CurrentPlayer.Location.X)
@@ -702,12 +691,12 @@ namespace RogueGame
                 if (adjacent.ContainsKey(direct))
                 {
                     // Inspect target character
-                    visibleCharacter = CurrentMap.PriorityChar(adjacent[direct], false);
+                    visibleCharacter = CurrentMap.PriorityChar(adjacent[direct], false).DisplayChar;
                     foundInventory = CurrentMap.DetectInventory(adjacent[direct]);
                 }
                 else
                 {
-                    visibleCharacter = MapLevel.EMPTY;
+                    visibleCharacter = MapLevel.EMPTY.DisplayChar;
                     foundInventory = null;
                 }
 
@@ -757,9 +746,9 @@ namespace RogueGame
             return FastPlay
                 & CurrentMap.DetectMonster(Target) == null // No monster
                 & CurrentMap.DetectInventory(Target) == null // No mnventory  
-                & Target.MapCharacter == Origin.MapCharacter
-                & MapLevel.SpacesAllowed.Contains(CurrentMap.PriorityChar(Target, false))
-                & CurrentMap.SearchAdjacent(MapLevel.HALLWAY, Origin.X, Origin.Y).Count < 3;
+                & Target.MapCharacter.DisplayChar == Origin.MapCharacter.DisplayChar
+                & MapLevel.SpacesAllowed.Contains(CurrentMap.PriorityChar(Target, false).DisplayChar)
+                & CurrentMap.SearchAdjacent(MapLevel.HALLWAY.DisplayChar, Origin.X, Origin.Y).Count < 3;
 
         }
 
@@ -839,14 +828,14 @@ namespace RogueGame
                 {
                     case KEY_DOWNLEVEL:     // Going downstairs.
                         startTurn = true;
-                        if (CurrentPlayer.Location!.MapCharacter == MapLevel.STAIRWAY)
+                        if (CurrentPlayer.Location!.MapCharacter.DisplayChar == MapLevel.STAIRWAY.DisplayChar)
                             ChangeLevel(1);
                         else
                             UpdateStatus("There's no stairway here.", false);
                         break;
                     case KEY_UPLEVEL:       // Going upstairs.
                         startTurn = true;
-                        if (CurrentPlayer.Location!.MapCharacter == MapLevel.STAIRWAY)
+                        if (CurrentPlayer.Location!.MapCharacter.DisplayChar == MapLevel.STAIRWAY.DisplayChar)
                             ChangeLevel(-1);
                         else
                             UpdateStatus("There's no stairway here.", false);
@@ -1056,21 +1045,43 @@ namespace RogueGame
         /// </summary>
         private void DisplayInventory()
         {
+            string screenText = "";
             // Switch the screen to the player's inventory.
             GameMode = DisplayMode.Inventory;
-            ScreenDisplay = "\n\n";
+            screenText = "\n\n";
 
             foreach (InventoryLine line in InventoryDisplay(CurrentPlayer.PlayerInventory))
                 if (line.InvItem == CurrentPlayer.Armor)
-                    ScreenDisplay += line.Description + " (being worn)\n";  // current armor
+                    screenText += line.Description + " (being worn)\n";  // current armor
                 else if (CurrentPlayer.Wielding != null && line.InvItem == CurrentPlayer.Wielding)
-                    ScreenDisplay += line.Description + " (wielding)\n";  // weapon
+                    screenText += line.Description + " (wielding)\n";  // weapon
                 else if (CurrentPlayer.RightHand != null && line.InvItem == CurrentPlayer.RightHand)
-                    ScreenDisplay += line.Description + " (on right hand)\n";  // ring
+                    screenText += line.Description + " (on right hand)\n";  // ring
                 else if (CurrentPlayer.LeftHand != null && line.InvItem == CurrentPlayer.LeftHand)
-                    ScreenDisplay += line.Description + " (on left hand)\n";  // ring
+                    screenText += line.Description + " (on left hand)\n";  // ring
                 else
-                    ScreenDisplay += line.Description + "\n";
+                    screenText += line.Description + "\n";
+
+            ScreenDisplay = ScreenDisplayFromText(screenText);
+        }
+
+        private MapGlyph[,] ScreenDisplayFromText(string TextOutput)
+        {
+            MapGlyph[,] returnScreen = new MapGlyph[80, 25];
+            string[] lines = TextOutput.Split('\n');
+            int x = 0, y = 0;
+
+            foreach(string line in lines)
+            {                
+                foreach (char  c in line)
+                {                    
+                    returnScreen[x, y] = new MapGlyph(c, Color.Orange, Color.Black);
+                    x += 0;
+                }
+                y += 0;
+            }
+
+            return returnScreen;
         }
 
         /// <summary>

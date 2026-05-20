@@ -25,32 +25,32 @@ namespace RogueGame
         /// </summary>
         private static List<Monster> monsterIncubator = new List<Monster>()
         {
-            new Monster("Aquator"       , 5, 40, 5, 9, 7, 15, 50, 0, 0, 'A', 50, null, true, 50, false),
-            new Monster("Bat"           , 1, 8, 4, 1, 1, 5, 50, 1, 2, 'B', 0, null, true, 50, false),
-            new Monster("Centaur"       , 4, 32, 5, 15, 8, 17, 50, 3, 12, 'C', 0, null, true, 50, false),
-            new Monster("Dragon"        , 10, 80, 10, 6800, 22, 26, 50, 5, 46, 'D', 0, null, true,  50, false),
-            new Monster("Emu"           , 1, 8, 2, 5, 2, 11, 50, 1, 2, 'E', 0, null, true,  50, false),
-            new Monster("Flytrap"       , 8, 64, 9, 80, 15, 20, 50, 0, 0, 'F', 0, null, true, 50,  false),
-            new Monster("Griffin"       , 13, 104, 5, 7, 12, 20, 50, 7, 27, 'G', 0, null, true, 50, false),
-            new Monster("Hobgoblin"     , 1, 8, 3, 3, 1, 10, 50, 1, 8, 'H', 0, null, true, 50, false),
-            new Monster("Ice Monster"   , 1, 8, 2, 120, 3, 12, 50, 0, 0, 'I', 0, null, true, 50, false),
-            new Monster("Jabberwock"    , 15, 120, 9, 2, 20, 26, 50, 4, 32, 'J', 0, null, true, 50, false),
-            new Monster("Kestral"       , 1, 8, 2, 1, 1, 6, 50, 1, 4, 'K', 0, null, true, 50, false),
-            new Monster("Leprechaun"    , 3, 24, 5, 10, 7, 16, 50, 1, 1, 'L', 0, null, true, 50, false),
-            new Monster("Medusa"        , 8, 64, 5, 100, 19, 26, 50, 8, 34, 'M', 0, null, true, 50, false),
-            new Monster("Nymph"         , 3, 24, 5, 37, 11, 20, 50, 0, 0, 'N', 0, null, true, 50, false),
-            new Monster("Orc"           , 1, 8, 3, 5, 4, 13, 50, 1, 8, 'O', 0, null, true, 50, false),
-            new Monster("Phantom"       , 8, 64, 9, 4000, 20, 26, 50, 4, 16, 'P', 0, null, true, 50, false),
-            new Monster("Quagga"        , 3, 24, 9, 32, 10, 19, 50, 2, 10, 'Q', 0, null, true, 50, false),
-            new Monster("Rattlesnake"   , 2, 16, 5, 20, 9, 18, 50, 1, 6, 'R', 0, null, true, 50, false),
-            new Monster("Snake"         , 1, 8, 2, 2, 1, 9, 50, 1, 3, 'S', 0, null, true, 50, false),
-            new Monster("Troll"         , 6, 48, 9, 120, 13, 22, 50, 4, 28, 'T', 0, null, true, 50, false),
-            new Monster("Ur-vile"       , 7, 56, 9, 200, 18, 26, 50, 4, 36, 'U', 0, null, true, 50, false),
-            new Monster("Vampire"       , 8, 64, 9, 350, 20, 26, 50, 1, 10, 'V', 0, null, true, 50, false),
-            new Monster("Wraith"        , 5, 40, 9, 55, 14, 23, 50, 1, 6, 'W', 0, null, true, 50, false),
-            new Monster("Xeroc"         , 7, 56, 9, 190, 17, 26, 50, 4, 16, 'X', 0, null, true, 50, false),
-            new Monster("Yeti"          , 4, 32, 5, 50, 12, 21, 50, 2, 12, 'Y', 0, null, true, 50, false),
-            new Monster("Zombie"        , 2, 16, 5, 6, 7, 14, 50, 1, 8, 'Z', 0, null, true, 50, false),
+            new Monster("Aquator"       , 5, 40, 5, 9, 7, 15, 50, 0, 0, new MapGlyph('A', Color.LightGray, Color.Black), 50, null, true, 50, false),
+            new Monster("Bat"           , 1, 8, 4, 1, 1, 5, 50, 1, 2, new MapGlyph('B', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Centaur"       , 4, 32, 5, 15, 8, 17, 50, 3, 12, new MapGlyph('C', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Dragon"        , 10, 80, 10, 6800, 22, 26, 50, 5, 46, new MapGlyph('D', Color.LightGray, Color.Black), 0, null, true,  50, false),
+            new Monster("Emu"           , 1, 8, 2, 5, 2, 11, 50, 1, 2, new MapGlyph('E', Color.LightGray, Color.Black), 0, null, true,  50, false),
+            new Monster("Flytrap"       , 8, 64, 9, 80, 15, 20, 50, 0, 0, new MapGlyph('F', Color.LightGray, Color.Black), 0, null, true, 50,  false),
+            new Monster("Griffin"       , 13, 104, 5, 7, 12, 20, 50, 7, 27, new MapGlyph('G', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Hobgoblin"     , 1, 8, 3, 3, 1, 10, 50, 1, 8, new MapGlyph('H', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Ice Monster"   , 1, 8, 2, 120, 3, 12, 50, 0, 0, new MapGlyph('I', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Jabberwock"    , 15, 120, 9, 2, 20, 26, 50, 4, 32, new MapGlyph('J', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Kestral"       , 1, 8, 2, 1, 1, 6, 50, 1, 4, new MapGlyph('K', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Leprechaun"    , 3, 24, 5, 10, 7, 16, 50, 1, 1, new MapGlyph('L', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Medusa"        , 8, 64, 5, 100, 19, 26, 50, 8, 34, new MapGlyph('M', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Nymph"         , 3, 24, 5, 37, 11, 20, 50, 0, 0, new MapGlyph('N', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Orc"           , 1, 8, 3, 5, 4, 13, 50, 1, 8, new MapGlyph('O', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Phantom"       , 8, 64, 9, 4000, 20, 26, 50, 4, 16, new MapGlyph('P', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Quagga"        , 3, 24, 9, 32, 10, 19, 50, 2, 10, new MapGlyph('Q', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Rattlesnake"   , 2, 16, 5, 20, 9, 18, 50, 1, 6, new MapGlyph('R', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Snake"         , 1, 8, 2, 2, 1, 9, 50, 1, 3, new MapGlyph('S', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Troll"         , 6, 48, 9, 120, 13, 22, 50, 4, 28, new MapGlyph('T', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Ur-vile"       , 7, 56, 9, 200, 18, 26, 50, 4, 36, new MapGlyph('U', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Vampire"       , 8, 64, 9, 350, 20, 26, 50, 1, 10, new MapGlyph('V', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Wraith"        , 5, 40, 9, 55, 14, 23, 50, 1, 6, new MapGlyph('W', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Xeroc"         , 7, 56, 9, 190, 17, 26, 50, 4, 16, new MapGlyph('X', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Yeti"          , 4, 32, 5, 50, 12, 21, 50, 2, 12, new MapGlyph('Y', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Zombie"        , 2, 16, 5, 6, 7, 14, 50, 1, 8, new MapGlyph('Z', Color.LightGray, Color.Black), 0, null, true, 50, false),
         };
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace RogueGame
         /// <summary>
         /// Character used to show monster
         /// </summary>
-        public char DisplayCharacter { get; set; }
+        public MapGlyph DisplayCharacter { get; set; }
         /// <summary>
         /// Probability of monster using special attack
         /// </summary>
@@ -174,7 +174,7 @@ namespace RogueGame
         /// <param name="canRegenerate">Is the monster currently angry and persisting in an atack?</param>
         public Monster(string monsterName, int minStartingHP, int maxStartingHP,  
             int armorClass, int expReward, int minLevel, int maxLevel, int appearancePct, 
-            int minAttackDmg, int maxAttackDmg, char displayCharacter, int specialAttackPct, 
+            int minAttackDmg, int maxAttackDmg, MapGlyph displayCharacter, int specialAttackPct, 
             Func<Player>? specialAttack, bool aggressive, int inertia, bool canRegenerate)
         {
             this.MonsterName = monsterName;

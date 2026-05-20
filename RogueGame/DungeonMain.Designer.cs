@@ -31,8 +31,7 @@
             components = new System.ComponentModel.Container();
             lblStats = new Label();
             toolTip1 = new ToolTip(components);
-            lblArray = new Label();
-            pnlName = new Panel();
+            pnlName = new RoguePanel();
             lblPrompt = new Label();
             btnStart = new Button();
             txtName = new TextBox();
@@ -45,23 +44,13 @@
             // 
             lblStats.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             lblStats.AutoSize = true;
-            lblStats.Font = new Font("Consolas", 14F, FontStyle.Bold, GraphicsUnit.Point);
+            lblStats.Font = new Font("Consolas", 14F, FontStyle.Bold);
             lblStats.Location = new Point(13, 767);
             lblStats.Margin = new Padding(4, 0, 4, 0);
             lblStats.Name = "lblStats";
             lblStats.Size = new Size(80, 22);
             lblStats.TabIndex = 1;
             lblStats.Text = "       ";
-            // 
-            // lblArray
-            // 
-            lblArray.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            lblArray.Font = new Font("Consolas", 14F, FontStyle.Regular, GraphicsUnit.Point);
-            lblArray.Location = new Point(14, 167);
-            lblArray.Margin = new Padding(4, 0, 4, 0);
-            lblArray.Name = "lblArray";
-            lblArray.Size = new Size(1118, 572);
-            lblArray.TabIndex = 10;
             // 
             // pnlName
             // 
@@ -117,11 +106,10 @@
             listStatus.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             listStatus.BackColor = Color.Black;
             listStatus.BorderStyle = BorderStyle.None;
-            listStatus.Font = new Font("Consolas", 12F, FontStyle.Bold, GraphicsUnit.Point);
+            listStatus.Font = new Font("Consolas", 12F, FontStyle.Bold);
             listStatus.ForeColor = Color.FromArgb(255, 128, 0);
             listStatus.FormattingEnabled = true;
             listStatus.HorizontalScrollbar = true;
-            listStatus.ItemHeight = 19;
             listStatus.Location = new Point(12, 12);
             listStatus.Name = "listStatus";
             listStatus.Size = new Size(1120, 152);
@@ -135,9 +123,8 @@
             ClientSize = new Size(1144, 798);
             Controls.Add(pnlName);
             Controls.Add(lblStats);
-            Controls.Add(lblArray);
             Controls.Add(listStatus);
-            Font = new Font("Consolas", 10F, FontStyle.Bold, GraphicsUnit.Point);
+            Font = new Font("Consolas", 10F, FontStyle.Bold);
             ForeColor = Color.FromArgb(255, 128, 0);
             KeyPreview = true;
             Margin = new Padding(4);
@@ -154,8 +141,7 @@
         #endregion
         private Label lblStats;
         private ToolTip toolTip1;
-        private Label lblArray;
-        private Panel pnlName;
+        private RoguePanel pnlName;
         private Button btnStart;
         private TextBox txtName;
         private Label lblQuestion;

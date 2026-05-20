@@ -6,10 +6,12 @@ namespace RogueGame
     public partial class DungeonMain : Form
     {
         Game? currentGame;
+        Font mapFont = new Font("Consolas", 14, FontStyle.Regular);
 
         public DungeonMain()
         {
             InitializeComponent();
+            DoubleBuffered = true;
         }
 
         private void btnStart_Click(object sender, EventArgs e)
@@ -24,7 +26,7 @@ namespace RogueGame
                 currentGame = new Game(txtName.Text);
                 listStatus.DataSource = currentGame.StatusList;
                 pnlName.Visible = false;
-                lblArray.Text = currentGame.ScreenDisplay;
+                this.Invalidate(true);
                 lblStats.Text = currentGame.StatsDisplay();
             }
             else
@@ -44,7 +46,7 @@ namespace RogueGame
                     Debug.WriteLine(e.KeyValue);
                     currentGame.KeyHandler(e.KeyValue, e.Shift, e.Control);
 
-                    lblArray.Text = currentGame.ScreenDisplay;
+                    this.Invalidate(true);
 
                     lblStats.Text = currentGame.StatsDisplay();
                     listStatus.SelectedIndex = 0;
@@ -60,6 +62,46 @@ namespace RogueGame
                     txtName.Text = currentGame.CurrentPlayer.PlayerName;
                 }
             }
+        }
+
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            int cellWidth = 10;
+            int cellHeight = 18;
+            int px, py;
+
+            if (currentGame != null)
+            {
+                for (int y = 0; y < currentGame.ScreenDisplay.GetLength(1); y++)
+                {
+                    for (int x = 0; x < currentGame.ScreenDisplay.GetLength(0); x++)
+                    {
+                        MapGlyph g = currentGame.ScreenDisplay[x, y];
+                        px = x * cellWidth;
+                        py = y * cellHeight + 150;
+
+                        TextRenderer.DrawText(
+                            e.Graphics,
+                            g.DisplayChar.ToString(),
+                            mapFont,
+                            new Point(px, py),
+                            g.Foreground,
+                            g.Background,
+                            TextFormatFlags.NoPadding);
+                    }
+                }
+            }
+
+        }
+    }
+
+    public class RoguePanel : Panel
+    {
+        public RoguePanel()
+        {
+            DoubleBuffered = true;
+            //ResizeRedraw = true;
         }
     }
 }

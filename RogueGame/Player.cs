@@ -30,7 +30,7 @@ namespace RogueGame
         /// <summary>
         /// Display character
         /// </summary>
-        public const char CHARACTER = '☺'; 
+        public static readonly MapGlyph CHARACTER = new MapGlyph('☺', Color.LightYellow, Color.Black); 
         /// <summary>
         /// Maximum items in inventory
         /// </summary>
