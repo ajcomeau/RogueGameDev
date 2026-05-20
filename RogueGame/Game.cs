@@ -156,6 +156,11 @@ namespace RogueGame
             return retValue;
         }
 
+        /// <summary>
+        /// Add status line to status box.
+        /// </summary>
+        /// <param name="Status"></param>
+        /// <param name="Confirm"></param>
         private void UpdateStatus(string Status, bool Confirm)
         {
             if (Confirm)
@@ -403,6 +408,7 @@ namespace RogueGame
 
         public static string CapitalFirstLetter(string Text)
         {
+            // Capitalize as needed.
             if (Text.Length == 0)
                 return "";
             else if (Text.Length == 1)
@@ -413,12 +419,18 @@ namespace RogueGame
 
         public static string AddEnglishArticle(string Text)
         {
+            // Add appropriate article - "a" or "an".
             if ("AEIOU".Contains(Text.Substring(0, 1)))
                 return $"an {Text}";
             else
                 return $"a {Text}";
         }
 
+        /// <summary>
+        /// When the player identifies a certain inventory type, mark it
+        /// so that future items will be identified.
+        /// </summary>
+        /// <param name="PriorityID"></param>
         public void SetInventoryAsIdentified(int PriorityID)
         {
             Inventory? template;
@@ -535,6 +547,11 @@ namespace RogueGame
             } while (!stopMoving && invFound == null && CanAutoMove(player.Location, adjacent[direct]));
         }
 
+        /// <summary>
+        /// Attach routine with calculations.
+        /// </summary>
+        /// <param name="Attacker"></param>
+        /// <param name="Defender"></param>
         private void Attack(Player Attacker, Monster Defender)
         {
             int hitChance;
@@ -749,7 +766,6 @@ namespace RogueGame
                 & Target.MapCharacter.DisplayChar == Origin.MapCharacter.DisplayChar
                 & MapLevel.SpacesAllowed.Contains(CurrentMap.PriorityChar(Target, false).DisplayChar)
                 & CurrentMap.SearchAdjacent(MapLevel.HALLWAY.DisplayChar, Origin.X, Origin.Y).Count < 3;
-
         }
 
         #endregion
@@ -956,7 +972,7 @@ namespace RogueGame
 
             if (GameMode != DisplayMode.Inventory)
             {
-                // Verify the player has something they can eat.
+                // Verify the player has something they can wield.
                 items = (from inv in CurrentPlayer.PlayerInventory
                          where inv.ItemCategory == InvCategory.Weapon ||
                          inv.ItemCategory == InvCategory.Ammunition
@@ -964,14 +980,14 @@ namespace RogueGame
 
                 if (items.Count > 0)
                 {
-                    // If there's something edible, show the inventory
+                    // If there's a weapon, show the inventory
                     // and let the player select it.  Set to return and exit.
                     DisplayInventory();
                     UpdateStatus("Please select an item to wield.", false);
                     ReturnFunction = Wield;
                 }
                 else
-                    // Otherwise, they'll be hungry for awhile.
+                    // Otherwise, their hand-to-hand skills better be good.
                     UpdateStatus("You don't have anything that can be used as a weapon.", false);
             }
             else
@@ -1065,6 +1081,11 @@ namespace RogueGame
             ScreenDisplay = ScreenDisplayFromText(screenText);
         }
 
+        /// <summary>
+        /// Translate screen text into an array of MapGlyphs for display.
+        /// </summary>
+        /// <param name="TextOutput"></param>
+        /// <returns></returns>
         private MapGlyph[,] ScreenDisplayFromText(string TextOutput)
         {
             MapGlyph[,] returnScreen = new MapGlyph[80, 25];

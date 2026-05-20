@@ -31,7 +31,7 @@
             components = new System.ComponentModel.Container();
             lblStats = new Label();
             toolTip1 = new ToolTip(components);
-            pnlName = new RoguePanel();
+            pnlName = new Panel();
             lblPrompt = new Label();
             btnStart = new Button();
             txtName = new TextBox();
@@ -141,7 +141,7 @@
         #endregion
         private Label lblStats;
         private ToolTip toolTip1;
-        private RoguePanel pnlName;
+        private Panel pnlName;
         private Button btnStart;
         private TextBox txtName;
         private Label lblQuestion;

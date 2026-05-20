@@ -156,10 +156,10 @@ namespace RogueGame{
         public List<Inventory> MapInventory = new List<Inventory>();
 
         /// <summary>
-        /// Array to hold map definition.
+        /// Array to hold map definitions.
         /// </summary>
-        private MapSpace[,] levelMap = new MapSpace[80, 25];
-        private MapGlyph[,] userMap = new MapGlyph[80, 25];
+        private MapSpace[,] levelMap = new MapSpace[80, 25]; // Internal game map.
+        private MapGlyph[,] userMap = new MapGlyph[80, 25]; // Map to be shown to user.
 
         /// <summary>
         /// Current game level
@@ -544,8 +544,6 @@ namespace RogueGame{
                     }
                     else
                         deadEnds.Remove(hallwaySpace);
-
-                    //Console.Write(MapText());
                 }
             }
         }        
@@ -788,23 +786,32 @@ namespace RogueGame{
             return foundMonster;
         }
 
+
+        /// <summary>
+        /// Get the highest priority character for display to the user.
+        /// </summary>
+        /// <param name="Space"></param>
+        /// <param name="ShowHidden"></param>
+        /// <returns></returns>
         public MapGlyph PriorityChar(MapSpace Space, bool ShowHidden)
         {
             Monster? monster = DetectMonster(Space);
             Inventory? invItem = DetectInventory(Space);
-
+            
             MapGlyph retValue;
 
-            if (monster != null)
+            if (monster != null)  // If there's a monster present, show it first.
                 retValue = monster.DisplayCharacter;
-            else if (Space == CurrentPlayer.Location)
+            else if (Space == CurrentPlayer.Location) // Player is next highest.
                 retValue = Player.CHARACTER;
+            // Inventory comes third as player and monsters can sit  on top.
             else if (invItem != null)
                 retValue = invItem.DisplayCharacter;
+            // Finally show the alternet char if the current space is hidden.
             else if (Space.AltMapCharacter != null && !ShowHidden)
                 retValue = (MapGlyph)Space.AltMapCharacter;
             else
-                retValue = Space.MapCharacter;
+                retValue = Space.MapCharacter;  // Otherwise just show normal char.
 
             return retValue;
         }
@@ -918,6 +925,7 @@ namespace RogueGame{
 
         public bool DiscoverMap()
         {
+            // Set the entire map to discovered and visible.
             bool retValue = false;
 
             List<MapSpace> spaces = (from MapSpace space in levelMap
@@ -1173,12 +1181,22 @@ namespace RogueGame{
         }
     }
 
+    /// <summary>
+    /// Class to hold display character and colors.
+    /// Used within MapSpace class.
+    /// </summary>
     public struct MapGlyph
     {
         public char DisplayChar;
         public Color Foreground;
         public Color Background;
 
+        /// <summary>
+        /// Basic constructor.
+        /// </summary>
+        /// <param name="displayChar"></param>
+        /// <param name="foreground"></param>
+        /// <param name="background"></param>
         public MapGlyph(char displayChar, Color foreground, Color background)
         {
             DisplayChar = displayChar;
