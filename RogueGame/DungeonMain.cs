@@ -49,6 +49,7 @@ namespace RogueGame
                     // Invalidate to redraw map.
                     this.Invalidate(true);
 
+                    listStatus.Visible = (currentGame.GameMode == Game.DisplayMode.Primary);
                     lblStats.Text = currentGame.StatsDisplay();
                     listStatus.SelectedIndex = 0;
                     listStatus.SelectedIndex = -1;
@@ -81,8 +82,8 @@ namespace RogueGame
                     for (int x = 0; x < currentGame.CurrentMap.DisplayMap.GetLength(0); x++)
                     {
                         MapGlyph g = currentGame.CurrentMap.DisplayMap[x, y];
-                        px = x * cellWidth + 25;    // Add 25 as margin on left side.
-                        py = y * cellHeight + 175;  // Add 175 to top to avoid game message display.
+                        px = x * cellWidth + 25;   // Add 25 on top and left as margin.
+                        py = y * cellHeight + 25;  
 
                         TextRenderer.DrawText(
                             e.Graphics,

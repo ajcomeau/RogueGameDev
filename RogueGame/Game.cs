@@ -92,10 +92,6 @@ namespace RogueGame
         /// </summary>
         public int CurrentTurn { get; set; }
         /// <summary>
-        /// String showing current contents of the screen.
-        /// </summary>
-        //public MapGlyph[,] ScreenDisplay { get; set; }
-        /// <summary>
         /// Current display mode indicating which screen is showing
         /// </summary>
         public DisplayMode GameMode { get; set; }
@@ -233,9 +229,9 @@ namespace RogueGame
         /// <returns></returns>
         private void HelpScreen()
         {
-            string screenText = "";
+            string screenText = "Command list - Press ESC to return.\n\n";
 
-            screenText = "Arrows - movement\n\n" +
+            screenText += "Arrows - movement\n\n" +
                 "d - drop inventory\n" +
                 "e - eat\n" +
                 "i - show inventory\n" +
@@ -252,7 +248,7 @@ namespace RogueGame
                 "CTRL-D - Developer mode.  See entire map.\n" +
                 "CTRL-N - Change out map for new one in dev mode.";
 
-            UpdateDisplayFromText(screenText);
+            this.CurrentMap.UpdateDisplayFromText(screenText);
         }
 
         /// <summary>
@@ -284,7 +280,7 @@ namespace RogueGame
             "\n                 __\\/ (\\//(\\/ \\(//)\\)\\/(//)\\)//(\\__" +
             "\n";
 
-            UpdateDisplayFromText(screen);
+            this.CurrentMap.UpdateDisplayFromText(screen);
 
         }
 
@@ -829,6 +825,7 @@ namespace RogueGame
                 // For ESC, clear the return function and restore the game map.
                 ReturnFunction = null;
                 RestoreMap();
+
                 keyHandled = true;
             }
 
@@ -938,7 +935,6 @@ namespace RogueGame
                         break;
                     case KEY_I:     // Show inventory
                         DisplayInventory();
-                        UpdateStatus("Displaying inventory. Press ESC to exit.", false);
                         break;
                     case KEY_ESC:  // Restore map
                         RestoreMap();
@@ -1070,11 +1066,10 @@ namespace RogueGame
         /// </summary>
         public void DisplayInventory()
         {
-            string screenText = "";
+            string screenText = "Inventory List\n\n";
             // Switch the screen to the player's inventory.
             GameMode = DisplayMode.Inventory;
-            screenText = "\n\n";
-
+            
             foreach (InventoryLine line in InventoryDisplay(CurrentPlayer.PlayerInventory))
                 if (line.InvItem == CurrentPlayer.Armor)
                     screenText += line.Description + " (being worn)\n";  // current armor
@@ -1087,40 +1082,9 @@ namespace RogueGame
                 else
                     screenText += line.Description + "\n";
             
-            UpdateDisplayFromText(screenText);
+            this.CurrentMap.UpdateDisplayFromText(screenText);
         }
 
-        /// <summary>
-        /// Translate screen text into an array of MapGlyphs for display.
-        /// </summary>
-        /// <param name="TextOutput"></param>
-        /// <returns></returns>
-        public void UpdateDisplayFromText(string TextOutput)
-        {
-            string[] lines = TextOutput.Split('\n');
-            int cx = 0, cy = 0, nx = 0, ny = 0;
-
-            // Clear existing text
-            for(cy = 0;  cy < 25; cy++)
-            {
-                for(cx = 0;  cx < 80; cx++)
-                {
-                    this.CurrentMap.DisplayMap[cx, cy] = new MapGlyph(MapLevel.EMPTY.DisplayChar, Color.Black, Color.Black);
-                }
-            }
-
-            // Add new text
-            foreach(string line in lines)
-            {                
-                foreach (char c in line)
-                {                    
-                    this.CurrentMap.DisplayMap[nx, ny] = new MapGlyph(c, Color.Orange, Color.Black);
-                    nx += 1;
-                }
-                nx = 0;
-                ny += 1;
-            }
-        }
 
         /// <summary>
         /// Wear specified armor.

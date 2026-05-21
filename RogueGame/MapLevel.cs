@@ -1099,6 +1099,37 @@ namespace RogueGame{
 
             return DisplayMap;
         }
+
+        public void UpdateDisplayFromText(string TextOutput)
+        {
+            string[] lines = TextOutput.Split('\n');
+            int cx = 0, cy = 0, nx = 0, ny = 0;
+
+            // Clear existing text
+            for (cy = 0; cy < 25; cy++)
+            {
+                for (cx = 0; cx < 80; cx++)
+                {
+                    DisplayMap[cx, cy] =
+                        new MapGlyph(MapLevel.EMPTY.DisplayChar, Color.Black, Color.Black);
+                }
+            }
+
+            // Add new text
+            foreach (string line in lines)
+            {
+                foreach (char c in line)
+                {
+                    DisplayMap[nx, ny] =
+                        new MapGlyph(c, Color.Orange, Color.Black);
+
+                    nx += 1;
+                }
+                nx = 0;
+                ny += 1;
+            }
+        }
+
     }
 
     /// <summary>
