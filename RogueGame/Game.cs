@@ -94,7 +94,7 @@ namespace RogueGame
         /// <summary>
         /// String showing current contents of the screen.
         /// </summary>
-        public MapGlyph[,] ScreenDisplay { get; set; }
+        //public MapGlyph[,] ScreenDisplay { get; set; }
         /// <summary>
         /// Current display mode indicating which screen is showing
         /// </summary>
@@ -231,7 +231,7 @@ namespace RogueGame
         /// Returns help screen text.
         /// </summary>
         /// <returns></returns>
-        private MapGlyph[,] HelpScreen()
+        private void HelpScreen()
         {
             string screenText = "";
 
@@ -252,14 +252,14 @@ namespace RogueGame
                 "CTRL-D - Developer mode.  See entire map.\n" +
                 "CTRL-N - Change out map for new one in dev mode.";
 
-            return ScreenDisplayFromText(screenText);
+            UpdateDisplayFromText(screenText);
         }
 
         /// <summary>
         /// Creates and returns R.I.P. screen.
         /// </summary>
         /// <returns></returns>
-        private MapGlyph[,] RIPScreen()
+        private void RIPScreen()
         {
             string screen;
 
@@ -284,7 +284,7 @@ namespace RogueGame
             "\n                 __\\/ (\\//(\\/ \\(//)\\)\\/(//)\\)//(\\__" +
             "\n";
 
-            return ScreenDisplayFromText(screen);
+            UpdateDisplayFromText(screen);
 
         }
 
@@ -356,7 +356,10 @@ namespace RogueGame
             if (GameMode == DisplayMode.Inventory || GameMode == DisplayMode.Help)
             {
                 GameMode = DisplayMode.Primary;
-                ScreenDisplay = DevMode ? CurrentMap.MapCheck() : CurrentMap.MapText();
+                if (DevMode)
+                    CurrentMap.MapCheck();
+                else
+                    CurrentMap.MapText();
             }
         }
 
@@ -798,7 +801,10 @@ namespace RogueGame
             UpdateStatus($"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ... (Press ? for list of commands.)", false);
 
             // Set the current screen display.
-            this.ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText();
+            if (DevMode)
+                this.CurrentMap.MapCheck();
+            else
+                this.CurrentMap.MapText();
             
         }
 
@@ -858,7 +864,7 @@ namespace RogueGame
                         break;
                     case KEY_HELP:  // Show help screen
                         GameMode = DisplayMode.Help;
-                        ScreenDisplay = HelpScreen();
+                        HelpScreen();
                         break;
                     case KEY_F: // Fast Play
                         FastPlay = !FastPlay;
@@ -952,12 +958,15 @@ namespace RogueGame
 
             // Display the appropriate map mode.
             if (GameMode == DisplayMode.Primary)
-                ScreenDisplay = DevMode ? this.CurrentMap.MapCheck() : this.CurrentMap.MapText();
+                if (DevMode) 
+                    { this.CurrentMap.MapCheck(); } 
+                else 
+                    { this.CurrentMap.MapText(); }
 
             switch (GameMode)
             {
                 case DisplayMode.GameOver:
-                    ScreenDisplay = RIPScreen();
+                    RIPScreen();
                     break;
                 default:
                     break;
@@ -1059,7 +1068,7 @@ namespace RogueGame
         /// <summary>
         /// Bring up inventory screen for viewing.
         /// </summary>
-        private void DisplayInventory()
+        public void DisplayInventory()
         {
             string screenText = "";
             // Switch the screen to the player's inventory.
@@ -1077,8 +1086,8 @@ namespace RogueGame
                     screenText += line.Description + " (on left hand)\n";  // ring
                 else
                     screenText += line.Description + "\n";
-
-            ScreenDisplay = ScreenDisplayFromText(screenText);
+            
+            UpdateDisplayFromText(screenText);
         }
 
         /// <summary>
@@ -1086,23 +1095,31 @@ namespace RogueGame
         /// </summary>
         /// <param name="TextOutput"></param>
         /// <returns></returns>
-        private MapGlyph[,] ScreenDisplayFromText(string TextOutput)
+        public void UpdateDisplayFromText(string TextOutput)
         {
-            MapGlyph[,] returnScreen = new MapGlyph[80, 25];
             string[] lines = TextOutput.Split('\n');
-            int x = 0, y = 0;
+            int cx = 0, cy = 0, nx = 0, ny = 0;
 
-            foreach(string line in lines)
-            {                
-                foreach (char  c in line)
-                {                    
-                    returnScreen[x, y] = new MapGlyph(c, Color.Orange, Color.Black);
-                    x += 0;
+            // Clear existing text
+            for(cy = 0;  cy < 25; cy++)
+            {
+                for(cx = 0;  cx < 80; cx++)
+                {
+                    this.CurrentMap.DisplayMap[cx, cy] = new MapGlyph(MapLevel.EMPTY.DisplayChar, Color.Black, Color.Black);
                 }
-                y += 0;
             }
 
-            return returnScreen;
+            // Add new text
+            foreach(string line in lines)
+            {                
+                foreach (char c in line)
+                {                    
+                    this.CurrentMap.DisplayMap[nx, ny] = new MapGlyph(c, Color.Orange, Color.Black);
+                    nx += 1;
+                }
+                nx = 0;
+                ny += 1;
+            }
         }
 
         /// <summary>

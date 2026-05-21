@@ -159,7 +159,7 @@ namespace RogueGame{
         /// Array to hold map definitions.
         /// </summary>
         private MapSpace[,] levelMap = new MapSpace[80, 25]; // Internal game map.
-        private MapGlyph[,] userMap = new MapGlyph[80, 25]; // Map to be shown to user.
+        public MapGlyph[,] DisplayMap = new MapGlyph[80, 25]; // Map to be shown to user.
 
         /// <summary>
         /// Current game level
@@ -1010,16 +1010,16 @@ namespace RogueGame{
         public MapGlyph[,] MapCheck()
         { 
 
-            // Iterate through the two-dimensional array and use StringBuilder to 
-            // concatenate the proper characters into rows and columns for display.
+            // Iterate through the two-dimensional array and transfer the appropriate characters
+            // to the output map to display to the user.
 
             for (int y = 0; y <= MAP_HT; y++)
             {
                 for (int x = 0; x <= MAP_WD; x++)
-                    userMap[x, y] = PriorityChar(levelMap[x, y], true);
+                    DisplayMap[x, y] = PriorityChar(levelMap[x, y], true);
             }
 
-            return userMap;
+            return DisplayMap;
         }
 
         /// <summary>
@@ -1093,11 +1093,11 @@ namespace RogueGame{
 
                     if (appendChar == null) { appendChar = EMPTY; }
 
-                    userMap[x, y] = (MapGlyph)appendChar;
+                    DisplayMap[x, y] = (MapGlyph)appendChar;
                 }          
             }
 
-            return userMap;
+            return DisplayMap;
         }
     }
 

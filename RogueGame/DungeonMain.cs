@@ -76,13 +76,13 @@ namespace RogueGame
             if (currentGame != null)
             {
                 // Iterate through array cells and draw glyphs on screen.
-                for (int y = 0; y < currentGame.ScreenDisplay.GetLength(1); y++)
+                for (int y = 0; y < currentGame.CurrentMap.DisplayMap.GetLength(1); y++)
                 {
-                    for (int x = 0; x < currentGame.ScreenDisplay.GetLength(0); x++)
+                    for (int x = 0; x < currentGame.CurrentMap.DisplayMap.GetLength(0); x++)
                     {
-                        MapGlyph g = currentGame.ScreenDisplay[x, y];
-                        px = x * cellWidth;
-                        py = y * cellHeight + 150;  // Add 150 to top to avoid game message display.
+                        MapGlyph g = currentGame.CurrentMap.DisplayMap[x, y];
+                        px = x * cellWidth + 25;    // Add 25 as margin on left side.
+                        py = y * cellHeight + 175;  // Add 175 to top to avoid game message display.
 
                         TextRenderer.DrawText(
                             e.Graphics,
