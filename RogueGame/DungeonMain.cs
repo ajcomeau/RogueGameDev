@@ -6,7 +6,7 @@ namespace RogueGame
     public partial class DungeonMain : Form
     {
         Game? currentGame;
-        Font mapFont = new Font("Consolas", 14, FontStyle.Regular);
+        Font mapFont = new Font("Consolas", 16, FontStyle.Regular);
 
         public DungeonMain()
         {
@@ -70,8 +70,8 @@ namespace RogueGame
         protected override void OnPaint(PaintEventArgs e)
         {
             // Redraw the map from the ScreenDisplay array.
-            int cellWidth = 10;
-            int cellHeight = 18;
+            int cellWidth = 12;
+            int cellHeight = 24;
             int px, py;
 
             if (currentGame != null)
@@ -82,14 +82,14 @@ namespace RogueGame
                     for (int x = 0; x < currentGame.CurrentMap.DisplayMap.GetLength(0); x++)
                     {
                         MapGlyph g = currentGame.CurrentMap.DisplayMap[x, y];
-                        px = x * cellWidth + 25;   // Add 25 on top and left as margin.
-                        py = y * cellHeight + 25;  
+                        px = x * cellWidth + 25;   // Add pixels on top and left as margin.
+                        py = y * cellHeight + 175;  
 
                         TextRenderer.DrawText(
                             e.Graphics,
                             g.DisplayChar.ToString(),
                             mapFont,
-                            new Point(px, py),
+                            new Point(px, py-2),
                             g.Foreground,
                             g.Background,
                             TextFormatFlags.NoPadding);

@@ -44,11 +44,11 @@
             // 
             lblStats.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             lblStats.AutoSize = true;
-            lblStats.Font = new Font("Consolas", 14F, FontStyle.Bold);
+            lblStats.Font = new Font("Consolas", 15F, FontStyle.Bold);
             lblStats.Location = new Point(13, 767);
             lblStats.Margin = new Padding(4, 0, 4, 0);
             lblStats.Name = "lblStats";
-            lblStats.Size = new Size(80, 22);
+            lblStats.Size = new Size(87, 23);
             lblStats.TabIndex = 1;
             lblStats.Text = "       ";
             // 
@@ -106,13 +106,13 @@
             listStatus.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             listStatus.BackColor = Color.Black;
             listStatus.BorderStyle = BorderStyle.None;
-            listStatus.Font = new Font("Consolas", 12F, FontStyle.Bold);
+            listStatus.Font = new Font("Consolas", 14F, FontStyle.Bold);
             listStatus.ForeColor = Color.FromArgb(255, 128, 0);
             listStatus.FormattingEnabled = true;
             listStatus.HorizontalScrollbar = true;
             listStatus.Location = new Point(12, 12);
             listStatus.Name = "listStatus";
-            listStatus.Size = new Size(1120, 152);
+            listStatus.Size = new Size(1120, 132);
             listStatus.TabIndex = 12;
             // 
             // DungeonMain

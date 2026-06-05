@@ -262,22 +262,22 @@ namespace RogueGame
             if (CauseOfDeath == null) CauseOfDeath = "mysterious forces.";
 
             // Assemble the ASCII graphic and return it.
-            screen = "\n\n\n\n\n\n\n\n" +
-            "\n                   ╔═════════════════════════════╗" +
-            "\n                   ║                             ║" +
-            "\n                   ║                             ║" +
-            "\n                   ║                             ║" +
-            "\n                   ║        REST IN PEACE        ║" +
-            "\n                   ║                             ║" +
-            $"\n                   ║{CenterString(CurrentPlayer.PlayerName, 29)}║" +
-            "\n                   ║          Killed by          ║" +
-            $"\n                   ║{CenterString(CauseOfDeath, 29)}║" +
-            "\n                   ║                             ║" +
-            $"\n                   ║{CenterString(CurrentPlayer.Gold.ToString() + " Au", 29)}║" +
-            $"\n                   ║           {DateTime.Now.Year + " "}             ║" +
-            "\n                   ║                             ║" +
-            "\n                   ║                             ║" +
-            "\n                 __\\/ (\\//(\\/ \\(//)\\)\\/(//)\\)//(\\__" +
+            screen = "\n\n\n\n\n\n" +
+            "\n                        ╔═════════════════════════════╗" +
+            "\n                        ║                             ║" +
+            "\n                        ║                             ║" +
+            "\n                        ║                             ║" +
+            "\n                        ║        REST IN PEACE        ║" +
+            "\n                        ║                             ║" +
+            $"\n                        ║{CenterString(CurrentPlayer.PlayerName, 29)}║" +
+            "\n                        ║          Killed by          ║" +
+            $"\n                        ║{CenterString(CauseOfDeath, 29)}║" +
+            "\n                        ║                             ║" +
+            $"\n                        ║{CenterString(CurrentPlayer.Gold.ToString() + " Au", 29)}║" +
+            $"\n                       ║           {DateTime.Now.Year + " "}             ║" +
+            "\n                         ║                             ║" +
+            "\n                        ║                             ║" +
+            "\n                      __\\/ (\\//(\\/ \\(//)\\)\\/(//)\\)//(\\__" +
             "\n";
 
             this.CurrentMap.UpdateDisplayFromText(screen);

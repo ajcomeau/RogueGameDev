@@ -137,7 +137,7 @@ namespace RogueGame
         /// <summary>
         /// Can the monster regenerate hit points?
         /// </summary>
-        public bool CanRegenerate { get; set; }
+        public bool CanRegenerate { get; set; } /// TODO: What is this used for?
         public int Confused { get; set; } = 0;
         public int Immobile { get; set; } = 0;
         public int Blind { get; set; } = 0;

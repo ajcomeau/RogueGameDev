@@ -37,17 +37,17 @@ namespace RogueGame{
         /// <summary>
         /// Box drawing constants and other symbols.
         /// </summary>
-        public static readonly MapGlyph HORIZONTAL = new MapGlyph ('═', Color.SandyBrown, Color.Black);      // Unicode symbols can be copy-pasted from https://www.w3.org/TR/xml-entity-names/025.html.  
-        public static readonly MapGlyph VERTICAL = new MapGlyph('║', Color.SandyBrown, Color.Black);
-        public static readonly MapGlyph CORNER_NW = new MapGlyph('╔', Color.SandyBrown, Color.Black);
-        public static readonly MapGlyph CORNER_SE = new MapGlyph('╝', Color.SandyBrown, Color.Black);
-        public static readonly MapGlyph CORNER_NE = new MapGlyph('╗', Color.SandyBrown, Color.Black);
-        public static readonly MapGlyph CORNER_SW = new MapGlyph('╚', Color.SandyBrown, Color.Black);
+        public static readonly MapGlyph HORIZONTAL = new MapGlyph ('═', Color.SaddleBrown, Color.Black);      // Unicode symbols can be copy-pasted from https://www.w3.org/TR/xml-entity-names/025.html.  
+        public static readonly MapGlyph VERTICAL = new MapGlyph('║', Color.SaddleBrown, Color.Black);
+        public static readonly MapGlyph CORNER_NW = new MapGlyph('╔', Color.SaddleBrown, Color.Black);
+        public static readonly MapGlyph CORNER_SE = new MapGlyph('╝', Color.SaddleBrown, Color.Black);
+        public static readonly MapGlyph CORNER_NE = new MapGlyph('╗', Color.SaddleBrown, Color.Black);
+        public static readonly MapGlyph CORNER_SW = new MapGlyph('╚', Color.SaddleBrown, Color.Black);
         public static readonly MapGlyph ROOM_INT = new MapGlyph('·', Color.Gray, Color.Black);
-        public static readonly MapGlyph ROOM_DOOR = new MapGlyph('╬', Color.SandyBrown, Color.Black);
-        public static readonly MapGlyph HALLWAY = new MapGlyph('▒', Color.Gray, Color.Black);
-        public static readonly MapGlyph STAIRWAY = new MapGlyph('≣', Color.SandyBrown, Color.Black);
-        public static readonly MapGlyph GOLD = new MapGlyph('*', Color.Gold, Color.Black);
+        public static readonly MapGlyph ROOM_DOOR = new MapGlyph('╬', Color.SaddleBrown, Color.Black);
+        public static readonly MapGlyph HALLWAY = new MapGlyph('▒', Color.White, Color.Black);
+        public static readonly MapGlyph STAIRWAY = new MapGlyph('≣', Color.Black, Color.Green);
+        public static readonly MapGlyph GOLD = new MapGlyph('*', Color.LightYellow, Color.Black);
         public static readonly MapGlyph AMULET = new MapGlyph('♀', Color.Yellow, Color.Black);
         public static readonly MapGlyph EMPTY = new MapGlyph(' ', Color.Black, Color.Black);
         /// <summary>
@@ -193,7 +193,7 @@ namespace RogueGame{
             bool retValue = true;
             List<char> dirCheck = new List<char>();
 
-            // Check horizontal for blank rows which no hallways. Top and bottom might be legitimately blank
+            // Check horizontal for blank rows with no hallways. Top and bottom might be legitimately blank
             // so just check a portion of the map.
 
             for (int y = REGION_HT - MIN_ROOM_HT; y < (REGION_HT * 2) + MIN_ROOM_HT; y++)
