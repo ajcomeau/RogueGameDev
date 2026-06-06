@@ -6,15 +6,15 @@ Check out the newest chapters in the Rogue C# project on AndrewComeau.com!
 
 **Dungeon Search and Rescue (https://www.andrewcomeau.com/programming/dungeon-search-and-rescue/)**
 
-It's time to revive this project and bring it to Version 1.0.
+_It's time to revive this project and bring it to Version 1.0._
 
 **Better Graphics through the TextRenderer Class (https://www.andrewcomeau.com/programming/enhance-graphics-textrenderer/)**
 
-ASCII graphics are great but even the 1985 DOS version managed some color.  I decided to spruce up the grame map a bit.
+_ASCII graphics are great but even the 1985 DOS version managed some color.  I decided to spruce up the grame map a bit._
 
 **Going Back to the Requirements (https://www.andrewcomeau.com/programming/roguelike-game-requirements/)**
 
-The project now has an official, updated list of requirements.  Check out this article to see the progress of the game.
+_The project now has an official, updated list of requirements.  Check out this article to see the progress of the game._
 
 ## PDF Edition now available through LeanPub!
 
