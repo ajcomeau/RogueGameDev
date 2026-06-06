@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http.Headers;
+using System.Text;
+using static RogueGame.MapLevel;
 
 namespace RogueGame{
 
@@ -105,7 +106,11 @@ namespace RogueGame{
         /// <summary>
         /// Maximum inventory in a room.
         /// </summary>
-        private const int MAX_INVENTORY = 3; 
+        private const int MAX_INVENTORY = 3;
+        /// <summary>
+        /// Maximum number of initial monsters on a level.
+        /// </summary>
+        private const int MAX_INIT_MONSTERS = 15;
         /// <summary>
         /// Max gold amount per stash.
         /// </summary>
@@ -278,8 +283,8 @@ namespace RogueGame{
             // Create hallways 
             HallwayGeneration();
 
-            // Add nine monsters to start, regardless of number of actual rooms.
-            AddMonsters(9);
+            // Add a random number of monsters to start.
+            AddMonsters(rand.Next(MAX_INIT_MONSTERS));
 
             // Add stairway
             stairway = GetOpenSpace(false);
@@ -487,55 +492,38 @@ namespace RogueGame{
                     // SearchAdjacent(). This is part of the fix. 
                     hallwayLimit = hallwaySpace.X < 2 || hallwaySpace.Y < 2 || 
                         hallwaySpace.X > MAP_WD || hallwaySpace.Y > MAP_HT;
-
+                    
                     // Look for distant hallways in three directions.  If one is found, connect to it.
                     if (hallDirection != Direction.None)
                     {
                         surroundingChars = SearchAllDirections(hallwaySpace.X, hallwaySpace.Y);
 
-                        // Forward ...
-                        if ((surroundingChars[hallDirection] != null &&
-                            surroundingChars[hallDirection].MapCharacter.DisplayChar == HALLWAY.DisplayChar))
-                            hallwayDug = DrawHallway(hallwaySpace, surroundingChars[hallDirection], hallDirection);
-                        
-                        // To one side ... 
-                        if ((surroundingChars[direction90] != null &&
-                            surroundingChars[direction90].MapCharacter.DisplayChar == HALLWAY.DisplayChar))
-                            hallwayDug = DrawHallway(hallwaySpace, surroundingChars[direction90], direction90);
-                        
-                        // To the other side.
-                        if ((surroundingChars[direction270] != null &&
-                            surroundingChars[direction270].MapCharacter.DisplayChar == HALLWAY.DisplayChar))
-                            hallwayDug = DrawHallway(hallwaySpace, surroundingChars[direction270], direction270);
+                        foreach (Direction direct in new List<Direction> { hallDirection, direction90, direction270 })
+                        {
+                            if ((surroundingChars[direct] != null &&
+                                surroundingChars[direct].MapCharacter.DisplayChar == HALLWAY.DisplayChar))
+                            {
+                                DrawHallway(hallwaySpace, surroundingChars[direct], direct);
+                                hallwayDug = true;
+                            }
+                        }
 
                         if (!hallwayDug && !hallwayLimit)
                         {
                             // If there's no hallway to connect to, just add another space where possible for the
                             // next iteration to pick up on.
                             adjacentChars = SearchAdjacent(EMPTY.DisplayChar, hallwaySpace.X, hallwaySpace.Y);
-                            if (adjacentChars.ContainsKey(hallDirection))
+                            
+                            foreach (Direction direct in new List<Direction>{ hallDirection, direction90, direction270})
                             {
-                                // Forward ...
-                                newSpace = new MapSpace(HALLWAY, adjacentChars[hallDirection]);
-                                levelMap[adjacentChars[hallDirection].X, adjacentChars[hallDirection].Y] = newSpace;
-                                deadEnds.Remove(hallwaySpace);
-                                deadEnds.Add(newSpace, hallDirection);
-                            }
-                            else if (adjacentChars.ContainsKey(direction90))
-                            {
-                                // To one side ...
-                                newSpace = new MapSpace(HALLWAY, adjacentChars[direction90]);
-                                levelMap[adjacentChars[direction90].X, adjacentChars[direction90].Y] = newSpace;
-                                deadEnds.Remove(hallwaySpace);
-                                deadEnds.Add(newSpace, direction90);
-                            }
-                            else if (adjacentChars.ContainsKey(direction270))
-                            {
-                                // Then the other side.
-                                newSpace = new MapSpace(HALLWAY, adjacentChars[direction270]);
-                                levelMap[adjacentChars[direction270].X, adjacentChars[direction270].Y] = newSpace;
-                                deadEnds.Remove(hallwaySpace);
-                                deadEnds.Add(newSpace, direction270);
+                                if (adjacentChars.ContainsKey(direct))
+                                {
+                                    newSpace = new MapSpace(HALLWAY, adjacentChars[direct]);
+                                    levelMap[adjacentChars[direct].X, adjacentChars[direct].Y] = newSpace;
+                                    deadEnds.Remove(hallwaySpace);
+                                    deadEnds.Add(newSpace, direct);
+                                    break;
+                                }
                             }
                             break;
                         }
@@ -555,7 +543,7 @@ namespace RogueGame{
         /// <param name="start"></param>
         /// <param name="end"></param>
         /// <param name="hallDirection"></param>
-        private bool DrawHallway(MapSpace start, MapSpace end, Direction hallDirection)
+        private void DrawHallway(MapSpace start, MapSpace end, Direction hallDirection)
         {
             switch (hallDirection) {
                 case Direction.North:
@@ -591,7 +579,7 @@ namespace RogueGame{
                     }
                     break;
             }
-            return true;
+
         }        
 
         /// <summary>
