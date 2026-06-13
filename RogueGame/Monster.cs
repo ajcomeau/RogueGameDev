@@ -148,7 +148,6 @@ namespace RogueGame
         /// Inventory
         public List<Inventory> MonsterInventory { get; set; }
         public MapSpace? Location { get; set; }
-        public MapSpace? Destination { get; set; }
         public MapLevel.Direction? Direction { get; set; }
 
         #endregion

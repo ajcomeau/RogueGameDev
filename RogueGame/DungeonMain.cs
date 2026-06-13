@@ -83,7 +83,7 @@ namespace RogueGame
                     {
                         MapGlyph g = currentGame.CurrentMap.DisplayMap[x, y];
                         px = x * cellWidth + 25;   // Add pixels on top and left as margin.
-                        py = y * cellHeight + 175;  
+                        py = y * cellHeight + 150;  
 
                         TextRenderer.DrawText(
                             e.Graphics,
