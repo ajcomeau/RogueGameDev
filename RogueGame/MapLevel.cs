@@ -173,7 +173,7 @@ namespace RogueGame{
         /// <summary>
         /// Reference to current player to get location and anything else needed.
         /// </summary>
-        public Player CurrentPlayer { get; set; }
+        public Player CurrentPlayer { get; }
         #endregion
 
         /// <summary>
