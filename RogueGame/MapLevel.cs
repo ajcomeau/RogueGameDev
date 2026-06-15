@@ -102,7 +102,7 @@ namespace RogueGame{
         /// <summary>
         /// Probability that a room will have gold.
         /// </summary>
-        private const int ROOM_GOLD_PCT = 70; 
+        private const int ROOM_GOLD_PCT = 51; 
         /// <summary>
         /// Maximum inventory in a room.
         /// </summary>
