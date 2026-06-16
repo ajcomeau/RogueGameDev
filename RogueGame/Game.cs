@@ -785,7 +785,7 @@ namespace RogueGame
             InitializeInventory();
             // Generate the new map, add player and shroud the map.
             this.CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer);
-            this.CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
+            //this.CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
             this.CurrentMap.ShroudMap();
 
             // Activate the player's current room.

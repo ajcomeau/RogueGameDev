@@ -147,6 +147,8 @@ namespace RogueGame
         /// <param name="PlayerName"></param>
         public Player(string PlayerName) {
 
+            List<Inventory>? assigned = Inventory.GetAssignedInventory();
+
             // Create a new player object
             var rand = new Random();
             this.PlayerName = PlayerName;
@@ -155,23 +157,29 @@ namespace RogueGame
             this.Experience = 1;
             this.HungerTurn = rand.Next(Inventory.MIN_FOODVALUE, Inventory.MAX_FOODVALUE + 1);
 
-            // Add inventory items
-            this.PlayerInventory.Add(Inventory.GetInventoryItem("some food")!);
-            this.PlayerInventory.Add(Inventory.GetInventoryItem("studded leather armor")!);
-            this.PlayerInventory.Add(Inventory.GetInventoryItem("mace")!);
-            this.PlayerInventory.Add(Inventory.GetInventoryItem("short bow")!);
+            if (assigned != null)
+            {
+                foreach (Inventory item in assigned)
+                {
+                    // For ammunition, which is always groupable, add a random number.
+                    if (item.ItemCategory == Inventory.InvCategory.Ammunition)
+                    {
+                        for (int i = 1; i <= rand.Next(1, Inventory.MAX_AMMO_BATCH + 1); i++)
+                            this.PlayerInventory.Add(item);
+                    }
+                    else
+                        // For everything else, just add the item.
+                        this.PlayerInventory.Add(item);
 
-            // Have player wear the armor and wield the mace.
-            this.Armor = SearchInventory(Inventory.InvCategory.Armor);
-            this.Wielding = SearchInventory("mace");
-
-            // Add batch of arrows
-            for (int i = 1; i <= rand.Next(1, Inventory.MAX_AMMO_BATCH + 1); i++)
-                this.PlayerInventory.Add(Inventory.GetInventoryItem("arrow")!);
-
-            // Check for null items in list and remove
-            this.PlayerInventory = this.PlayerInventory.Where(x => x != null).ToList();
-
+                    // Set the first armor added to the worn armor.
+                    if (item.ItemCategory == Inventory.InvCategory.Armor && this.Armor == null) 
+                        this.Armor = item; 
+                    
+                    // Set the first weapon to be wielded.
+                    if (item.ItemCategory == Inventory.InvCategory.Weapon && this.Wielding == null) 
+                        this.Wielding = item; 
+                }
+            }
         }
         #endregion
 

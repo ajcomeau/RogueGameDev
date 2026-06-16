@@ -181,12 +181,15 @@ namespace RogueGame{
         /// </summary>
         public MapLevel(int levelNumber, Player currentPlayer)
         {
-            CurrentLevel = levelNumber;
+            this.CurrentLevel = levelNumber;
             this.CurrentPlayer = currentPlayer;
+
             do
             {
                 MapGeneration();
-            } while (!VerifyMap());             
+            } while (!VerifyMap());
+            
+            this.CurrentPlayer.Location = GetOpenSpace(false);
         }
 
         /// <summary>
