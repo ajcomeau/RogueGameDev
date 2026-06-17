@@ -529,7 +529,7 @@ namespace RogueGame
                     Monster opponent = (from Monster monst in CurrentMap.ActiveMonsters
                                         where monst.Location == adjacent[direct]
                                         select monst).First();
-
+                    
                     Attack(CurrentPlayer, opponent);
 
                     // Player turn completed.

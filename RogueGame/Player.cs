@@ -30,7 +30,7 @@ namespace RogueGame
         /// <summary>
         /// Display character
         /// </summary>
-        public static readonly MapGlyph CHARACTER = new MapGlyph('☺', Color.LightYellow, Color.Black); 
+        public static readonly MapGlyph CHARACTER = new MapGlyph('☺', Color.LightYellow, Color.Black);
         /// <summary>
         /// Maximum items in inventory
         /// </summary>
@@ -52,11 +52,11 @@ namespace RogueGame
         /// <summary>
         /// Name provided by player
         /// </summary>
-        public string PlayerName { get; set; }  
+        public string PlayerName { get; set; }
         /// <summary>
         /// Maximum current hit points
         /// </summary>
-        public int MaxHP { get; set; } = STARTING_HP; 
+        public int MaxHP { get; set; } = STARTING_HP;
         /// <summary>
         /// Current damage in hit points
         /// </summary>
@@ -64,7 +64,7 @@ namespace RogueGame
         /// <summary>
         /// Current HP
         /// </summary>
-        public int CurrentHP { get { return MaxHP - HPDamage; } } 
+        public int CurrentHP { get { return MaxHP - HPDamage; } }
         /// <summary>
         /// Current max strength
         /// </summary>
@@ -72,11 +72,11 @@ namespace RogueGame
         /// <summary>
         /// Current strength modifier
         /// </summary>
-        public int StrengthMod { get; set; } 
+        public int StrengthMod { get; set; }
         /// <summary>
         /// Current Strength
         /// </summary>
-        public int CurrentStrength { get { return MaxStrength - StrengthMod; } } 
+        public int CurrentStrength { get { return MaxStrength - StrengthMod; } }
         /// <summary>
         /// Current gold
         /// </summary>        
@@ -84,7 +84,7 @@ namespace RogueGame
         /// <summary>
         /// Current experience
         /// </summary>
-        public int Experience { get; set; } 
+        public int Experience { get; set; }
         /// <summary>
         /// Current hunger level
         /// </summary>
@@ -92,11 +92,11 @@ namespace RogueGame
         /// <summary>
         /// Next turn at which hunger state will change
         /// </summary>
-        public int HungerTurn { get; set; }     
+        public int HungerTurn { get; set; }
         /// <summary>
         /// Confused - player moves erratically.
         /// </summary>
-        public int Confused { get; set; } 
+        public int Confused { get; set; }
         /// <summary>
         /// Paralysis, frozen by ice monster, etc..
         /// </summary>
@@ -116,7 +116,7 @@ namespace RogueGame
         /// <summary>
         /// Left hand ring
         /// </summary>
-        public Inventory? LeftHand { get; set; }   
+        public Inventory? LeftHand { get; set; }
         /// <summary>
         /// Right hand ring
         /// </summary>
@@ -124,11 +124,11 @@ namespace RogueGame
         /// <summary>
         /// Weapon
         /// </summary>
-        public Inventory? Wielding { get; set; } 
+        public Inventory? Wielding { get; set; }
         /// <summary>
         /// Main inventory list.
         /// </summary>
-        public List<Inventory> PlayerInventory { get; set; } 
+        public List<Inventory> PlayerInventory { get; set; }
         /// <summary>
         /// Current map space occupied
         /// </summary>

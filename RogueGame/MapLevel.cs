@@ -23,22 +23,10 @@ namespace RogueGame{
             South = -1,
             West = -2
         }
-
-        /// <summary>
-        /// Random number generator
-        /// </summary>
-        private static Random rand = new Random();
-
-        /// <summary>
-        /// Dictionary to hold hallway endings during map generation.
-        /// </summary>
-        private Dictionary<MapSpace, Direction> deadEnds =
-            new Dictionary<MapSpace, Direction>();
-
         /// <summary>
         /// Box drawing constants and other symbols.
         /// </summary>
-        public static readonly MapGlyph HORIZONTAL = new MapGlyph ('═', Color.SaddleBrown, Color.Black);      // Unicode symbols can be copy-pasted from https://www.w3.org/TR/xml-entity-names/025.html.  
+        public static readonly MapGlyph HORIZONTAL = new MapGlyph('═', Color.SaddleBrown, Color.Black);      // Unicode symbols can be copy-pasted from https://www.w3.org/TR/xml-entity-names/025.html.  
         public static readonly MapGlyph VERTICAL = new MapGlyph('║', Color.SaddleBrown, Color.Black);
         public static readonly MapGlyph CORNER_NW = new MapGlyph('╔', Color.SaddleBrown, Color.Black);
         public static readonly MapGlyph CORNER_SE = new MapGlyph('╝', Color.SaddleBrown, Color.Black);
@@ -51,6 +39,28 @@ namespace RogueGame{
         public static readonly MapGlyph GOLD = new MapGlyph('*', Color.LightYellow, Color.Black);
         public static readonly MapGlyph AMULET = new MapGlyph('♀', Color.Yellow, Color.Black);
         public static readonly MapGlyph EMPTY = new MapGlyph(' ', Color.Black, Color.Black);
+
+        /// <summary>
+        /// Max gold amount per stash.
+        /// </summary>
+        public const int MIN_GOLD_AMT = 10;
+        /// <summary>
+        /// Max gold amount per stash.
+        /// </summary>
+        public const int MAX_GOLD_AMT = 125;
+        /// <summary>
+        /// Probability of a monster appearing at any given point.
+        /// </summary>
+        public const int SPAWN_MONSTER = 90;
+        /// <summary>
+        /// Random number generator
+        /// </summary>
+        private static Random rand = new Random();
+        /// <summary>
+        /// Dictionary to hold hallway endings during map generation.
+        /// </summary>
+        private Dictionary<MapSpace, Direction> deadEnds =
+            new Dictionary<MapSpace, Direction>();
         /// <summary>
         /// Width of region holding single room.
         /// </summary>
@@ -112,68 +122,48 @@ namespace RogueGame{
         /// </summary>
         private const int MAX_INIT_MONSTERS = 15;
         /// <summary>
-        /// Max gold amount per stash.
-        /// </summary>
-        public const int MIN_GOLD_AMT = 10;  
-        /// <summary>
-        /// Max gold amount per stash.
-        /// </summary>
-        public const int MAX_GOLD_AMT = 125;
-        /// <summary>
-        /// Probability of a monster appearing at any given point.
-        /// </summary>
-        public const int SPAWN_MONSTER = 90;
-
-        /// <summary>
         /// List of characters that will be marked as Visible during map discovery.
         /// </summary>
-        public static List<char> MapDiscovery = new List<char>(){HORIZONTAL.DisplayChar, VERTICAL.DisplayChar,
+        private static List<char> MapDiscovery = new List<char>(){HORIZONTAL.DisplayChar, VERTICAL.DisplayChar,
             CORNER_NW.DisplayChar, CORNER_SE.DisplayChar, CORNER_NE.DisplayChar, CORNER_SW.DisplayChar, 
             ROOM_DOOR.DisplayChar, HALLWAY.DisplayChar, STAIRWAY.DisplayChar};
-
         /// <summary>
         /// List of characters that occur inside a room.
         /// </summary>
-        public static List<char> RoomInterior = new List<char>(){ROOM_DOOR.DisplayChar, ROOM_INT.DisplayChar, 
+        private static List<char> RoomInterior = new List<char>(){ROOM_DOOR.DisplayChar, ROOM_INT.DisplayChar, 
             STAIRWAY.DisplayChar };
-
         /// <summary>
         /// List of characters a player or monster can move onto.
         /// </summary>
         public static List<char> SpacesAllowed = new List<char>(){ROOM_INT.DisplayChar, STAIRWAY.DisplayChar, 
             ROOM_DOOR.DisplayChar, HALLWAY.DisplayChar };
-
         /// <summary>
         /// List of characters that can be moved past on Fast Play.
         /// </summary>
-        public static List<char> GlideSpaces = new List<char>(){ROOM_INT.DisplayChar, HORIZONTAL.DisplayChar, 
+        private static List<char> GlideSpaces = new List<char>(){ROOM_INT.DisplayChar, HORIZONTAL.DisplayChar, 
             VERTICAL.DisplayChar, CORNER_NE.DisplayChar, CORNER_NW.DisplayChar, CORNER_SE.DisplayChar, 
             CORNER_SW.DisplayChar, HALLWAY.DisplayChar, EMPTY.DisplayChar};
-
         /// <summary>
         /// List of monsters on current map.
         /// </summary>
         public List<Monster> ActiveMonsters = new List<Monster>();
-
         /// <summary>
         /// List of inventory on current map, including gold.
         /// </summary>
         public List<Inventory> MapInventory = new List<Inventory>();
-
         /// <summary>
         /// Array to hold map definitions.
         /// </summary>
         private MapSpace[,] levelMap = new MapSpace[80, 25]; // Internal game map.
         public MapGlyph[,] DisplayMap = new MapGlyph[80, 25]; // Map to be shown to user.
-
         /// <summary>
         /// Current game level
         /// </summary>
-        public int CurrentLevel { get; set; }
+        private int CurrentLevel { get; set; }
         /// <summary>
         /// Reference to current player to get location and anything else needed.
         /// </summary>
-        public Player CurrentPlayer { get; }
+        private Player CurrentPlayer { get; }
         #endregion
 
         /// <summary>
@@ -367,7 +357,6 @@ namespace RogueGame{
             // Add doorways and initial hallways on room. Room walls facing the edges of the map do not get exits
             // so the ROOM_EXIT_PCT constant needs to be high to ensure that every room gets at least one and we
             // still might need to repeat the process anyway.
-
             while (doorCount == 0) { 
                 if (regionNumber >= 4 && rand.Next(1, 101) <= ROOM_EXIT_PCT)  // North doorways
                 {
@@ -936,7 +925,7 @@ namespace RogueGame{
         /// <param name="xPos"></param>
         /// <param name="yPos"></param>
         /// <returns></returns>
-        public int GetRegionNumber(int xPos, int yPos)
+        private int GetRegionNumber(int xPos, int yPos)
         {
             // The map is divided into a 3 x 3 grid of 9 equal regions.
             // This function returns 1 to 9 to indicate where the region is on the map.
@@ -960,7 +949,7 @@ namespace RogueGame{
         /// <param name="xPos"></param>
         /// <param name="yPos"></param>
         /// <returns></returns>
-        public Tuple<MapSpace, MapSpace> GetRegionLimits(int xPos, int yPos)
+        private Tuple<MapSpace, MapSpace> GetRegionLimits(int xPos, int yPos)
         {
             // Get a pair of MapSpaces defining the limits of the region based
             // on an internal x and y coordinate.
@@ -978,7 +967,7 @@ namespace RogueGame{
         /// </summary>
         /// <param name="RegionNumber"></param>
         /// <returns></returns>
-        public Tuple<MapSpace, MapSpace> GetRegionLimits(int RegionNumber)
+        private Tuple<MapSpace, MapSpace> GetRegionLimits(int RegionNumber)
         {
             // Get a pair of MapSpaces defining the limits of the region based
             // on the region number from the 3 x 3 grid of regions.

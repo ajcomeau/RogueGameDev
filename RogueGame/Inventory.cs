@@ -82,7 +82,7 @@ namespace RogueGame
         /// <summary>
         /// List to contain potential code names for non-identified items.
         /// </summary>
-        public static List<Tuple<InvCategory, string>> CodeNames = new List<Tuple<InvCategory, string>>()
+        private static List<Tuple<InvCategory, string>> CodeNames = new List<Tuple<InvCategory, string>>()
         {
             new Tuple<InvCategory, string>(InvCategory.Ring, "agate"),
             new Tuple<InvCategory, string>(InvCategory.Ring, "adamite"),
