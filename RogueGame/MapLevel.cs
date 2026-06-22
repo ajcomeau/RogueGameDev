@@ -1101,7 +1101,7 @@ namespace RogueGame{
                 foreach (char c in line)
                 {
                     DisplayMap[nx, ny] =
-                        new MapGlyph(c, Color.Orange, Color.Black);
+                        new MapGlyph(c, Color.FromArgb(255, 128, 0), Color.Black);
 
                     nx += 1;
                 }

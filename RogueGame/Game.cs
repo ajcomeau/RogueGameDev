@@ -121,11 +121,11 @@ namespace RogueGame
         /// <param name="KeyPressed"></param>
         /// <param name="Ctrl"></param>
         /// <param name="Shift"></param>
-        private record recKeyChord(int KeyPressed, bool Ctrl, bool Shift);
+        private record struct recKeyChord(int KeyPressed, bool Ctrl, bool Shift);
         /// <summary>
         /// Searchable dictionary field to hold possible key presses in game.
         /// </summary>
-        private Dictionary<recKeyChord, Action> KeyActions;
+        private Dictionary<recKeyChord, (Action method, string desc)> KeyActions;
 
         /// <summary>
         /// Random number generator
@@ -244,26 +244,21 @@ namespace RogueGame
         private void HelpScreen()
         {
             string screenText = "Command list - Press ESC to return.\n\n";
+            bool firstColumn = true;
 
-            screenText += "Arrows - movement\n\n" +
-                "d - drop inventory\n" +
-                "e - eat\n" +
-                "i - show inventory\n" +
-                "q - quaff potion\n" +
-                "r - read scroll\n" +
-                "s - search for hidden doorways\n" +
-                "w - wield new weapon\n\n" +
-                "F - Fast Play mode ON / OFF\n" +
-                "T - remove armor\n" +
-                "W - wear armor\n\n" +
-                "> - go down a staircase\n" +
-                "< - go up a staircase (requires Amulet of Yendor)\n\n" +
-                "ESC - return to map.\n" +
-                "CTRL-D - Developer mode.  See entire map.\n" +
-                "CTRL-N - Change out map for new one in dev mode.";
+            foreach (var (keyChord, (method, desc)) in KeyActions)
+            {
+                if(firstColumn)
+                   screenText += desc + new string(' ', 40 - desc.Length);
+                else
+                   screenText += desc + "\n";
+
+                firstColumn = !firstColumn;
+            }
 
             this.CurrentMap.UpdateDisplayFromText(screenText);
         }
+        
 
         /// <summary>
         /// Creates and returns R.I.P. screen.
@@ -861,8 +856,8 @@ namespace RogueGame
             // Shift, Ctrl and Basic combinations
             if (GameMode == DisplayMode.Primary)
             {
-                if (KeyActions.TryGetValue(new recKeyChord(KeyVal, Control, Shift), out method))
-                    method.Invoke();
+                if (KeyActions.TryGetValue(new recKeyChord(KeyVal, Control, Shift), out var taskInfo))
+                    taskInfo.method.Invoke();
 
                 keyHandled = true;
             }
@@ -880,51 +875,56 @@ namespace RogueGame
         }
 
         #region KeyProcs
+
         private void InitializeCommands()
         {
             // Create searchable dictionary of key commands and delegates to methods.
-            KeyActions = new Dictionary<recKeyChord, Action>
+            KeyActions = new Dictionary<recKeyChord, (Action, string)>
             {
-                {new recKeyChord(KEY_F, false, true), FastPlayProc},
-                {new recKeyChord(KEY_DOWNLEVEL, false, true), DownStairsProc},
-                {new recKeyChord(KEY_UPLEVEL, false, true), UpstairsProc},
-                {new recKeyChord(KEY_HELP, false, true), HelpProc},
-                {new recKeyChord(KEY_T, false, true), RemoveArmorProc},
-                {new recKeyChord(KEY_W, false, true), WearArmorProc},
-                {new recKeyChord(KEY_D, true, false), DevModeProc},
-                {new recKeyChord(KEY_N, true, false), NewMapProc},
-                {new recKeyChord(KEY_SOUTH, false, false), SouthProc},
-                {new recKeyChord(KEY_WEST, false, false), WestProc},
-                {new recKeyChord(KEY_NORTH, false, false), NorthProc},
-                {new recKeyChord(KEY_EAST, false, false), EastProc},
-                {new recKeyChord(KEY_Q, false, false), QuaffProc},
-                {new recKeyChord(KEY_R, false, false), ReadProc},
-                {new recKeyChord(KEY_S, false, false), SearchProc},
-                {new recKeyChord(KEY_E, false, false), EatProc},
-                {new recKeyChord(KEY_I, false, false), DisplayInventory},
-                {new recKeyChord(KEY_D, false, false), DropProc},
-                {new recKeyChord(KEY_W, false, false), WieldProc},
+                {new recKeyChord(KEY_DOWNLEVEL, false, true), (DownStairsProc, "> - Go downstairs")},
+                {new recKeyChord(KEY_UPLEVEL, false, true), (UpstairsProc, "< - Go upstairs (requires amulet)")},
+                {new recKeyChord(KEY_F, false, true), (FastPlayProc, "F - Fast Play ON / OFF")},
+                {new recKeyChord(KEY_HELP, false, true), (HelpProc, "? - Show help screen")},
+                {new recKeyChord(KEY_T, false, true), (RemoveArmorProc, "R - Remove armor")},
+                {new recKeyChord(KEY_W, false, true), (WearArmorProc, "W - Wear armor")},
+                {new recKeyChord(KEY_SOUTH, false, false), (SouthProc, "Down arrow - Move south")},
+                {new recKeyChord(KEY_WEST, false, false), (WestProc, "Left arrow - Move west")},
+                {new recKeyChord(KEY_NORTH, false, false), (NorthProc, "Up arrow - Move north")},
+                {new recKeyChord(KEY_EAST, false, false), (EastProc, "Right arrow - Move east")},
+                {new recKeyChord(KEY_Q, false, false), (QuaffProc, "q - Quaff potion")},
+                {new recKeyChord(KEY_R, false, false), (ReadProc, "r - Read scroll")},
+                {new recKeyChord(KEY_S, false, false), (SearchProc, "s - Search for item")},
+                {new recKeyChord(KEY_E, false, false), (EatProc, "e - Eat food")},
+                {new recKeyChord(KEY_I, false, false), (DisplayInventory, "i - Show inventory")},
+                {new recKeyChord(KEY_D, false, false), (DropProc, "d - Drop item")},
+                {new recKeyChord(KEY_W, false, false), (WieldProc, "w - Wield a weapon")},
+                {new recKeyChord(KEY_D, true, false), (DevModeProc, "CTRL-D - Dev Mode ON / OFF")},
+                {new recKeyChord(KEY_N, true, false), (NewMapProc, "CTRL-N - Draw new map (Dev mode)")},
             };
         }
 
         private void WieldProc()
         {
+            // Wield a weapon
             Wield(null);
         }
 
         private void DropProc()
         {
+            // Drop an inventory item
             DropInventory(null);
         }
 
         private void EatProc()
         {
+            // Eat something
             startTurn = true;
             Eat(null);
         }
 
         private void SearchProc()
         {
+            // Search for hidden items
             startTurn = true;
             SearchForHidden();
         }
@@ -945,21 +945,25 @@ namespace RogueGame
 
         private void WestProc()
         {
+            // Move player west
             MovePlayer(CurrentPlayer, MapLevel.Direction.West);
         }
 
         private void NorthProc()
         {
+            // Move player north
             MovePlayer(CurrentPlayer, MapLevel.Direction.North);
         }
 
         private void EastProc()
         {
+            // Move player east
             MovePlayer(CurrentPlayer, MapLevel.Direction.East);
         }
 
         private void SouthProc()
         {
+            // Move player south
             MovePlayer(CurrentPlayer, MapLevel.Direction.South);
         }
 
