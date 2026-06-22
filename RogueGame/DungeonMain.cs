@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using static RogueGame.Game;
 
 namespace RogueGame
 {
@@ -49,7 +50,7 @@ namespace RogueGame
                     // Invalidate to redraw map.
                     this.Invalidate(true);
 
-                    listStatus.Visible = (currentGame.GameMode == Game.DisplayMode.Primary);
+                    listStatus.Visible = (currentGame.GameMode is DisplayMode.Primary or DisplayMode.Inventory);
                     lblStats.Text = currentGame.StatsDisplay();
                     listStatus.SelectedIndex = 0;
                     listStatus.SelectedIndex = -1;

@@ -110,17 +110,31 @@ namespace RogueGame
         /// <summary>
         /// Delgate used to return to function that enables an inventory item to be used.
         /// </summary>
-        public Func<char?, bool>? ReturnFunction { get; set; } 
-
+        public Func<char?, bool>? ReturnFunction { get; set; }         
         /// <summary>
         /// Status message for top of screen.
         /// </summary>
         public BindingList<string> StatusList = new BindingList<string>();
-        
+        /// <summary>
+        /// Record field to store KeyPress and CTRL / SHIFT options.
+        /// </summary>
+        /// <param name="KeyPressed"></param>
+        /// <param name="Ctrl"></param>
+        /// <param name="Shift"></param>
+        private record recKeyChord(int KeyPressed, bool Ctrl, bool Shift);
+        /// <summary>
+        /// Searchable dictionary field to hold possible key presses in game.
+        /// </summary>
+        private Dictionary<recKeyChord, Action> KeyActions;
+
         /// <summary>
         /// Random number generator
         /// </summary>
         public static Random rand = new Random();
+
+        private bool startTurn = false;
+        private bool keyHandled = false;
+
         #endregion
 
         #region Procedures
@@ -243,7 +257,7 @@ namespace RogueGame
                 "T - remove armor\n" +
                 "W - wear armor\n\n" +
                 "> - go down a staircase\n" +
-                "< - go up a staircase(requires Amulet from level 26)\n\n" +
+                "< - go up a staircase (requires Amulet of Yendor)\n\n" +
                 "ESC - return to map.\n" +
                 "CTRL-D - Developer mode.  See entire map.\n" +
                 "CTRL-N - Change out map for new one in dev mode.";
@@ -274,8 +288,8 @@ namespace RogueGame
             $"\n                        ║{CenterString(CauseOfDeath, 29)}║" +
             "\n                        ║                             ║" +
             $"\n                        ║{CenterString(CurrentPlayer.Gold.ToString() + " Au", 29)}║" +
-            $"\n                       ║           {DateTime.Now.Year + " "}             ║" +
-            "\n                         ║                             ║" +
+            $"\n                        ║           {DateTime.Now.Year + " "}             ║" +
+            "\n                        ║                             ║" +
             "\n                        ║                             ║" +
             "\n                      __\\/ (\\//(\\/ \\(//)\\)\\/(//)\\)//(\\__" +
             "\n";
@@ -783,6 +797,8 @@ namespace RogueGame
             this.CurrentPlayer = new Player(PlayerName);
             // Initialize inventory with code names
             InitializeInventory();
+            // Initialize possible commands
+            InitializeCommands();
             // Generate the new map, add player and shroud the map.
             this.CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer);
             //this.CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
@@ -800,8 +816,7 @@ namespace RogueGame
             if (DevMode)
                 this.CurrentMap.MapCheck();
             else
-                this.CurrentMap.MapText();
-            
+                this.CurrentMap.MapText();    
         }
 
         #region Command Keys
@@ -816,159 +831,198 @@ namespace RogueGame
             // Process whatever key is sent by the form.
             // Putting a break point in this function to test causes it to lose keystrokes
             // following CTRL and SHIFT so they're not being sent here on their own anymore.
-
-            bool startTurn = false, keyHandled = false;
+            Action? method;
             char lowerCase = char.ToLower((char)KeyVal);
 
             if (KeyVal == KEY_ESC)
             {
-                // For ESC, clear the return function and restore the game map.
                 ReturnFunction = null;
                 RestoreMap();
-
-                keyHandled = true;
             }
-
-            if (GameMode == DisplayMode.Inventory)
-            {
-                // For letters, call the current return function.
-                if (lowerCase >= 'a' && lowerCase <= 'z')
-                {
-                    if (ReturnFunction != null)
-                        ReturnFunction(lowerCase);
-                }
-                keyHandled = true;
-            }
-
-            // Shift combinations
-            if (Shift & !keyHandled & GameMode == DisplayMode.Primary)
-            {
-                switch (KeyVal)
-                {
-                    case KEY_DOWNLEVEL:     // Going downstairs.
-                        startTurn = true;
-                        if (CurrentPlayer.Location!.MapCharacter.DisplayChar == MapLevel.STAIRWAY.DisplayChar)
-                            ChangeLevel(1);
-                        else
-                            UpdateStatus("There's no stairway here.", false);
-                        break;
-                    case KEY_UPLEVEL:       // Going upstairs.
-                        startTurn = true;
-                        if (CurrentPlayer.Location!.MapCharacter.DisplayChar == MapLevel.STAIRWAY.DisplayChar)
-                            ChangeLevel(-1);
-                        else
-                            UpdateStatus("There's no stairway here.", false);
-                        break;
-                    case KEY_HELP:  // Show help screen
-                        GameMode = DisplayMode.Help;
-                        HelpScreen();
-                        break;
-                    case KEY_F: // Fast Play
-                        FastPlay = !FastPlay;
-                        UpdateStatus(FastPlay ? "Fast Play mode ON." : "Fast Play mode OFF", false);
-                        break;
-                    case KEY_T: // Remove armor
-                        startTurn = true;
-                        RemoveArmor();
-                        break;
-                    case KEY_W: // Wear armor
-                        startTurn = true;
-                        WearArmor(null);
-                        break;
-                    default:
-                        break;
-                }
-                keyHandled = true;
-            }
-
-            if (Control & !keyHandled & GameMode == DisplayMode.Primary)
-            {
-                switch (KeyVal)
-                {
-                    case KEY_D:         // Dev mode ON / OFF
-                        DevMode = !DevMode;
-                        UpdateStatus(DevMode ? "Developer Mode ON" : "Developer Mode OFF", false);
-                        break;
-                    case KEY_N:         // New map
-                        if (DevMode)
-                            ReplaceMap();
-                        break;
-                    default:
-                        break;
-                }
-                keyHandled = true;
-            }
-
-            // Basics 
-            if (!keyHandled & GameMode == DisplayMode.Primary)
-            {
-                switch (KeyVal)
-                {
-                    // Movement keys
-                    case KEY_WEST:
-                        MovePlayer(CurrentPlayer, MapLevel.Direction.West);
-                        break;
-                    case KEY_NORTH:
-                        MovePlayer(CurrentPlayer, MapLevel.Direction.North);
-                        break;
-                    case KEY_EAST:
-                        MovePlayer(CurrentPlayer, MapLevel.Direction.East);
-                        break;
-                    case KEY_SOUTH:
-                        MovePlayer(CurrentPlayer, MapLevel.Direction.South);
-                        break;
-                    case KEY_Q:     // Quaff
-                        startTurn = true;
-                        QuaffPotion(null);
-                        break;
-                    case KEY_R:     // Read
-                        startTurn = true;
-                        ReadScroll(null);
-                        break;
-                    case KEY_S:     // Search
-                        startTurn = true;
-                        SearchForHidden();
-                        break;
-                    case KEY_E:     // Eat
-                        startTurn = true;
-                        Eat(null);
-                        break;
-                    case KEY_I:     // Show inventory
-                        DisplayInventory();
-                        break;
-                    case KEY_ESC:  // Restore map
-                        RestoreMap();
-                        break;
-                    case KEY_D:     // Drop item
-                        DropInventory(null);
-                        break;
-                    case KEY_W:
-                        Wield(null);  // Wield item
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            if (startTurn) CompleteTurn();
-
-            // Display the appropriate map mode.
-            if (GameMode == DisplayMode.Primary)
-                if (DevMode) 
-                    { this.CurrentMap.MapCheck(); } 
-                else 
-                    { this.CurrentMap.MapText(); }
 
             switch (GameMode)
             {
+                case DisplayMode.Inventory:
+                    // For letters, call the current return function.
+                    if (lowerCase >= 'a' && lowerCase <= 'z')
+                    {
+                        if (ReturnFunction != null)
+                            ReturnFunction(lowerCase);
+                    }
+                    keyHandled = true;
+                    break;
                 case DisplayMode.GameOver:
                     RIPScreen();
                     break;
                 default:
                     break;
             }
+
+            // Shift, Ctrl and Basic combinations
+            if (GameMode == DisplayMode.Primary)
+            {
+                if (KeyActions.TryGetValue(new recKeyChord(KeyVal, Control, Shift), out method))
+                    method.Invoke();
+
+                keyHandled = true;
+            }
+
+            // Complete turn if one was started.
+            if (startTurn) CompleteTurn();
+            
+            // Display the appropriate map mode.
+            if (GameMode == DisplayMode.Primary)
+                if (DevMode) 
+                    { this.CurrentMap.MapCheck(); } 
+                else 
+                    { this.CurrentMap.MapText(); }            
+
         }
 
+        #region KeyProcs
+        private void InitializeCommands()
+        {
+            // Create searchable dictionary of key commands and delegates to methods.
+            KeyActions = new Dictionary<recKeyChord, Action>
+            {
+                {new recKeyChord(KEY_F, false, true), FastPlayProc},
+                {new recKeyChord(KEY_DOWNLEVEL, false, true), DownStairsProc},
+                {new recKeyChord(KEY_UPLEVEL, false, true), UpstairsProc},
+                {new recKeyChord(KEY_HELP, false, true), HelpProc},
+                {new recKeyChord(KEY_T, false, true), RemoveArmorProc},
+                {new recKeyChord(KEY_W, false, true), WearArmorProc},
+                {new recKeyChord(KEY_D, true, false), DevModeProc},
+                {new recKeyChord(KEY_N, true, false), NewMapProc},
+                {new recKeyChord(KEY_SOUTH, false, false), SouthProc},
+                {new recKeyChord(KEY_WEST, false, false), WestProc},
+                {new recKeyChord(KEY_NORTH, false, false), NorthProc},
+                {new recKeyChord(KEY_EAST, false, false), EastProc},
+                {new recKeyChord(KEY_Q, false, false), QuaffProc},
+                {new recKeyChord(KEY_R, false, false), ReadProc},
+                {new recKeyChord(KEY_S, false, false), SearchProc},
+                {new recKeyChord(KEY_E, false, false), EatProc},
+                {new recKeyChord(KEY_I, false, false), DisplayInventory},
+                {new recKeyChord(KEY_D, false, false), DropProc},
+                {new recKeyChord(KEY_W, false, false), WieldProc},
+            };
+        }
+
+        private void WieldProc()
+        {
+            Wield(null);
+        }
+
+        private void DropProc()
+        {
+            DropInventory(null);
+        }
+
+        private void EatProc()
+        {
+            startTurn = true;
+            Eat(null);
+        }
+
+        private void SearchProc()
+        {
+            startTurn = true;
+            SearchForHidden();
+        }
+
+        private void ReadProc()
+        {
+            // Read scroll
+            startTurn = true;
+            ReadScroll(null);
+        }
+
+        private void QuaffProc()
+        {
+            // Quaff potion
+            startTurn = true;
+            QuaffPotion(null);
+        }
+
+        private void WestProc()
+        {
+            MovePlayer(CurrentPlayer, MapLevel.Direction.West);
+        }
+
+        private void NorthProc()
+        {
+            MovePlayer(CurrentPlayer, MapLevel.Direction.North);
+        }
+
+        private void EastProc()
+        {
+            MovePlayer(CurrentPlayer, MapLevel.Direction.East);
+        }
+
+        private void SouthProc()
+        {
+            MovePlayer(CurrentPlayer, MapLevel.Direction.South);
+        }
+
+
+        private void NewMapProc()
+        {
+            // Show new map if in Dev mode.
+            if (DevMode)
+                ReplaceMap();
+        }
+
+        private void DevModeProc()
+        {
+            // Toggle Dev mode
+            DevMode = !DevMode;
+            UpdateStatus(DevMode ? "Developer Mode ON" : "Developer Mode OFF", false);
+        }
+
+        private void WearArmorProc()
+        {
+            // Wear armor
+            startTurn = true;
+            WearArmor(null);
+        }
+        private void RemoveArmorProc()
+        {
+            // Take off armor
+            startTurn = true;
+            RemoveArmor();
+        }
+        private void HelpProc()
+        {
+            // Display help screen.
+            GameMode = DisplayMode.Help;
+            HelpScreen();
+        }
+
+        private void UpstairsProc()
+        {
+            // Go up staircase if possible.
+            startTurn = true;
+            if (CurrentPlayer.Location!.MapCharacter.DisplayChar == MapLevel.STAIRWAY.DisplayChar)
+                ChangeLevel(-1);
+            else
+                UpdateStatus("There's no stairway here.", false);
+        }
+
+        private void DownStairsProc()
+        {
+            // Go down staircase if possible.
+            startTurn = true;
+            if (CurrentPlayer.Location!.MapCharacter.DisplayChar == MapLevel.STAIRWAY.DisplayChar)
+                ChangeLevel(1);
+            else
+                UpdateStatus("There's no stairway here.", false);
+        }
+        private void FastPlayProc()
+        {
+            // Fast Play Toggle
+            FastPlay = !FastPlay;
+            UpdateStatus(FastPlay ? "Fast Play mode ON." : "Fast Play mode OFF", false);
+        }
+        #endregion
 
         private bool Wield(char? ListItem)
         {
@@ -1412,7 +1466,7 @@ namespace RogueGame
                         switch (items[0].RealName)
                         {
                             case "Identify":
-                                UpdateStatus("This is a Scroll of Identify.", true);
+                                UpdateStatus("This is a Scroll of Identify. Please select an item to identify.", false);
                                 if (!items[0].IsIdentified) SetInventoryAsIdentified(items[0].PriorityId);
                                 readScroll = ScrollOfIdentify(null);
                                 break;
@@ -1528,9 +1582,9 @@ namespace RogueGame
 
             if (ReturnFunction != ScrollOfIdentify)
             {
+                DisplayInventory();
                 UpdateStatus("Please select an item to identify.", false);
                 ReturnFunction = ScrollOfIdentify;
-                DisplayInventory();
                 retValue = true;
             }
             else
