@@ -137,105 +137,7 @@ namespace RogueGame
 
         #endregion
 
-        #region Procedures
-
-        /// <summary>
-        /// Get current player stats display for bottom of screen.
-        /// </summary>
-        public string StatsDisplay()
-        {
-            string retValue = "";
-
-            if (GameMode == DisplayMode.Primary)
-            {
-                // Assemble stats display for the bottom of the screen.
-                retValue = $"Level: {CurrentLevel}  ";
-                retValue += $"HP: {CurrentPlayer.CurrentHP}/{CurrentPlayer.MaxHP}  ";
-                retValue += $"Strength: {CurrentPlayer.CurrentStrength}/{CurrentPlayer.MaxStrength}  ";
-                retValue += $"Gold: {CurrentPlayer.Gold}  ";
-                retValue += $"Armor: {(CurrentPlayer.Armor != null ? CurrentPlayer.Armor.ArmorClass + CurrentPlayer.Armor.Increment : 0)}  ";
-                retValue += $"Turn: {CurrentTurn}  ";
-                retValue += $"Exp: {CurrentPlayer.ExpLevel}/{CurrentPlayer.Experience}";
-                
-                if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied)
-                    retValue += $"  {CurrentPlayer.HungerState}     ";
-            }
-            else
-                retValue = "";
-
-            return retValue;
-        }
-
-        /// <summary>
-        /// Add status line to status box.
-        /// </summary>
-        /// <param name="Status"></param>
-        /// <param name="Confirm"></param>
-        private void UpdateStatus(string Status, bool Confirm)
-        {
-            if (Confirm)
-            {
-                StatusList.Insert(0, Status);
-                MessageBox.Show(Status);
-            }
-            else StatusList.Insert(0, Status);
-        }
-
-        /// <summary>
-        /// Carries out necessary actions to finish the turn.
-        /// </summary>
-        private void CompleteTurn()
-        {
-            do
-            {
-                // Perform whatever actions needed to complete turn
-                // (i.e. monster moves)
-                foreach (Monster monster in CurrentMap.ActiveMonsters)
-                    MoveMonster(monster);
-
-                // Then, evaluate the player's current condition.
-                EvaluatePlayer();
-                // Increment current turn number
-                CurrentTurn++;
-
-
-                if (CurrentPlayer.Immobile > 0)
-                {
-                    CurrentPlayer.Immobile = CurrentPlayer.Immobile <= CurrentTurn ? 0 : CurrentPlayer.Immobile;
-
-                    if (CurrentPlayer.Immobile == 0) UpdateStatus("You can move again.", false);
-                }
-            } while (CurrentPlayer.Immobile > CurrentTurn);
-        }
-
-        /// <summary>
-        /// Centers a text string for display.
-        /// </summary>
-        /// <param name="Text">Text to be centered.</param>
-        /// <param name="Spaces">Total number of spaces in displayed string.</param>
-        /// <returns></returns>
-        private string CenterString(string Text, int Spaces)
-        {
-            // Center the string provided within the specified
-            // number of spaces.
-
-            string retValue = "";
-
-            // If the string is longer than the number, just pass it back.
-            if (Text.Length >= Spaces)
-                retValue = Text;
-            else
-            // Otherwise, use PadLeft / PadRight
-            {
-                retValue = Text.PadLeft(Spaces / 2 + Text.Length / 2).PadRight(Spaces);
-            }
-
-            // If it's still short, keep adding a space.
-            while (retValue.Length < Spaces)
-                retValue = retValue.PadLeft(1);
-
-            return retValue;
-        }
+        #region DisplayFunctions
 
         /// <summary>
         /// Returns help screen text.
@@ -248,17 +150,17 @@ namespace RogueGame
 
             foreach (var (keyChord, (method, desc)) in KeyActions)
             {
-                if(firstColumn)
-                   screenText += desc + new string(' ', 40 - desc.Length);
+                if (firstColumn)
+                    screenText += desc + new string(' ', 40 - desc.Length);
                 else
-                   screenText += desc + "\n";
+                    screenText += desc + "\n";
 
                 firstColumn = !firstColumn;
             }
 
             this.CurrentMap.UpdateDisplayFromText(screenText);
         }
-        
+
 
         /// <summary>
         /// Creates and returns R.I.P. screen.
@@ -292,6 +194,232 @@ namespace RogueGame
             this.CurrentMap.UpdateDisplayFromText(screen);
 
         }
+
+        /// <summary>
+        /// Add status line to status box.
+        /// </summary>
+        /// <param name="Status"></param>
+        /// <param name="Confirm"></param>
+        private void UpdateStatus(string Status, bool Confirm)
+        {
+            if (Confirm)
+            {
+                StatusList.Insert(0, Status);
+                MessageBox.Show(Status);
+            }
+            else StatusList.Insert(0, Status);
+        }
+
+        /// <summary>
+        /// Centers a text string for display.
+        /// </summary>
+        /// <param name="Text">Text to be centered.</param>
+        /// <param name="Spaces">Total number of spaces in displayed string.</param>
+        /// <returns></returns>
+        private string CenterString(string Text, int Spaces)
+        {
+            // Center the string provided within the specified
+            // number of spaces.
+
+            string retValue = "";
+
+            // If the string is longer than the number, just pass it back.
+            if (Text.Length >= Spaces)
+                retValue = Text;
+            else
+            // Otherwise, use PadLeft / PadRight
+            {
+                retValue = Text.PadLeft(Spaces / 2 + Text.Length / 2).PadRight(Spaces);
+            }
+
+            // If it's still short, keep adding a space.
+            while (retValue.Length < Spaces)
+                retValue = retValue.PadLeft(1);
+
+            return retValue;
+        }
+
+        /// <summary>
+        /// Get current player stats display for bottom of screen.
+        /// </summary>
+        public string StatsDisplay()
+        {
+            string retValue = "";
+
+            if (GameMode == DisplayMode.Primary)
+            {
+                // Assemble stats display for the bottom of the screen.
+                retValue = $"Level: {CurrentLevel}  ";
+                retValue += $"HP: {CurrentPlayer.CurrentHP}/{CurrentPlayer.MaxHP}  ";
+                retValue += $"Strength: {CurrentPlayer.CurrentStrength}/{CurrentPlayer.MaxStrength}  ";
+                retValue += $"Gold: {CurrentPlayer.Gold}  ";
+                retValue += $"Armor: {(CurrentPlayer.Armor != null ? CurrentPlayer.Armor.ArmorClass + CurrentPlayer.Armor.Increment : 0)}  ";
+                retValue += $"Turn: {CurrentTurn}  ";
+                retValue += $"Exp: {CurrentPlayer.ExpLevel}/{CurrentPlayer.Experience}";
+                
+                if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied)
+                    retValue += $"  {CurrentPlayer.HungerState}     ";
+            }
+            else
+                retValue = "";
+
+            return retValue;
+        }
+
+        /// <summary>
+        /// Restore current map after viewing another screen.
+        /// </summary>
+        private void RestoreMap()
+        {
+            // Restore the map display.
+            if (GameMode == DisplayMode.Inventory || GameMode == DisplayMode.Help)
+            {
+                GameMode = DisplayMode.Primary;
+                if (DevMode)
+                    CurrentMap.MapCheck();
+                else
+                    CurrentMap.MapText();
+            }
+        }
+
+
+        /// <summary>
+        /// Dev mode: Change out current map for a new one.
+        /// </summary>
+        private void ReplaceMap()
+        {
+            // Dev mode only - replace the map for testing.
+            CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer);
+            CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
+        }
+
+
+        /// <summary>
+        /// Bring up inventory screen for viewing.
+        /// </summary>
+        public void DisplayInventory()
+        {
+            string screenText = "Inventory List\n\n";
+            // Switch the screen to the player's inventory.
+            GameMode = DisplayMode.Inventory;
+
+            foreach (InventoryLine line in InventoryDisplay(CurrentPlayer.PlayerInventory))
+                if (line.InvItem == CurrentPlayer.Armor)
+                    screenText += line.Description + " (being worn)\n";  // current armor
+                else if (CurrentPlayer.Wielding != null && line.InvItem == CurrentPlayer.Wielding)
+                    screenText += line.Description + " (wielding)\n";  // weapon
+                else if (CurrentPlayer.RightHand != null && line.InvItem == CurrentPlayer.RightHand)
+                    screenText += line.Description + " (on right hand)\n";  // ring
+                else if (CurrentPlayer.LeftHand != null && line.InvItem == CurrentPlayer.LeftHand)
+                    screenText += line.Description + " (on left hand)\n";  // ring
+                else
+                    screenText += line.Description + "\n";
+
+            this.CurrentMap.UpdateDisplayFromText(screenText);
+        }
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Primary constructor for starting new game.
+        /// </summary>
+        /// <param name="PlayerName"></param>
+        public Game(string PlayerName)
+        {
+
+            // Setup a new game with a map and a player.
+            // Put the player on the map and set the opening status.
+
+            this.CurrentLevel = 1;
+            // Create new player.
+            this.CurrentPlayer = new Player(PlayerName);
+            // Initialize inventory with code names
+            InitializeInventory();
+            // Initialize possible commands
+            InitializeCommands();
+            // Generate the new map, add player and shroud the map.
+            this.CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer);
+            //this.CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
+            this.CurrentMap.ShroudMap();
+
+            // Activate the player's current room.
+            this.CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
+
+            // Set starting turn and show welcome message.
+            this.CurrentTurn = 1;
+            this.GameMode = DisplayMode.Primary;
+            UpdateStatus($"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ... (Press ? for list of commands.)", false);
+
+            // Set the current screen display.
+            if (DevMode)
+                this.CurrentMap.MapCheck();
+            else
+                this.CurrentMap.MapText();
+        }
+
+        /// <summary>
+        /// Initialize all key commands with Action delegates and descriptions.
+        /// </summary>
+        private void InitializeCommands()
+        {
+            // Create searchable dictionary of key commands and delegates to methods.
+            KeyActions = new Dictionary<recKeyChord, (Action, string)>
+            {
+                {new recKeyChord(KEY_DOWNLEVEL, false, true), (DownStairsProc, "> - Go downstairs")},
+                {new recKeyChord(KEY_UPLEVEL, false, true), (UpstairsProc, "< - Go upstairs (requires amulet)")},
+                {new recKeyChord(KEY_F, false, true), (FastPlayProc, "F - Fast Play ON / OFF")},
+                {new recKeyChord(KEY_HELP, false, true), (HelpProc, "? - Show help screen")},
+                {new recKeyChord(KEY_T, false, true), (RemoveArmorProc, "R - Remove armor")},
+                {new recKeyChord(KEY_W, false, true), (WearArmorProc, "W - Wear armor")},
+                {new recKeyChord(KEY_SOUTH, false, false), (SouthProc, "Down arrow - Move south")},
+                {new recKeyChord(KEY_WEST, false, false), (WestProc, "Left arrow - Move west")},
+                {new recKeyChord(KEY_NORTH, false, false), (NorthProc, "Up arrow - Move north")},
+                {new recKeyChord(KEY_EAST, false, false), (EastProc, "Right arrow - Move east")},
+                {new recKeyChord(KEY_Q, false, false), (QuaffProc, "q - Quaff potion")},
+                {new recKeyChord(KEY_R, false, false), (ReadProc, "r - Read scroll")},
+                {new recKeyChord(KEY_S, false, false), (SearchProc, "s - Search for item")},
+                {new recKeyChord(KEY_E, false, false), (EatProc, "e - Eat food")},
+                {new recKeyChord(KEY_I, false, false), (DisplayInventory, "i - Show inventory")},
+                {new recKeyChord(KEY_D, false, false), (DropProc, "d - Drop item")},
+                {new recKeyChord(KEY_W, false, false), (WieldProc, "w - Wield a weapon")},
+                {new recKeyChord(KEY_D, true, false), (DevModeProc, "CTRL-D - Dev Mode ON / OFF")},
+                {new recKeyChord(KEY_N, true, false), (NewMapProc, "CTRL-N - Draw new map (Dev mode)")},
+            };
+        }
+
+        #endregion
+
+        #region Procedures
+
+        /// <summary>
+        /// Carries out necessary actions to finish the turn.
+        /// </summary>
+        private void CompleteTurn()
+        {
+            do
+            {
+                // Perform whatever actions needed to complete turn
+                // (i.e. monster moves)
+                foreach (Monster monster in CurrentMap.ActiveMonsters)
+                    MoveMonster(monster);
+
+                // Then, evaluate the player's current condition.
+                EvaluatePlayer();
+                // Increment current turn number
+                CurrentTurn++;
+
+
+                if (CurrentPlayer.Immobile > 0)
+                {
+                    CurrentPlayer.Immobile = CurrentPlayer.Immobile <= CurrentTurn ? 0 : CurrentPlayer.Immobile;
+
+                    if (CurrentPlayer.Immobile == 0) UpdateStatus("You can move again.", false);
+                }
+            } while (CurrentPlayer.Immobile > CurrentTurn);
+        }
+
 
         /// <summary>
         /// Evaluate and adjust all player stats at end of turn.
@@ -352,21 +480,7 @@ namespace RogueGame
             }
         }
 
-        /// <summary>
-        /// Restore current map after viewing another screen.
-        /// </summary>
-        private void RestoreMap()
-        {
-            // Restore the map display.
-            if (GameMode == DisplayMode.Inventory || GameMode == DisplayMode.Help)
-            {
-                GameMode = DisplayMode.Primary;
-                if (DevMode)
-                    CurrentMap.MapCheck();
-                else
-                    CurrentMap.MapText();
-            }
-        }
+
 
         /// <summary>
         /// Change the current map level number.
@@ -404,15 +518,7 @@ namespace RogueGame
 
         }
 
-        /// <summary>
-        /// Dev mode: Change out current map for a new one.
-        /// </summary>
-        private void ReplaceMap()
-        {
-            // Dev mode only - replace the map for testing.
-            CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer);
-            CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
-        }
+
 
         public static string CapitalFirstLetter(string Text)
         {
@@ -778,42 +884,6 @@ namespace RogueGame
 
         #endregion
 
-        /// <summary>
-        /// Primary constructor for starting new game.
-        /// </summary>
-        /// <param name="PlayerName"></param>
-        public Game(string PlayerName) {
-
-            // Setup a new game with a map and a player.
-            // Put the player on the map and set the opening status.
-            
-            this.CurrentLevel = 1;            
-            // Create new player.
-            this.CurrentPlayer = new Player(PlayerName);
-            // Initialize inventory with code names
-            InitializeInventory();
-            // Initialize possible commands
-            InitializeCommands();
-            // Generate the new map, add player and shroud the map.
-            this.CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer);
-            //this.CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
-            this.CurrentMap.ShroudMap();
-
-            // Activate the player's current room.
-            this.CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
-
-            // Set starting turn and show welcome message.
-            this.CurrentTurn = 1;
-            this.GameMode = DisplayMode.Primary;
-            UpdateStatus($"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ... (Press ? for list of commands.)", false);
-
-            // Set the current screen display.
-            if (DevMode)
-                this.CurrentMap.MapCheck();
-            else
-                this.CurrentMap.MapText();    
-        }
-
         #region Command Keys
         /// <summary>
         /// Method for responding to key presses.
@@ -876,32 +946,7 @@ namespace RogueGame
 
         #region KeyProcs
 
-        private void InitializeCommands()
-        {
-            // Create searchable dictionary of key commands and delegates to methods.
-            KeyActions = new Dictionary<recKeyChord, (Action, string)>
-            {
-                {new recKeyChord(KEY_DOWNLEVEL, false, true), (DownStairsProc, "> - Go downstairs")},
-                {new recKeyChord(KEY_UPLEVEL, false, true), (UpstairsProc, "< - Go upstairs (requires amulet)")},
-                {new recKeyChord(KEY_F, false, true), (FastPlayProc, "F - Fast Play ON / OFF")},
-                {new recKeyChord(KEY_HELP, false, true), (HelpProc, "? - Show help screen")},
-                {new recKeyChord(KEY_T, false, true), (RemoveArmorProc, "R - Remove armor")},
-                {new recKeyChord(KEY_W, false, true), (WearArmorProc, "W - Wear armor")},
-                {new recKeyChord(KEY_SOUTH, false, false), (SouthProc, "Down arrow - Move south")},
-                {new recKeyChord(KEY_WEST, false, false), (WestProc, "Left arrow - Move west")},
-                {new recKeyChord(KEY_NORTH, false, false), (NorthProc, "Up arrow - Move north")},
-                {new recKeyChord(KEY_EAST, false, false), (EastProc, "Right arrow - Move east")},
-                {new recKeyChord(KEY_Q, false, false), (QuaffProc, "q - Quaff potion")},
-                {new recKeyChord(KEY_R, false, false), (ReadProc, "r - Read scroll")},
-                {new recKeyChord(KEY_S, false, false), (SearchProc, "s - Search for item")},
-                {new recKeyChord(KEY_E, false, false), (EatProc, "e - Eat food")},
-                {new recKeyChord(KEY_I, false, false), (DisplayInventory, "i - Show inventory")},
-                {new recKeyChord(KEY_D, false, false), (DropProc, "d - Drop item")},
-                {new recKeyChord(KEY_W, false, false), (WieldProc, "w - Wield a weapon")},
-                {new recKeyChord(KEY_D, true, false), (DevModeProc, "CTRL-D - Dev Mode ON / OFF")},
-                {new recKeyChord(KEY_N, true, false), (NewMapProc, "CTRL-N - Draw new map (Dev mode)")},
-            };
-        }
+
 
         private void WieldProc()
         {
@@ -1118,31 +1163,6 @@ namespace RogueGame
 
             UpdateStatus(status, false);
         }
-
-        /// <summary>
-        /// Bring up inventory screen for viewing.
-        /// </summary>
-        public void DisplayInventory()
-        {
-            string screenText = "Inventory List\n\n";
-            // Switch the screen to the player's inventory.
-            GameMode = DisplayMode.Inventory;
-            
-            foreach (InventoryLine line in InventoryDisplay(CurrentPlayer.PlayerInventory))
-                if (line.InvItem == CurrentPlayer.Armor)
-                    screenText += line.Description + " (being worn)\n";  // current armor
-                else if (CurrentPlayer.Wielding != null && line.InvItem == CurrentPlayer.Wielding)
-                    screenText += line.Description + " (wielding)\n";  // weapon
-                else if (CurrentPlayer.RightHand != null && line.InvItem == CurrentPlayer.RightHand)
-                    screenText += line.Description + " (on right hand)\n";  // ring
-                else if (CurrentPlayer.LeftHand != null && line.InvItem == CurrentPlayer.LeftHand)
-                    screenText += line.Description + " (on left hand)\n";  // ring
-                else
-                    screenText += line.Description + "\n";
-            
-            this.CurrentMap.UpdateDisplayFromText(screenText);
-        }
-
 
         /// <summary>
         /// Wear specified armor.
@@ -1577,7 +1597,6 @@ namespace RogueGame
         #endregion
 
         #region Scroll Methods
-
 
         public bool ScrollOfIdentify(char? ListItem)
         {
