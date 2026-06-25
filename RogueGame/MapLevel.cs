@@ -114,9 +114,9 @@ namespace RogueGame{
         /// </summary>
         private const int ROOM_GOLD_PCT = 51; 
         /// <summary>
-        /// Maximum inventory in a room.
+        /// Maximum inventory on a level.
         /// </summary>
-        private const int MAX_INVENTORY = 3;
+        private const int MAX_INVENTORY = 20;
         /// <summary>
         /// Maximum number of initial monsters on a level.
         /// </summary>
@@ -279,6 +279,9 @@ namespace RogueGame{
             // Add a random number of monsters to start.
             AddMonsters(rand.Next(MAX_INIT_MONSTERS));
 
+            // Add a random number of inventory items.
+            AddInventory(rand.Next(MAX_INVENTORY));
+
             // Add stairway
             stairway = GetOpenSpace(false);
             levelMap[stairway.X, stairway.Y] = new MapSpace(STAIRWAY, stairway.X, stairway.Y);
@@ -313,6 +316,36 @@ namespace RogueGame{
         }
 
         /// <summary>
+        /// Add specified number of inventory items to map.
+        /// </summary>
+        /// <param name="Number"></param>
+        public void AddInventory(int Number)
+        {            
+            Inventory invItem;
+            MapSpace itemSpace;
+            int startingCount = MapInventory.Count;
+
+            // Add up to the number of specified inventory items.
+            while (MapInventory.Count < startingCount + Number)
+            {
+                itemSpace = GetOpenSpace(false);
+                invItem = Inventory.GetInventoryItem(itemSpace);
+
+                // Place the inventory according to its chances of showing up.
+                if (rand.Next(1, 101) <= invItem.AppearancePct)
+                {
+                    // For ammunition that's groupable, decide how many items are in the batch.
+                    if (invItem.ItemCategory == Inventory.InvCategory.Ammunition
+                        && invItem.IsGroupable)
+                        invItem.Amount = rand.Next(1, Inventory.MAX_AMMO_BATCH + 1);
+
+                    // Update the space and increment the count.
+                    MapInventory.Add(invItem);
+                }
+            }
+        }
+
+        /// <summary>
         /// Create room on map based on inputs
         /// </summary>
         /// <param name="westWallX"></param>
@@ -329,12 +362,6 @@ namespace RogueGame{
             int doorway = 0, doorCount = 0, openX, openY;
 
             bool searchRequired;
-
-            // Inventory variables.
-            int maxInventoryItems = rand.Next(1, MAX_INVENTORY + 1);
-            int mapInventory = 0;
-            Inventory invItem;
-            MapSpace itemSpace;
 
             // Create horizontal and vertical walls for room and fill interior spaces.
             for (int y = northWallY; y <= southWallY; y++)
@@ -411,7 +438,6 @@ namespace RogueGame{
 
             // Set starting point to northwest corner
             openX = westWallX; openY = northWallY;
-            itemSpace = levelMap[openX, openY];
 
             // Evaluate room for a gold deposit
             if (rand.Next(1, 101) < ROOM_GOLD_PCT)
@@ -425,34 +451,6 @@ namespace RogueGame{
                 }
 
                 MapInventory.Add(Inventory.GetInventoryItem(Inventory.InvCategory.Gold, levelMap[openX, openY]));
-            }
-
-            // Add up to the number of specified inventory items.
-            while (mapInventory < maxInventoryItems)
-            {
-                // Look for an interior space that hasn't been used by gold.
-                while (PriorityChar(itemSpace, true).DisplayChar != ROOM_INT.DisplayChar)
-                {
-                    openX = rand.Next(westWallX + 1, eastWallX);
-                    openY = rand.Next(northWallY + 1, southWallY);
-                    itemSpace = levelMap[openX, openY];
-                }
-
-                invItem = Inventory.GetInventoryItem(itemSpace);
-
-                // Place the inventory according to its chances of showing up.
-                if (rand.Next(1, 101) <= invItem.AppearancePct)
-                {
-                    // For ammunition that's groupable, decide how many items are in the batch.
-                    if (invItem.ItemCategory == Inventory.InvCategory.Ammunition
-                        && invItem.IsGroupable)
-                        invItem.Amount = rand.Next(1, Inventory.MAX_AMMO_BATCH + 1);
-
-                    // Update the space and increment the count.
-                    MapInventory.Add(invItem);
-
-                    mapInventory++;
-                }
             }
         }
 
