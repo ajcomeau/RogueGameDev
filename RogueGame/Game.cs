@@ -1515,10 +1515,7 @@ namespace RogueGame
                             readScroll = taskInfo.Invoke();
                         }
 
-
-
-
-                        retValue = true;
+                        retValue = readScroll;
                     }
                 }
                 else
@@ -1536,7 +1533,7 @@ namespace RogueGame
 
         private bool QuaffPotion(char? ListItem)
         {
-            bool retValue = false, readScroll = false;
+            bool retValue = false, quaffPotion = false;
             List<Inventory> items;
 
             if (GameMode != DisplayMode.Inventory)
@@ -1576,20 +1573,18 @@ namespace RogueGame
                     }
                     else
                     {
-                        // Route to the appropriate routine based on the name of the scroll.
-                        switch (items[0].RealName)
-                        {
-                            case "":
+                        // Set the inventory item as identified if necessary.
+                        if (!items[0].IsIdentified) SetInventoryAsIdentified(items[0].PriorityId);
 
-                                break;
-                            default:
-                                break;
+                        // Find and invoke the delegate
+                        if (InventoryActions.TryGetValue((Inventory.InvCategory.Potion, items[0].RealName), out var taskInfo))
+                        {
+                            // Remove the item from the player's inventory and invoke delegate.
+                            CurrentPlayer.PlayerInventory.Remove(items[0]);
+                            quaffPotion = taskInfo.Invoke();
                         }
 
-                        if (readScroll) CurrentPlayer.PlayerInventory.Remove(items[0]);
-
-
-                        retValue = true;
+                        retValue = quaffPotion;
                     }
                 }
                 else
