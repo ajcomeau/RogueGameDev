@@ -508,7 +508,7 @@ namespace RogueGame
             if (allowPass)
             {
                 CurrentLevel += Change;
-                CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer);
+                CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer, GameInventory);
                 CurrentMap.ShroudMap();
                 CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
                 CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
