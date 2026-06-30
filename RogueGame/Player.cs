@@ -145,9 +145,10 @@ namespace RogueGame
         /// Primary constructor for creating new player when game starts.
         /// </summary>
         /// <param name="PlayerName"></param>
-        public Player(string PlayerName) {
+        public Player(string PlayerName, List<Inventory>? AssignedInventory) {
 
-            List<Inventory>? assigned = Inventory.GetAssignedInventory();
+            Inventory dInv = new Inventory(false);
+            List<Inventory>? assigned = AssignedInventory;
 
             // Create a new player object
             var rand = new Random();

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using static RogueGame.Inventory;
 
 namespace RogueGame
@@ -76,6 +77,10 @@ namespace RogueGame
 
         #region Properties
         /// <summary>
+        /// Game level Inventory instance for accessing functions.
+        /// </summary>
+        private Inventory GameInventory { get; }
+        /// <summary>
         /// Current map object being shown.
         /// </summary>
         public MapLevel CurrentMap { get; set; }                    
@@ -126,13 +131,17 @@ namespace RogueGame
         /// Searchable dictionary field to hold possible key presses in game.
         /// </summary>
         private Dictionary<recKeyChord, (Action method, string desc)> KeyActions;
-
+        /// <summary>
+        /// Searchable dictionary field to hold delegates for inventory items.
+        /// </summary>
+        private Dictionary<(Inventory.InvCategory InvCat, string InvName), Func<bool>> InventoryActions; 
         /// <summary>
         /// Random number generator
         /// </summary>
         public static Random rand = new Random();
 
         private bool startTurn = false;
+
         private bool keyHandled = false;
 
         #endregion
@@ -289,7 +298,7 @@ namespace RogueGame
         private void ReplaceMap()
         {
             // Dev mode only - replace the map for testing.
-            CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer);
+            CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer, GameInventory);
             CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
         }
 
@@ -303,7 +312,7 @@ namespace RogueGame
             // Switch the screen to the player's inventory.
             GameMode = DisplayMode.Inventory;
 
-            foreach (InventoryLine line in InventoryDisplay(CurrentPlayer.PlayerInventory))
+            foreach (InventoryLine line in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory))
                 if (line.InvItem == CurrentPlayer.Armor)
                     screenText += line.Description + " (being worn)\n";  // current armor
                 else if (CurrentPlayer.Wielding != null && line.InvItem == CurrentPlayer.Wielding)
@@ -328,19 +337,17 @@ namespace RogueGame
         /// <param name="PlayerName"></param>
         public Game(string PlayerName)
         {
-
+            this.GameInventory = new Inventory(true);
             // Setup a new game with a map and a player.
             // Put the player on the map and set the opening status.
 
             this.CurrentLevel = 1;
             // Create new player.
-            this.CurrentPlayer = new Player(PlayerName);
-            // Initialize inventory with code names
-            InitializeInventory();
+            this.CurrentPlayer = new Player(PlayerName, GameInventory.GetAssignedInventory());
             // Initialize possible commands
             InitializeCommands();
             // Generate the new map, add player and shroud the map.
-            this.CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer);
+            this.CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer, GameInventory);
             //this.CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
             this.CurrentMap.ShroudMap();
 
@@ -387,6 +394,17 @@ namespace RogueGame
                 {new recKeyChord(KEY_D, true, false), (DevModeProc, "CTRL-D - Dev Mode ON / OFF")},
                 {new recKeyChord(KEY_N, true, false), (NewMapProc, "CTRL-N - Draw new map (Dev mode)")},
             };
+
+            //Searchable dictionary field to hold delegates for inventory items.
+            InventoryActions = new Dictionary<(Inventory.InvCategory InvCat, string InvName), Func<bool>>
+            {
+                {(InvCategory.Scroll, "Identify"), ScrollOfIdentifyBegin},
+                {(InvCategory.Scroll, "Magic Mapping"), ScrollOfMagicMapping}
+            };
+            
+            
+            
+
         }
 
         #endregion
@@ -547,9 +565,9 @@ namespace RogueGame
         /// <param name="PriorityID"></param>
         public void SetInventoryAsIdentified(int PriorityID)
         {
-            Inventory? template;
+            Inventory? template = GameInventory.InventoryItems.FirstOrDefault(x => x.PriorityId == PriorityID);
+
             // Set the inventory template as identified
-            template = Inventory.InventoryItems.FirstOrDefault(x => x.PriorityId == PriorityID);
             if (template != null) template.IsIdentified = true;
 
             // Set all instances in the player's inventory as identified.
@@ -1101,7 +1119,7 @@ namespace RogueGame
             else
             {
                 // Get the selected item.
-                items = (from InventoryLine in InventoryDisplay(CurrentPlayer.PlayerInventory)
+                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
                          where InventoryLine.ID == ListItem
                          select InventoryLine.InvItem).ToList();
 
@@ -1201,7 +1219,7 @@ namespace RogueGame
             else
             {
                 // Get the selected item.
-                items = (from InventoryLine in InventoryDisplay(CurrentPlayer.PlayerInventory)
+                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
                          where InventoryLine.ID == ListItem
                          select InventoryLine.InvItem).ToList();
 
@@ -1270,7 +1288,7 @@ namespace RogueGame
             else
             {
                 // Get the selected item.
-                items = (from InventoryLine in InventoryDisplay(CurrentPlayer.PlayerInventory)
+                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
                          where InventoryLine.ID == ListItem
                          select InventoryLine.InvItem).ToList();
 
@@ -1330,7 +1348,7 @@ namespace RogueGame
             }
             else
             {
-                items = (from InventoryLine in InventoryDisplay(CurrentPlayer.PlayerInventory)
+                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
                          where InventoryLine.ID == ListItem
                          select InventoryLine).ToList();
 
@@ -1347,13 +1365,13 @@ namespace RogueGame
                             CurrentPlayer.PlayerInventory =
                                 CurrentPlayer.PlayerInventory.Where(x => x.RealName != items[0].InvItem.RealName).ToList();
 
-                            UpdateStatus($"You dropped {ListingDescription(items[0].Count, items[0].InvItem)}.", false);
+                            UpdateStatus($"You dropped {GameInventory.ListingDescription(items[0].Count, items[0].InvItem)}.", false);
                         }
                         else
                         {
                             items[0].InvItem.Amount = 1;
                             CurrentPlayer.PlayerInventory.Remove(items[0].InvItem);
-                            UpdateStatus($"You dropped {ListingDescription(1, items[0].InvItem)}.", false);
+                            UpdateStatus($"You dropped {GameInventory.ListingDescription(1, items[0].InvItem)}.", false);
                         }
 
                         items[0].InvItem.Location = CurrentPlayer.Location;
@@ -1411,7 +1429,7 @@ namespace RogueGame
                     // Otherwise, if there's an extra slot available, add it.
                     addToInventory = (foundItem.IsGroupable && CurrentPlayer.SearchInventory(foundItem.RealName) != null);
                     if (!addToInventory) addToInventory =
-                            InventoryDisplay(CurrentPlayer.PlayerInventory).Count + 1 <= Player.INVENTORY_LIMIT;
+                            GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory).Count + 1 <= Player.INVENTORY_LIMIT;
 
                     // If the additional inventory fits within the limit, keep the item.
                     // Otherwise, remove it.                
@@ -1422,9 +1440,9 @@ namespace RogueGame
                         foundItem.Amount = 1;
                         // Move the item to the player's inventory.
                         for (int i = 1; i <= itemAmount; i++)
-                            CurrentPlayer.PlayerInventory.Add(GetInventoryItem(foundItem.RealName)!);
+                            CurrentPlayer.PlayerInventory.Add(GameInventory.GetInventoryItem(foundItem.RealName)!);
 
-                        retValue = $"You picked up {ListingDescription(itemAmount, foundItem)}.";
+                        retValue = $"You picked up {GameInventory.ListingDescription(itemAmount, foundItem)}.";
                         CurrentMap.MapInventory.Remove(foundItem);
 
                         if (foundItem.ItemCategory == InvCategory.Amulet)
@@ -1471,7 +1489,7 @@ namespace RogueGame
             else
             {
                 // Get the selected item.
-                items = (from InventoryLine in InventoryDisplay(CurrentPlayer.PlayerInventory)
+                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
                          where InventoryLine.ID == ListItem
                          select InventoryLine.InvItem).ToList();
 
@@ -1486,25 +1504,18 @@ namespace RogueGame
                     }
                     else
                     {
-                        // Route to the appropriate routine based on the name of the scroll.
-                        switch (items[0].RealName)
+                        // Set the inventory item as identified if necessary.
+                        if (!items[0].IsIdentified) SetInventoryAsIdentified(items[0].PriorityId);
+
+                        // Find and invoke the delegate
+                        if (InventoryActions.TryGetValue((Inventory.InvCategory.Scroll, items[0].RealName), out var taskInfo))
                         {
-                            case "Identify":
-                                UpdateStatus("This is a Scroll of Identify. Please select an item to identify.", false);
-                                if (!items[0].IsIdentified) SetInventoryAsIdentified(items[0].PriorityId);
-                                readScroll = ScrollOfIdentify(null);
-                                break;
-                            case "Magic Mapping":
-                                UpdateStatus("This scroll has a map on it!", false);
-                                if (!items[0].IsIdentified) SetInventoryAsIdentified(items[0].PriorityId);
-                                readScroll = CurrentMap.DiscoverMap();
-                                RestoreMap();
-                                break;
-                            default:
-                                break;
+                            // Remove the item from the player's inventory and invoke delegate.
+                            CurrentPlayer.PlayerInventory.Remove(items[0]);
+                            readScroll = taskInfo.Invoke();
                         }
 
-                        if (readScroll) CurrentPlayer.PlayerInventory.Remove(items[0]);
+
 
 
                         retValue = true;
@@ -1550,7 +1561,7 @@ namespace RogueGame
             else
             {
                 // Get the selected item.
-                items = (from InventoryLine in InventoryDisplay(CurrentPlayer.PlayerInventory)
+                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
                          where InventoryLine.ID == ListItem
                          select InventoryLine.InvItem).ToList();
 
@@ -1598,44 +1609,56 @@ namespace RogueGame
 
         #region Scroll Methods
 
-        public bool ScrollOfIdentify(char? ListItem)
+        public bool ScrollOfIdentifyBegin()
         {
-            List<InventoryLine> lines;
             bool retValue = false;
-
-            if (ReturnFunction != ScrollOfIdentify)
-            {
-                DisplayInventory();
-                UpdateStatus("Please select an item to identify.", false);
-                ReturnFunction = ScrollOfIdentify;
-                retValue = true;
-            }
-            else
-            {
-                // Get the selected item.
-                lines = (from InventoryLine in InventoryDisplay(CurrentPlayer.PlayerInventory)
-                            where InventoryLine.ID == ListItem
-                            select InventoryLine).ToList();
-
-                if (lines.Count > 0)
-                {
-                    // Update inventory template to Identified and then update player's inventory.
-                    SetInventoryAsIdentified(lines[0].InvItem.PriorityId);
-                    UpdateStatus(Inventory.ListingDescription(lines[0].Count, lines[0].InvItem), false);
-                }
-                else
-                {
-                    // Process non-existent option.
-                    UpdateStatus("That item doesn't exist.", false);
-                }
-
-                ReturnFunction = null;
-                RestoreMap();
-            }
+            UpdateStatus("This is a Scroll of Identify. Please select an item to identify.", false);
+            DisplayInventory();
+            ReturnFunction = ScrollOfIdentifyEnd;
+            retValue = true;
 
             return retValue;
         }
 
+        private bool ScrollOfIdentifyEnd(char? ListItem)
+        {
+            bool retValue = false;
+            List<InventoryLine> lines;
+            // Get the selected item.
+            lines = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
+                     where InventoryLine.ID == ListItem
+                     select InventoryLine).ToList();
+
+            if (lines.Count > 0)
+            {
+                // Update inventory template to Identified and then update player's inventory.
+                SetInventoryAsIdentified(lines[0].InvItem.PriorityId);
+                UpdateStatus(GameInventory.ListingDescription(lines[0].Count, lines[0].InvItem), false);
+            }
+            else
+            {
+                // Process non-existent option.
+                UpdateStatus("That item doesn't exist.", false);
+            }
+
+            ReturnFunction = null;
+            RestoreMap();
+            retValue = true;
+
+            return retValue;
+
+
+        }
+
+        private bool ScrollOfMagicMapping()
+        {
+            // Reveal entire map
+            UpdateStatus("This scroll has a map on it!", false);
+            CurrentMap.DiscoverMap();
+            RestoreMap();
+
+            return true;
+        }
 
         #endregion
 

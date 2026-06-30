@@ -46,132 +46,16 @@ namespace RogueGame
         /// PriorityID values MUST BE UNIQUE. These will be used to identify the item elsewhere and to order the
         /// items in the inventory listing.
         /// </summary>
-        private static List<Inventory> invItems = new List<Inventory>()
-        {
-            new Inventory(InvCategory.Food, 1, "some food", "some food", "rations of food", new MapGlyph('♣', Color.Red, Color.Black), 20, true),
-            new Inventory(InvCategory.Food, 2, "a mango", "a mango", "mangoes", new MapGlyph('♣', Color.Red, Color.Black), 20, false),
-            new Inventory(InvCategory.Scroll, 3, "", "Identify", "Identify", false, true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('♪', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Scroll, 4, "", "Magic Mapping", "Magic Mapping", false, true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('♪', Color.Blue, Color.Black)),            
-            new Inventory(InvCategory.Armor, 5, "studded leather armor", "studded leather armor", "studded leather armor", false, false, true, false, false, 3, 1, 0, 0, 0, 0, 0, 15, new MapGlyph('◘', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Armor, 6, "leather armor", "leather armor", "leather armor", false, false, false, false, false, 2, 1, 0, 0, 0, 0, 0, 20, new MapGlyph('◘', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Armor, 7, "ring mail", "ring mail", "ring mail", false, false, false, false, false, 3, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('◘', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Armor, 8, "scale mail", "scale mail", "scale mail", false, false, false, false, false, 4, 0, 0, 0, 0, 0, 0, 13, new MapGlyph('◘', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Armor, 9, "chain mail", "chain mail", "chain mail", false, false, false, false, false, 5, 0, 0, 0, 0, 0, 0, 12, new MapGlyph('◘', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Armor, 10, "splint mail", "splint mail", "splint mail", false, false, false, false, false, 6, 0, 0, 0, 0, 0, 0, 10, new MapGlyph('◘', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Armor, 11, "banded mail", "banded mail", "banded mail", false, false, false, false, false, 6, 0, 0, 0, 0, 0, 0, 10, new MapGlyph('◘', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Armor, 12, "plate mail", "plate mail", "plate mail", false, false, false, false, false, 7, 0, 0, 0, 0, 0, 0, 5, new MapGlyph('◘', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Weapon, 13, "mace", "mace", "mace", false, false, true, true, false, 0, 0, 1, 1, 2, 8, -3, 10, new MapGlyph('↑', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Weapon, 14, "short bow", "short bow", "short bow", false, false, true, true, false, 0, 0, 0, 1, 1, 1, 0, 10, new MapGlyph('↑', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Weapon, 15, "crossbow", "crossbow", "crossbow", false, false, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, new MapGlyph('↑', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Weapon, 16, "dagger", "dagger", "dagger", false, false, false, true, false, 0, 0, 0, 1, 1, 4, 2, 10, new MapGlyph('↑', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Weapon, 17, "long sword", "long sword", "long sword", false, false, false, true, false, 0, 0, 0, 1, 3, 12, -10, 10, new MapGlyph('↑', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Weapon, 18, "spear", "spear", "spear", false, false, false, true, false, 0, 0, 0, 1, 1, 8, -2, 10, new MapGlyph('↑', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Weapon, 19, "two-handed sword", "two-handed sword", "two-handed sword", false, false, false, true, false, 0, 0, 0, 1, 4, 16, -14, 10, new MapGlyph('↑', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Ammunition, 20, "arrow", "arrow", "arrows", false, true, true, true, false, 0, 0, 0, 0, 1, 1, 4, 10, new MapGlyph('↑', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Ammunition, 21, "crossbow bolt", "crossbow bolt", "crossbow bolts", false, true, false, true, false, 0, 0, 0, 0, 1,2, 8, 10, new MapGlyph('↑', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Ammunition, 22, "dart", "dart", "darts", false, true, false, true, false, 0, 0, 0, 0, 1, 1, 2, 10, new MapGlyph('↑', Color.Blue, Color.Black)),
-            new Inventory(InvCategory.Amulet, 23, "The Amulet", "The Amulet", "The Amulet", true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 0, new MapGlyph(MapLevel.AMULET.DisplayChar, Color.Yellow, Color.Black)),
-            new Inventory(InvCategory.Gold, 24, "gold", "gold", "gold", true, true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, new MapGlyph('*', Color.Gold, Color.Black))
-        };
+        private List<Inventory> invItems;
 
         /// <summary>
         /// Read-only collection of inventory templates.
         /// </summary>
-        public static ReadOnlyCollection<Inventory> InventoryItems => invItems.AsReadOnly();
-
+        public ReadOnlyCollection<Inventory> InventoryItems => invItems.AsReadOnly();
         /// <summary>
         /// List to contain potential code names for non-identified items.
         /// </summary>
-        private static List<Tuple<InvCategory, string>> CodeNames = new List<Tuple<InvCategory, string>>()
-        {
-            new Tuple<InvCategory, string>(InvCategory.Ring, "agate"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "adamite"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "amethyst"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "beryl"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "bloodstone"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "carnelian"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "diamond"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "emerald"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "garnet"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "iolite"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "jade"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "lapi-lazuli"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "moonstone"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "onyx"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "opal"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "pearl"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "sapphire"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "stibotantalite"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "tiger-eye"),
-            new Tuple<InvCategory, string>(InvCategory.Ring, "turquoise"),
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Forsan et haec olim meminisse iuvabit."), // Perhaps even these things will be pleasing to remember one day.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Ab antiquo"), // From antiquity
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Acta deos numquam mortalia fallunt."), // Mortal deeds never deceive the gods.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Ad astra per aspera"), // To the stars through difficulties
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Aquila non capit muscas."), // The eagle does not catch flies
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Audentes fortuna iuvat."), // Fortune favors the brave.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Audi, vide, tace."), // Hear, see, be silent.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Aurum potestas est."),  // Gold is power.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Carpe noctem."), // Seize the night.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Charta pardonationis utlagariae"), // A letter of pardon for the outlaw.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Comedamus et bibamus, cras enim moriemur."), // Let us eat and drink for tomorrow we die.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Cuncti adsint meritaeque expectent praemia palmae."), // Let all come who by merit deserve the most reward
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Defendit numerus"), // Safety in numbers.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Descensus in cuniculi cavum"), // The descent into the cave of the rabbit (Down the rabbit hole)
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Dies tenebrosa sicut nox"),  // A day as dark as night.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Ducunt volentem fata, nolentem trahunt."), // Fates lead the willing, drag the unwilling.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Troglodytae dormientes titillari non debent."), // Sleeping trolls should not be tickled.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Dum vivimus, vivamus."),  // While we live, let us live.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Heu, fugaces labuntur horae!"), // Alas the fleeting hours slip away.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Errare humanum est."), // To err is human.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Videre nec videre."), // To see and not be seen.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Experientia docet."),  // Experience teaches.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Faber est suae quisque fortunae."), // every man is the artisan of his own fortune
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Fac fortia et patere."), // Do brave deeds and endure.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Factum fieri infectum non potest."), // It is impossible for a deed to be undone.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Fortis cadere, cedere non potest."), // The brave may fall but cannot yield.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Hic sunt monstra."), // Here there be monsters.
-            new Tuple<InvCategory, string>(InvCategory.Scroll, "Ignis aurum probat."), // Fire tests gold.
-            new Tuple<InvCategory, string>(InvCategory.Wand, "copper"),
-            new Tuple<InvCategory, string>(InvCategory.Wand, "gold"),
-            new Tuple<InvCategory, string>(InvCategory.Wand, "iron"),
-            new Tuple<InvCategory, string>(InvCategory.Wand, "nickel"),
-            new Tuple<InvCategory, string>(InvCategory.Wand, "silver"),
-            new Tuple<InvCategory, string>(InvCategory.Wand, "titanium"),
-            new Tuple<InvCategory, string>(InvCategory.Wand, "steel"),
-            new Tuple<InvCategory, string>(InvCategory.Wand, "aluminum"),
-            new Tuple<InvCategory, string>(InvCategory.Wand, "brass"),
-            new Tuple<InvCategory, string>(InvCategory.Wand, "bronze"),
-            new Tuple<InvCategory, string>(InvCategory.Wand, "glass"),
-            new Tuple<InvCategory, string>(InvCategory.Wand, "granite"),
-            new Tuple<InvCategory, string>(InvCategory.Wand, "platinum"),
-            new Tuple<InvCategory, string>(InvCategory.Staff, "birch"),
-            new Tuple<InvCategory, string>(InvCategory.Staff, "cedar"),
-            new Tuple<InvCategory, string>(InvCategory.Staff, "elm"),
-            new Tuple<InvCategory, string>(InvCategory.Staff, "maple"),
-            new Tuple<InvCategory, string>(InvCategory.Staff, "redwood"),
-            new Tuple<InvCategory, string>(InvCategory.Staff, "teak"),
-            new Tuple<InvCategory, string>(InvCategory.Staff, "walnut"),
-            new Tuple<InvCategory, string>(InvCategory.Staff, "pine"),
-            new Tuple<InvCategory, string>(InvCategory.Staff, "oak"),
-            new Tuple<InvCategory, string>(InvCategory.Staff, "dogwood"),
-            new Tuple<InvCategory, string>(InvCategory.Staff, "fir"),
-            new Tuple<InvCategory, string>(InvCategory.Staff, "acacia"),
-            new Tuple<InvCategory, string>(InvCategory.Potion, "crimson"),
-            new Tuple<InvCategory, string>(InvCategory.Potion, "blue"),
-            new Tuple<InvCategory, string>(InvCategory.Potion, "green"),
-            new Tuple<InvCategory, string>(InvCategory.Potion, "brown"),
-            new Tuple<InvCategory, string>(InvCategory.Potion, "orange"),
-            new Tuple<InvCategory, string>(InvCategory.Potion, "jade"),
-            new Tuple<InvCategory, string>(InvCategory.Potion, "pale"),
-            new Tuple<InvCategory, string>(InvCategory.Potion, "electric blue"),
-            new Tuple<InvCategory, string>(InvCategory.Potion, "pink"),
-            new Tuple<InvCategory, string>(InvCategory.Potion, "clear"),
-            new Tuple<InvCategory, string>(InvCategory.Potion, "black"),
-        };
-
-
-
+        private List<Tuple<InvCategory, string>> CodeNames;
         /// <summary>
         /// Maximum turns gained from food ration.
         /// </summary>
@@ -268,11 +152,26 @@ namespace RogueGame
         /// Location of the item on the map.
         /// </summary>
         public MapSpace Location { get; set; }
-
-
+        /// <summary>
+        /// Delegate function for inventory effects
+        /// </summary>
+        public Func<object, object?, string>? DelegateFunction { get; set; }
         #endregion
 
         #region Procedures
+        /// <summary>
+        /// Creates a dummy inventory object for use by Game class.
+        /// </summary>
+        public Inventory(bool InitInventory)
+        {
+            // Setup inventory list with random code names.
+            if (InitInventory) { 
+                LoadCodeNames();
+                LoadInventory();
+                InitializeInventory();
+            }
+        }
+
 
         /// <summary>
         /// Clone a new object off of another. To be used with inventory object templates.
@@ -299,7 +198,8 @@ namespace RogueGame
             this.MaxDamage = Original.MaxDamage;
             this.ThrowingBonus = Original.ThrowingBonus;
             this.AppearancePct = Original.AppearancePct;
-            this.DisplayCharacter = Original.DisplayCharacter;
+            this.DisplayCharacter = Original.DisplayCharacter;            
+            this.DelegateFunction = Original.DelegateFunction;
         }
 
         // TODO:  Create category-specific constructors.
@@ -329,7 +229,7 @@ namespace RogueGame
         /// <param name="Zap">Delegate function for staffs and wands</param>
         public Inventory(InvCategory InvType, int PriorityID, string CodeName, string RealName, string PluralName, bool Identified,
             bool Groupable, bool Assigned, bool Wieldable, bool Cursed, int ArmorClass, int Increment, int DamageInc, int AccuracyInc,
-            int MinDamage, int MaxDamage, int ThrowingBonus, int AppearancePct, MapGlyph DisplayChar)
+            int MinDamage, int MaxDamage, int ThrowingBonus, int AppearancePct, MapGlyph DisplayChar, Func<object, object, string>? DelFunc = null)
         {
             // Apply parameters
             this.ItemCategory = InvType; 
@@ -351,6 +251,7 @@ namespace RogueGame
             this.ThrowingBonus = ThrowingBonus;
             this.AppearancePct = AppearancePct;
             this.DisplayCharacter = DisplayChar;
+            this.DelegateFunction = DelFunc;
         }
 
         /// <summary>
@@ -387,7 +288,7 @@ namespace RogueGame
             this.IsIdentified = (this.RealName == this.CodeName || (int)this.ItemCategory > 5);
         }
 
-        public static void InitializeInventory()
+        public void InitializeInventory()
         {
             List<Tuple<InvCategory, string>> names = new List<Tuple<InvCategory, string>>();
             Tuple<InvCategory, string> code;
@@ -395,7 +296,7 @@ namespace RogueGame
             // For every inventory template that is marked as non-identified, select a random
             // code name from the same category and then remove it from the list.
 
-            foreach (Inventory item in InventoryItems)
+            foreach (Inventory item in invItems)
             {
                 if (!item.IsIdentified)
                 {
@@ -410,12 +311,138 @@ namespace RogueGame
             }
         }
 
+        private void LoadCodeNames()
+        {
+            // Instantiate code names list
+            this.CodeNames =
+            new List<Tuple<InvCategory, string>>()
+            {
+                new Tuple<InvCategory, string>(InvCategory.Ring, "agate"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "adamite"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "amethyst"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "beryl"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "bloodstone"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "carnelian"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "diamond"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "emerald"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "garnet"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "iolite"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "jade"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "lapi-lazuli"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "moonstone"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "onyx"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "opal"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "pearl"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "sapphire"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "stibotantalite"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "tiger-eye"),
+                new Tuple<InvCategory, string>(InvCategory.Ring, "turquoise"),
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Forsan et haec olim meminisse iuvabit."), // Perhaps even these things will be pleasing to remember one day.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Ab antiquo"), // From antiquity
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Acta deos numquam mortalia fallunt."), // Mortal deeds never deceive the gods.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Ad astra per aspera"), // To the stars through difficulties
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Aquila non capit muscas."), // The eagle does not catch flies
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Audentes fortuna iuvat."), // Fortune favors the brave.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Audi, vide, tace."), // Hear, see, be silent.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Aurum potestas est."),  // Gold is power.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Carpe noctem."), // Seize the night.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Charta pardonationis utlagariae"), // A letter of pardon for the outlaw.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Comedamus et bibamus, cras enim moriemur."), // Let us eat and drink for tomorrow we die.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Cuncti adsint meritaeque expectent praemia palmae."), // Let all come who by merit deserve the most reward
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Defendit numerus"), // Safety in numbers.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Descensus in cuniculi cavum"), // The descent into the cave of the rabbit (Down the rabbit hole)
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Dies tenebrosa sicut nox"),  // A day as dark as night.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Ducunt volentem fata, nolentem trahunt."), // Fates lead the willing, drag the unwilling.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Troglodytae dormientes titillari non debent."), // Sleeping trolls should not be tickled.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Dum vivimus, vivamus."),  // While we live, let us live.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Heu, fugaces labuntur horae!"), // Alas the fleeting hours slip away.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Errare humanum est."), // To err is human.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Videre nec videre."), // To see and not be seen.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Experientia docet."),  // Experience teaches.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Faber est suae quisque fortunae."), // every man is the artisan of his own fortune
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Fac fortia et patere."), // Do brave deeds and endure.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Factum fieri infectum non potest."), // It is impossible for a deed to be undone.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Fortis cadere, cedere non potest."), // The brave may fall but cannot yield.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Hic sunt monstra."), // Here there be monsters.
+                new Tuple<InvCategory, string>(InvCategory.Scroll, "Ignis aurum probat."), // Fire tests gold.
+                new Tuple<InvCategory, string>(InvCategory.Wand, "copper"),
+                new Tuple<InvCategory, string>(InvCategory.Wand, "gold"),
+                new Tuple<InvCategory, string>(InvCategory.Wand, "iron"),
+                new Tuple<InvCategory, string>(InvCategory.Wand, "nickel"),
+                new Tuple<InvCategory, string>(InvCategory.Wand, "silver"),
+                new Tuple<InvCategory, string>(InvCategory.Wand, "titanium"),
+                new Tuple<InvCategory, string>(InvCategory.Wand, "steel"),
+                new Tuple<InvCategory, string>(InvCategory.Wand, "aluminum"),
+                new Tuple<InvCategory, string>(InvCategory.Wand, "brass"),
+                new Tuple<InvCategory, string>(InvCategory.Wand, "bronze"),
+                new Tuple<InvCategory, string>(InvCategory.Wand, "glass"),
+                new Tuple<InvCategory, string>(InvCategory.Wand, "granite"),
+                new Tuple<InvCategory, string>(InvCategory.Wand, "platinum"),
+                new Tuple<InvCategory, string>(InvCategory.Staff, "birch"),
+                new Tuple<InvCategory, string>(InvCategory.Staff, "cedar"),
+                new Tuple<InvCategory, string>(InvCategory.Staff, "elm"),
+                new Tuple<InvCategory, string>(InvCategory.Staff, "maple"),
+                new Tuple<InvCategory, string>(InvCategory.Staff, "redwood"),
+                new Tuple<InvCategory, string>(InvCategory.Staff, "teak"),
+                new Tuple<InvCategory, string>(InvCategory.Staff, "walnut"),
+                new Tuple<InvCategory, string>(InvCategory.Staff, "pine"),
+                new Tuple<InvCategory, string>(InvCategory.Staff, "oak"),
+                new Tuple<InvCategory, string>(InvCategory.Staff, "dogwood"),
+                new Tuple<InvCategory, string>(InvCategory.Staff, "fir"),
+                new Tuple<InvCategory, string>(InvCategory.Staff, "acacia"),
+                new Tuple<InvCategory, string>(InvCategory.Potion, "crimson"),
+                new Tuple<InvCategory, string>(InvCategory.Potion, "blue"),
+                new Tuple<InvCategory, string>(InvCategory.Potion, "green"),
+                new Tuple<InvCategory, string>(InvCategory.Potion, "brown"),
+                new Tuple<InvCategory, string>(InvCategory.Potion, "orange"),
+                new Tuple<InvCategory, string>(InvCategory.Potion, "jade"),
+                new Tuple<InvCategory, string>(InvCategory.Potion, "pale"),
+                new Tuple<InvCategory, string>(InvCategory.Potion, "electric blue"),
+                new Tuple<InvCategory, string>(InvCategory.Potion, "pink"),
+                new Tuple<InvCategory, string>(InvCategory.Potion, "clear"),
+                new Tuple<InvCategory, string>(InvCategory.Potion, "black"),
+            };
+        }
+
+        private void LoadInventory()
+        {
+            // Load inventory items into this instance of the class.
+            this.invItems = new List<Inventory>()
+            { 
+                new Inventory(InvCategory.Food, 1, "some food", "some food", "rations of food", new MapGlyph('♣', Color.Red, Color.Black), 20, true),
+                new Inventory(InvCategory.Food, 2, "a mango", "a mango", "mangoes", new MapGlyph('♣', Color.Red, Color.Black), 20, false),
+                new Inventory(InvCategory.Scroll, 3, "", "Identify", "Identify", false, true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('♪', Color.Blue, Color.Black), null ),
+                new Inventory(InvCategory.Scroll, 4, "", "Magic Mapping", "Magic Mapping", false, true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('♪', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Armor, 5, "studded leather armor", "studded leather armor", "studded leather armor", false, false, true, false, false, 3, 1, 0, 0, 0, 0, 0, 15, new MapGlyph('◘', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Armor, 6, "leather armor", "leather armor", "leather armor", false, false, false, false, false, 2, 1, 0, 0, 0, 0, 0, 20, new MapGlyph('◘', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Armor, 7, "ring mail", "ring mail", "ring mail", false, false, false, false, false, 3, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('◘', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Armor, 8, "scale mail", "scale mail", "scale mail", false, false, false, false, false, 4, 0, 0, 0, 0, 0, 0, 13, new MapGlyph('◘', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Armor, 9, "chain mail", "chain mail", "chain mail", false, false, false, false, false, 5, 0, 0, 0, 0, 0, 0, 12, new MapGlyph('◘', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Armor, 10, "splint mail", "splint mail", "splint mail", false, false, false, false, false, 6, 0, 0, 0, 0, 0, 0, 10, new MapGlyph('◘', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Armor, 11, "banded mail", "banded mail", "banded mail", false, false, false, false, false, 6, 0, 0, 0, 0, 0, 0, 10, new MapGlyph('◘', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Armor, 12, "plate mail", "plate mail", "plate mail", false, false, false, false, false, 7, 0, 0, 0, 0, 0, 0, 5, new MapGlyph('◘', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Weapon, 13, "mace", "mace", "mace", false, false, true, true, false, 0, 0, 1, 1, 2, 8, -3, 10, new MapGlyph('↑', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Weapon, 14, "short bow", "short bow", "short bow", false, false, true, true, false, 0, 0, 0, 1, 1, 1, 0, 10, new MapGlyph('↑', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Weapon, 15, "crossbow", "crossbow", "crossbow", false, false, false, true, false, 0, 0, 0, 1, 1, 1, 0, 10, new MapGlyph('↑', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Weapon, 16, "dagger", "dagger", "dagger", false, false, false, true, false, 0, 0, 0, 1, 1, 4, 2, 10, new MapGlyph('↑', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Weapon, 17, "long sword", "long sword", "long sword", false, false, false, true, false, 0, 0, 0, 1, 3, 12, -10, 10, new MapGlyph('↑', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Weapon, 18, "spear", "spear", "spear", false, false, false, true, false, 0, 0, 0, 1, 1, 8, -2, 10, new MapGlyph('↑', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Weapon, 19, "two-handed sword", "two-handed sword", "two-handed sword", false, false, false, true, false, 0, 0, 0, 1, 4, 16, -14, 10, new MapGlyph('↑', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Ammunition, 20, "arrow", "arrow", "arrows", false, true, true, true, false, 0, 0, 0, 0, 1, 1, 4, 10, new MapGlyph('↑', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Ammunition, 21, "crossbow bolt", "crossbow bolt", "crossbow bolts", false, true, false, true, false, 0, 0, 0, 0, 1,2, 8, 10, new MapGlyph('↑', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Ammunition, 22, "dart", "dart", "darts", false, true, false, true, false, 0, 0, 0, 0, 1, 1, 2, 10, new MapGlyph('↑', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Amulet, 23, "The Amulet", "The Amulet", "The Amulet", true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 0, new MapGlyph(MapLevel.AMULET.DisplayChar, Color.Yellow, Color.Black), null),
+                new Inventory(InvCategory.Gold, 24, "gold", "gold", "gold", true, true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, new MapGlyph('*', Color.Gold, Color.Black), null)
+            };
+        }
+
+
         /// <summary>
         /// Generates grouped inventory listing for inventory display screen.
         /// </summary>
         /// <param name="PlayerInventory"></param>
         /// <returns></returns>
-        public static List<InventoryLine> InventoryDisplay(List<Inventory> PlayerInventory)
+        public List<InventoryLine> InventoryDisplay(List<Inventory> PlayerInventory)
         {
             char charID = 'a';
 
@@ -465,7 +492,7 @@ namespace RogueGame
         /// <param name="Number">Number of items in inventory slot</param>
         /// <param name="Item">Actual item</param>
         /// <returns></returns>
-        public static string ListingDescription(int Number, Inventory Item)
+        public string ListingDescription(int Number, Inventory Item)
         {
             // Single function to create inventory listing description for item and 
             // handle all the grammatical adjustments.
@@ -553,7 +580,7 @@ namespace RogueGame
         /// </summary>
         /// <param name="ItemName">Real name of item.</param>
         /// <returns></returns>
-        public static Inventory? GetInventoryItem(string ItemName)
+        public Inventory? GetInventoryItem(string ItemName)
         {
             
             List<Inventory> retList = (from Inventory item in InventoryItems
@@ -569,7 +596,7 @@ namespace RogueGame
         /// </summary>
         /// <param name="InvType">Specific category</param>
         /// <returns></returns>
-        public static Inventory GetInventoryItem(InvCategory InvType, MapSpace Location)
+        public Inventory GetInventoryItem(InvCategory InvType, MapSpace Location)
         {
             Inventory returnVal;
 
@@ -589,7 +616,7 @@ namespace RogueGame
         /// Generates random item from inventory template list.
         /// </summary>
         /// <returns></returns>
-        public static Inventory GetInventoryItem(MapSpace Location)
+        public Inventory GetInventoryItem(MapSpace Location)
         {
             Inventory returnVal;
 
@@ -609,10 +636,10 @@ namespace RogueGame
         /// Get the list of inventory assigned at the start of the game.
         /// </summary>
         /// <returns></returns>
-        public static List<Inventory>? GetAssignedInventory()
+        public List<Inventory>? GetAssignedInventory()
         {
 
-            List<Inventory> retList = (from Inventory item in InventoryItems
+            List<Inventory> retList = (from Inventory item in this.InventoryItems
                                        where item.IsAssigned
                                        select item).ToList();
 

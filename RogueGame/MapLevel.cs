@@ -166,13 +166,15 @@ namespace RogueGame{
         private Player CurrentPlayer { get; }
         #endregion
 
+        private Inventory GameInventory { get; }
         /// <summary>
         /// Constructor - generate a new map for this level.
         /// </summary>
-        public MapLevel(int levelNumber, Player currentPlayer)
+        public MapLevel(int levelNumber, Player currentPlayer, Inventory GameInventory)
         {
             this.CurrentLevel = levelNumber;
             this.CurrentPlayer = currentPlayer;
+            this.GameInventory = GameInventory;
 
             do
             {
@@ -288,7 +290,7 @@ namespace RogueGame{
 
             // Add Amulet to final level.
             if (CurrentLevel == Game.MAX_LEVEL)
-                MapInventory.Add(Inventory.GetInventoryItem(Inventory.InvCategory.Amulet, GetOpenSpace(false)));
+                MapInventory.Add(GameInventory.GetInventoryItem(Inventory.InvCategory.Amulet, GetOpenSpace(false)));
         }
 
         public void AddMonsters(int Number)
@@ -329,7 +331,7 @@ namespace RogueGame{
             while (MapInventory.Count < startingCount + Number)
             {
                 itemSpace = GetOpenSpace(false);
-                invItem = Inventory.GetInventoryItem(itemSpace);
+                invItem = GameInventory.GetInventoryItem(itemSpace);
 
                 // Place the inventory according to its chances of showing up.
                 if (rand.Next(1, 101) <= invItem.AppearancePct)
@@ -450,7 +452,7 @@ namespace RogueGame{
                     openY = rand.Next(northWallY + 1, southWallY);
                 }
 
-                MapInventory.Add(Inventory.GetInventoryItem(Inventory.InvCategory.Gold, levelMap[openX, openY]));
+                MapInventory.Add(GameInventory.GetInventoryItem(Inventory.InvCategory.Gold, levelMap[openX, openY]));
             }
         }
 
