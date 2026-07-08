@@ -918,6 +918,24 @@ namespace RogueGame{
             return retValue;
         }
 
+        public bool DiscoverFood()
+        {
+            // Set all the food on the map to discovered and visible.
+            bool retValue = false;
+            
+            List<Inventory> mapInventory = (from Inventory inv in MapInventory
+                                     where inv.ItemCategory == Inventory.InvCategory.Food
+                                     select inv).ToList();
+
+            mapInventory.ForEach(inv => {                
+                inv.Location.Discovered = true; inv.Location.Visible = true;
+                inv.Location.SearchRequired = false; inv.Location.AltMapCharacter = null;
+                retValue = true;
+            });
+
+            return retValue;
+        }
+
 
         /// <summary>
         /// Return region number 1 through 9 based on map point.

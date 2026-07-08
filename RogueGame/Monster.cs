@@ -40,7 +40,7 @@ namespace RogueGame
             new Monster("Medusa"        , 8, 64, 5, 100, 19, 26, 50, 8, 34, new MapGlyph('M', Color.LightGray, Color.Black), 0, null, true, 50, false),
             new Monster("Nymph"         , 3, 24, 5, 37, 11, 20, 50, 0, 0, new MapGlyph('N', Color.LightGray, Color.Black), 0, null, true, 50, false),
             new Monster("Orc"           , 1, 8, 3, 5, 4, 13, 50, 1, 8, new MapGlyph('O', Color.LightGray, Color.Black), 0, null, true, 50, false),
-            new Monster("Phantom"       , 8, 64, 9, 4000, 20, 26, 50, 4, 16, new MapGlyph('P', Color.LightGray, Color.Black), 0, null, true, 50, false),
+            new Monster("Phantom"       , 8, 64, 9, 4000, 20, 26, 50, 4, 16, new MapGlyph('P', Color.Black, Color.Black), 0, null, true, 50, false),
             new Monster("Quagga"        , 3, 24, 9, 32, 10, 19, 50, 2, 10, new MapGlyph('Q', Color.LightGray, Color.Black), 0, null, true, 50, false),
             new Monster("Rattlesnake"   , 2, 16, 5, 20, 9, 18, 50, 1, 6, new MapGlyph('R', Color.LightGray, Color.Black), 0, null, true, 50, false),
             new Monster("Snake"         , 1, 8, 2, 2, 1, 9, 50, 1, 3, new MapGlyph('S', Color.LightGray, Color.Black), 0, null, true, 50, false),

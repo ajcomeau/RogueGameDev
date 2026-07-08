@@ -396,14 +396,14 @@ namespace RogueGame
             };
 
             //Searchable dictionary field to hold delegates for inventory items.
-            InventoryActions = new Dictionary<(Inventory.InvCategory InvCat, string InvName), Func<bool>>
+            InventoryActions = new Dictionary<(InvCategory InvCat, string InvName), Func<bool>>
             {
                 {(InvCategory.Scroll, "Identify"), ScrollOfIdentifyBegin},
-                {(InvCategory.Scroll, "Magic Mapping"), ScrollOfMagicMapping}
+                {(InvCategory.Scroll, "Magic Mapping"), ScrollOfMagicMapping},
+                {(InvCategory.Scroll, "Enchant Armor"), ScrollOfEnchantArmor},
+                {(InvCategory.Scroll, "Enchant Weapon"), ScrollOfEnchantWeapon},
+                {(InvCategory.Scroll, "Food Detection"), ScrollOfFoodDetection}
             };
-            
-            
-            
 
         }
 
@@ -915,6 +915,7 @@ namespace RogueGame
             // Putting a break point in this function to test causes it to lose keystrokes
             // following CTRL and SHIFT so they're not being sent here on their own anymore.
             Action? method;
+            keyHandled = false;
             char lowerCase = char.ToLower((char)KeyVal);
 
             if (KeyVal == KEY_ESC)
@@ -941,13 +942,16 @@ namespace RogueGame
                     break;
             }
 
-            // Shift, Ctrl and Basic combinations
-            if (GameMode == DisplayMode.Primary)
+            if (!keyHandled)
             {
-                if (KeyActions.TryGetValue(new recKeyChord(KeyVal, Control, Shift), out var taskInfo))
-                    taskInfo.method.Invoke();
+                // Shift, Ctrl and Basic combinations
+                if (GameMode == DisplayMode.Primary)
+                {
+                    if (KeyActions.TryGetValue(new recKeyChord(KeyVal, Control, Shift), out var taskInfo))
+                        taskInfo.method.Invoke();
 
-                keyHandled = true;
+                    keyHandled = true;
+                }
             }
 
             // Complete turn if one was started.
@@ -1517,15 +1521,18 @@ namespace RogueGame
 
                         retValue = readScroll;
                     }
+
                 }
                 else
                 {
                     // Process non-existent option.
                     UpdateStatus("Please select something to read.", false);
-                    RestoreMap();
+                    
                     ReturnFunction = null;
                     retValue = false;
                 }
+
+                RestoreMap();
             }
 
             return retValue;
@@ -1591,10 +1598,11 @@ namespace RogueGame
                 {
                     // Process non-existent option.
                     UpdateStatus("Please select something to drink.", false);
-                    RestoreMap();
                     ReturnFunction = null;
                     retValue = false;
                 }
+
+                RestoreMap();
             }
 
             return retValue;
@@ -1637,7 +1645,6 @@ namespace RogueGame
             }
 
             ReturnFunction = null;
-            RestoreMap();
             retValue = true;
 
             return retValue;
@@ -1650,9 +1657,48 @@ namespace RogueGame
             // Reveal entire map
             UpdateStatus("This scroll has a map on it!", false);
             CurrentMap.DiscoverMap();
-            RestoreMap();
 
             return true;
+        }
+
+        private bool ScrollOfEnchantArmor()
+        {
+            // Raise the player's current armor by one level.
+            if(CurrentPlayer.Armor != null) {
+                UpdateStatus($"Your armor has been upgraded to class {CurrentPlayer.Armor.ArmorClass++}.", false);
+            }
+            else
+                UpdateStatus($"This is a scroll of enchant armor. Alas, you aren't wearing any.", false);
+
+            return true;
+        }
+
+        private bool ScrollOfEnchantWeapon()
+        {
+            // Increase the damage for the player's current weapon.
+            if (CurrentPlayer.Wielding != null)
+            {
+                CurrentPlayer.Wielding.DmgIncrement++;
+                UpdateStatus($"Your {CurrentPlayer.Wielding.RealName} gives off a bright flash of light.", false);
+            }
+            else
+                UpdateStatus($"This is a scroll of enchant weapon. Too bad you aren't wielding one.", false);
+
+            return true;
+        }
+
+        private bool ScrollOfFoodDetection()
+        {
+            bool retValue = false;
+            // Reveal all the food on the map.
+            retValue = CurrentMap.DiscoverFood();
+            
+            if (retValue) 
+                UpdateStatus("Your nose tingles as you smell food nearby.", false);
+            else
+                UpdateStatus("You hear a growling noise very close to you.", false);
+
+            return retValue;
         }
 
         #endregion
