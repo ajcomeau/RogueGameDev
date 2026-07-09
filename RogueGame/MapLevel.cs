@@ -12,6 +12,22 @@ namespace RogueGame{
     {
         #region Supporting Lists
         /// <summary>
+        /// Box drawing constants and other symbols.
+        /// </summary>
+        public static readonly MapGlyph HORIZONTAL = new MapGlyph('═', Color.SaddleBrown, Color.Black);      // Unicode symbols can be copy-pasted from https://www.w3.org/TR/xml-entity-names/025.html.  
+        public static readonly MapGlyph VERTICAL = new MapGlyph('║', Color.SaddleBrown, Color.Black);
+        public static readonly MapGlyph CORNER_NW = new MapGlyph('╔', Color.SaddleBrown, Color.Black);
+        public static readonly MapGlyph CORNER_SE = new MapGlyph('╝', Color.SaddleBrown, Color.Black);
+        public static readonly MapGlyph CORNER_NE = new MapGlyph('╗', Color.SaddleBrown, Color.Black);
+        public static readonly MapGlyph CORNER_SW = new MapGlyph('╚', Color.SaddleBrown, Color.Black);
+        public static readonly MapGlyph ROOM_INT = new MapGlyph('·', Color.Gray, Color.Black);
+        public static readonly MapGlyph ROOM_DOOR = new MapGlyph('╬', Color.SaddleBrown, Color.Black);
+        public static readonly MapGlyph HALLWAY = new MapGlyph('▒', Color.White, Color.Black);
+        public static readonly MapGlyph STAIRWAY = new MapGlyph('≣', Color.Black, Color.Green);
+        public static readonly MapGlyph GOLD = new MapGlyph('*', Color.LightYellow, Color.Black);
+        public static readonly MapGlyph AMULET = new MapGlyph('♀', Color.Yellow, Color.Black);
+        public static readonly MapGlyph EMPTY = new MapGlyph(' ', Color.Black, Color.Black);
+        /// <summary>
         /// Array to hold map definitions.
         /// </summary>
         private MapSpace[,] levelMap = new MapSpace[80, 25]; // Internal game map.
@@ -52,22 +68,6 @@ namespace RogueGame{
             South = -1,
             West = -2
         }
-        /// <summary>
-        /// Box drawing constants and other symbols.
-        /// </summary>
-        public static readonly MapGlyph HORIZONTAL = new MapGlyph('═', Color.SaddleBrown, Color.Black);      // Unicode symbols can be copy-pasted from https://www.w3.org/TR/xml-entity-names/025.html.  
-        public static readonly MapGlyph VERTICAL = new MapGlyph('║', Color.SaddleBrown, Color.Black);
-        public static readonly MapGlyph CORNER_NW = new MapGlyph('╔', Color.SaddleBrown, Color.Black);
-        public static readonly MapGlyph CORNER_SE = new MapGlyph('╝', Color.SaddleBrown, Color.Black);
-        public static readonly MapGlyph CORNER_NE = new MapGlyph('╗', Color.SaddleBrown, Color.Black);
-        public static readonly MapGlyph CORNER_SW = new MapGlyph('╚', Color.SaddleBrown, Color.Black);
-        public static readonly MapGlyph ROOM_INT = new MapGlyph('·', Color.Gray, Color.Black);
-        public static readonly MapGlyph ROOM_DOOR = new MapGlyph('╬', Color.SaddleBrown, Color.Black);
-        public static readonly MapGlyph HALLWAY = new MapGlyph('▒', Color.White, Color.Black);
-        public static readonly MapGlyph STAIRWAY = new MapGlyph('≣', Color.Black, Color.Green);
-        public static readonly MapGlyph GOLD = new MapGlyph('*', Color.LightYellow, Color.Black);
-        public static readonly MapGlyph AMULET = new MapGlyph('♀', Color.Yellow, Color.Black);
-        public static readonly MapGlyph EMPTY = new MapGlyph(' ', Color.Black, Color.Black);
         /// <summary>
         /// Max gold amount per stash.
         /// </summary>

@@ -402,7 +402,8 @@ namespace RogueGame
                 {(InvCategory.Scroll, "Magic Mapping"), ScrollOfMagicMapping},
                 {(InvCategory.Scroll, "Enchant Armor"), ScrollOfEnchantArmor},
                 {(InvCategory.Scroll, "Enchant Weapon"), ScrollOfEnchantWeapon},
-                {(InvCategory.Scroll, "Food Detection"), ScrollOfFoodDetection}
+                {(InvCategory.Scroll, "Food Detection"), ScrollOfFoodDetection},
+                {(InvCategory.Scroll, "Light"), ScrollOfLight}
             };
 
         }
@@ -1239,7 +1240,6 @@ namespace RogueGame
                         // If the player selects a valid item, add it as their armor and decide if it's cursed.
                         CurrentPlayer.Armor = items[0];
                         CurrentPlayer.Armor.IsCursed = rand.Next(1, 101) <= ITEM_CURSE_PROB ? true : false;
-                        RestoreMap();
                         UpdateStatus($"You are now wearing {items[0].RealName}.", false);
                         retValue = true;
                     }
@@ -1248,12 +1248,13 @@ namespace RogueGame
                 {
                     // Process non-existent option.
                     UpdateStatus("Please select some armor to wear.", false);
-                    RestoreMap();
                     retValue = false;
                 }
 
                 ReturnFunction = null;
             }
+
+            if (ReturnFunction == null) RestoreMap();
 
             return retValue;
         }
@@ -1312,7 +1313,6 @@ namespace RogueGame
                         CurrentPlayer.HungerTurn += foodValue;
                         CurrentPlayer.HungerState = Player.HungerLevel.Satisfied;
                         CurrentPlayer.PlayerInventory.Remove(items[0]);
-                        RestoreMap();
                         UpdateStatus("Mmmm, that hit the spot.", false);
                         // Reward a strength point if needed.
                         if (CurrentPlayer.StrengthMod > 0) CurrentPlayer.StrengthMod--;
@@ -1323,13 +1323,13 @@ namespace RogueGame
                 {
                     // Process non-existent option.
                     UpdateStatus("Please select something to eat.", false);
-                    RestoreMap();
                     retValue = false;
                 }
 
                 ReturnFunction = null;
             }
 
+            if (ReturnFunction == null) RestoreMap();
             return retValue;
         }
 
@@ -1380,7 +1380,6 @@ namespace RogueGame
 
                         items[0].InvItem.Location = CurrentPlayer.Location;
                         CurrentMap.MapInventory.Add(items[0].InvItem);
-                        RestoreMap();
                         retValue = true;
                     }
                     else
@@ -1392,12 +1391,13 @@ namespace RogueGame
                 else
                 {
                     UpdateStatus("Please select an inventory item to drop.", false);
-                    RestoreMap();
                     retValue = false;
                 }
 
                 ReturnFunction = null;
             }
+
+            if (ReturnFunction == null) RestoreMap();
 
             return retValue;
         }
@@ -1532,7 +1532,7 @@ namespace RogueGame
                     retValue = false;
                 }
 
-                RestoreMap();
+                if(ReturnFunction == null) RestoreMap();
             }
 
             return retValue;
@@ -1602,7 +1602,7 @@ namespace RogueGame
                     retValue = false;
                 }
 
-                RestoreMap();
+                if (ReturnFunction == null) RestoreMap();
             }
 
             return retValue;
@@ -1649,7 +1649,6 @@ namespace RogueGame
 
             return retValue;
 
-
         }
 
         private bool ScrollOfMagicMapping()
@@ -1657,7 +1656,8 @@ namespace RogueGame
             // Reveal entire map
             UpdateStatus("This scroll has a map on it!", false);
             CurrentMap.DiscoverMap();
-
+            ReturnFunction = null;
+            
             return true;
         }
 
@@ -1666,10 +1666,12 @@ namespace RogueGame
             // Raise the player's current armor by one level.
             if(CurrentPlayer.Armor != null) {
                 UpdateStatus($"Your armor has been upgraded to class {CurrentPlayer.Armor.ArmorClass++}.", false);
+                CurrentPlayer.Armor.IsCursed = false;
             }
             else
                 UpdateStatus($"This is a scroll of enchant armor. Alas, you aren't wearing any.", false);
 
+            ReturnFunction = null;
             return true;
         }
 
@@ -1685,6 +1687,7 @@ namespace RogueGame
             else
                 UpdateStatus($"This is a scroll of enchant weapon. Too bad you aren't wielding one.", false);
 
+            ReturnFunction = null;
             return true;
         }
 
@@ -1699,8 +1702,22 @@ namespace RogueGame
             else
                 UpdateStatus("You hear a growling noise very close to you.", false);
 
+            ReturnFunction = null;
             return retValue;
         }
+
+
+        private bool ScrollOfLight()
+        {
+            // Reveal the current room.
+            CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
+
+            UpdateStatus("The entire room is lighted by an unearthly glow.", false);
+            ReturnFunction = null;
+
+            return true;
+        }
+
 
         #endregion
 
