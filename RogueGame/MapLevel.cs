@@ -10,8 +10,37 @@ namespace RogueGame{
 
     internal class MapLevel
     {
+        #region Supporting Lists
+        /// <summary>
+        /// Array to hold map definitions.
+        /// </summary>
+        private MapSpace[,] levelMap = new MapSpace[80, 25]; // Internal game map.
+        public MapGlyph[,] DisplayMap = new MapGlyph[80, 25]; // Map to be shown to user.
+        /// <summary>
+        /// List of characters that will be marked as Visible during map discovery.
+        /// </summary>
+        private static List<char> MapDiscovery = new List<char>(){HORIZONTAL.DisplayChar, VERTICAL.DisplayChar,
+            CORNER_NW.DisplayChar, CORNER_SE.DisplayChar, CORNER_NE.DisplayChar, CORNER_SW.DisplayChar,
+            ROOM_DOOR.DisplayChar, HALLWAY.DisplayChar, STAIRWAY.DisplayChar};
+        /// <summary>
+        /// List of characters that occur inside a room.
+        /// </summary>
+        private static List<char> RoomInterior = new List<char>(){ROOM_DOOR.DisplayChar, ROOM_INT.DisplayChar,
+            STAIRWAY.DisplayChar };
+        /// <summary>
+        /// List of characters a player or monster can move onto.
+        /// </summary>
+        public static List<char> SpacesAllowed = new List<char>(){ROOM_INT.DisplayChar, STAIRWAY.DisplayChar,
+            ROOM_DOOR.DisplayChar, HALLWAY.DisplayChar };
+        /// <summary>
+        /// List of characters that can be moved past on Fast Play.
+        /// </summary>
+        private static List<char> GlideSpaces = new List<char>(){ROOM_INT.DisplayChar, HORIZONTAL.DisplayChar,
+            VERTICAL.DisplayChar, CORNER_NE.DisplayChar, CORNER_NW.DisplayChar, CORNER_SE.DisplayChar,
+            CORNER_SW.DisplayChar, HALLWAY.DisplayChar, EMPTY.DisplayChar};
+        #endregion
 
-        #region Constant and Properties
+        #region Constants, Properties
         /// <summary>
         /// Enumeration used to establish relative directions.
         /// </summary>
@@ -39,7 +68,6 @@ namespace RogueGame{
         public static readonly MapGlyph GOLD = new MapGlyph('*', Color.LightYellow, Color.Black);
         public static readonly MapGlyph AMULET = new MapGlyph('♀', Color.Yellow, Color.Black);
         public static readonly MapGlyph EMPTY = new MapGlyph(' ', Color.Black, Color.Black);
-
         /// <summary>
         /// Max gold amount per stash.
         /// </summary>
@@ -52,15 +80,6 @@ namespace RogueGame{
         /// Probability of a monster appearing at any given point.
         /// </summary>
         public const int SPAWN_MONSTER = 90;
-        /// <summary>
-        /// Random number generator
-        /// </summary>
-        private static Random rand = new Random();
-        /// <summary>
-        /// Dictionary to hold hallway endings during map generation.
-        /// </summary>
-        private Dictionary<MapSpace, Direction> deadEnds =
-            new Dictionary<MapSpace, Direction>();
         /// <summary>
         /// Width of region holding single room.
         /// </summary>
@@ -122,27 +141,9 @@ namespace RogueGame{
         /// </summary>
         private const int MAX_INIT_MONSTERS = 15;
         /// <summary>
-        /// List of characters that will be marked as Visible during map discovery.
+        /// Random number generator
         /// </summary>
-        private static List<char> MapDiscovery = new List<char>(){HORIZONTAL.DisplayChar, VERTICAL.DisplayChar,
-            CORNER_NW.DisplayChar, CORNER_SE.DisplayChar, CORNER_NE.DisplayChar, CORNER_SW.DisplayChar, 
-            ROOM_DOOR.DisplayChar, HALLWAY.DisplayChar, STAIRWAY.DisplayChar};
-        /// <summary>
-        /// List of characters that occur inside a room.
-        /// </summary>
-        private static List<char> RoomInterior = new List<char>(){ROOM_DOOR.DisplayChar, ROOM_INT.DisplayChar, 
-            STAIRWAY.DisplayChar };
-        /// <summary>
-        /// List of characters a player or monster can move onto.
-        /// </summary>
-        public static List<char> SpacesAllowed = new List<char>(){ROOM_INT.DisplayChar, STAIRWAY.DisplayChar, 
-            ROOM_DOOR.DisplayChar, HALLWAY.DisplayChar };
-        /// <summary>
-        /// List of characters that can be moved past on Fast Play.
-        /// </summary>
-        private static List<char> GlideSpaces = new List<char>(){ROOM_INT.DisplayChar, HORIZONTAL.DisplayChar, 
-            VERTICAL.DisplayChar, CORNER_NE.DisplayChar, CORNER_NW.DisplayChar, CORNER_SE.DisplayChar, 
-            CORNER_SW.DisplayChar, HALLWAY.DisplayChar, EMPTY.DisplayChar};
+        private static Random rand = new Random();
         /// <summary>
         /// List of monsters on current map.
         /// </summary>
@@ -152,11 +153,6 @@ namespace RogueGame{
         /// </summary>
         public List<Inventory> MapInventory = new List<Inventory>();
         /// <summary>
-        /// Array to hold map definitions.
-        /// </summary>
-        private MapSpace[,] levelMap = new MapSpace[80, 25]; // Internal game map.
-        public MapGlyph[,] DisplayMap = new MapGlyph[80, 25]; // Map to be shown to user.
-        /// <summary>
         /// Current game level
         /// </summary>
         private int CurrentLevel { get; set; }
@@ -164,9 +160,18 @@ namespace RogueGame{
         /// Reference to current player to get location and anything else needed.
         /// </summary>
         private Player CurrentPlayer { get; }
+        /// <summary>
+        /// Dictionary to hold hallway endings during map generation.
+        /// </summary>
+        private Dictionary<MapSpace, Direction> deadEnds =
+            new Dictionary<MapSpace, Direction>();
+        /// <summary>
+        /// Class inventory object to be used as reference to game inventory instance.
+        /// </summary>
+        private Inventory GameInventory { get; }
+
         #endregion
 
-        private Inventory GameInventory { get; }
         /// <summary>
         /// Constructor - generate a new map for this level.
         /// </summary>
@@ -183,7 +188,6 @@ namespace RogueGame{
             
             this.CurrentPlayer.Location = GetOpenSpace(false);
         }
-
         /// <summary>
         /// Verify that the generate map is free of isolated rooms or sections.
         /// </summary>
@@ -292,7 +296,10 @@ namespace RogueGame{
             if (CurrentLevel == Game.MAX_LEVEL)
                 MapInventory.Add(GameInventory.GetInventoryItem(Inventory.InvCategory.Amulet, GetOpenSpace(false)));
         }
-
+        /// <summary>
+        /// Add a specific number of monsters to the map.
+        /// </summary>
+        /// <param name="Number"></param>
         public void AddMonsters(int Number)
         {
             Monster? spawned;
@@ -316,7 +323,6 @@ namespace RogueGame{
                 }
             }
         }
-
         /// <summary>
         /// Add specified number of inventory items to map.
         /// </summary>
@@ -346,7 +352,6 @@ namespace RogueGame{
                 }
             }
         }
-
         /// <summary>
         /// Create room on map based on inputs
         /// </summary>
@@ -455,7 +460,6 @@ namespace RogueGame{
                 MapInventory.Add(GameInventory.GetInventoryItem(Inventory.InvCategory.Gold, levelMap[openX, openY]));
             }
         }
-
         /// <summary>
         /// Create hallways between all the existing rooms.
         /// </summary>
@@ -527,7 +531,6 @@ namespace RogueGame{
                 }
             }
         }        
-
         /// <summary>
         /// Draw a hallway between specified spaces.  Break off if another hallway
             /// is discovered to the side.
@@ -573,7 +576,6 @@ namespace RogueGame{
             }
 
         }        
-
         /// <summary>
         /// Raise the fog of war and hide the map.
         /// </summary>
@@ -589,7 +591,6 @@ namespace RogueGame{
                 space.Visible = false;
             }
         }
-
         /// <summary>
         /// Return direction 90 degrees from original based on forward direction.
         /// </summary>
@@ -600,7 +601,6 @@ namespace RogueGame{
             Direction retValue = (Math.Abs((int)startingDirection) == 1) ? (Direction)2 : (Direction)1;
             return retValue;
         }
-
         /// <summary>
         /// Return direction 270 degrees from original (opposite of 90 degrees) based on forward direction.
         /// </summary>
@@ -612,7 +612,6 @@ namespace RogueGame{
             retValue = (Direction)((int)retValue * -1);
             return retValue;
         }
-
         /// <summary>
         /// Return direction 180 degrees from original (opposite) based on forward direction.
         /// </summary>
@@ -622,8 +621,6 @@ namespace RogueGame{
         {
             return (Direction)((int)startingDirection * -1); 
         }
-
-
         /// <summary>
         /// Search for specific character in four directions around point for a specific character. 
         /// Return list of directions and characters found.
@@ -651,7 +648,6 @@ namespace RogueGame{
             return retValue;
 
         }
-
         /// <summary>
         /// Search in four directions around point. Return list of directions and characters found.
         /// </summary>
@@ -677,7 +673,6 @@ namespace RogueGame{
 
             return retValue;
         }
-
         /// <summary>
         /// Look in all directions and return a Dictionary of the first non-space characters found.
         /// </summary>
@@ -695,7 +690,6 @@ namespace RogueGame{
 
             return retValue;
         }
-
         /// <summary>
         /// Get the next non-space object found in a given direction. Return null if none is found.
         /// </summary>
@@ -738,7 +732,11 @@ namespace RogueGame{
 
             return retValue;
         }
-
+        /// <summary>
+        /// Look for and return an inventory item at a specific location.
+        /// </summary>
+        /// <param name="Location"></param>
+        /// <returns></returns>
         public Inventory? DetectInventory(MapSpace Location)
         {
             Inventory? foundItem = (from Inventory inv in MapInventory
@@ -748,7 +746,6 @@ namespace RogueGame{
 
             return foundItem;
         }
-
         /// <summary>
         /// Search for a monster at a specific location based on the locations
         /// recorded in the ActiveMonsters list.
@@ -765,8 +762,6 @@ namespace RogueGame{
             
             return foundMonster;
         }
-
-
         /// <summary>
         /// Get the highest priority character for display to the user.
         /// </summary>
@@ -795,7 +790,6 @@ namespace RogueGame{
 
             return retValue;
         }
-
         /// <summary>
         /// Return a list of all spaces around given space in eight directions.
         /// </summary>
@@ -811,7 +805,6 @@ namespace RogueGame{
 
             return surrounding;
         }
-
         /// <summary>
         /// Return a random open space on the map.
         /// </summary>
@@ -831,7 +824,6 @@ namespace RogueGame{
 
             return spaces[rand.Next(0, spaces.Count)];
         }
-
         /// <summary>
         /// For all room spaces in region, set Discovered = True and 
         /// Visible according to ROOM_LIGHTED probability
@@ -868,7 +860,6 @@ namespace RogueGame{
                 }
             }
         }
-
         /// <summary>
         /// Set surrounding spaces to Discovered.  Return True if there's something in one of them.
         /// </summary>
@@ -902,7 +893,10 @@ namespace RogueGame{
 
             return retValue;
         }
-
+        /// <summary>
+        /// Set the entire map to discovered and visible.
+        /// </summary>
+        /// <returns></returns>
         public bool DiscoverMap()
         {
             // Set the entire map to discovered and visible.
@@ -917,7 +911,10 @@ namespace RogueGame{
 
             return retValue;
         }
-
+        /// <summary>
+        /// Show all the food on the map.
+        /// </summary>
+        /// <returns></returns>
         public bool DiscoverFood()
         {
             // Set all the food on the map to discovered and visible.
@@ -935,8 +932,6 @@ namespace RogueGame{
 
             return retValue;
         }
-
-
         /// <summary>
         /// Return region number 1 through 9 based on map point.
         /// </summary>
@@ -960,7 +955,6 @@ namespace RogueGame{
 
             return returnVal;
         }
-
         /// <summary>
         /// Get northwest and south east corners of region based on X,Y coordintes.
         /// </summary>
@@ -979,7 +973,6 @@ namespace RogueGame{
 
             return new Tuple<MapSpace, MapSpace>(levelMap[xTopLeft, yTopLeft], levelMap[xBottomRight, yBottomRight]);
         }
-
         /// <summary>
         /// Get northwest and south east corners of specific region.
         /// </summary>
@@ -1000,7 +993,6 @@ namespace RogueGame{
 
             return new Tuple<MapSpace, MapSpace>(levelMap[xTopLeft, yTopLeft], levelMap[xBottomRight, yBottomRight]);
         }
-
         /// <summary>
         /// For Dev mode. Output the array to text for display with no alternate characters and everything visible.
         /// </summary>
@@ -1019,31 +1011,6 @@ namespace RogueGame{
 
             return DisplayMap;
         }
-
-        /// <summary>
-        /// Reads directly from monster and inventory lists to provide a list
-        /// of the occupied spaces.
-        /// </summary>
-        /// <returns></returns>
-        public List<MapSpace> CurrentMapItems()
-        {
-            List<MapSpace> retList = new List<MapSpace>();
-
-            // Add the current player's location.
-            if(CurrentPlayer.Location != null)
-                retList.Add(CurrentPlayer.Location);
-
-            // Add the monsters.
-            foreach (Monster monster in ActiveMonsters)
-                retList.Add(monster.Location!);
-
-            // Add inventory
-            foreach (Inventory item in MapInventory)
-                retList.Add(item.Location!);
-
-            return retList;
-        }
-
         /// <summary>
         /// Output the array to text for display.
         /// </summary>
@@ -1097,7 +1064,33 @@ namespace RogueGame{
 
             return DisplayMap;
         }
+        /// <summary>
+        /// Reads directly from monster and inventory lists to provide a list
+        /// of the occupied spaces.
+        /// </summary>
+        /// <returns></returns>
+        public List<MapSpace> CurrentMapItems()
+        {
+            List<MapSpace> retList = new List<MapSpace>();
 
+            // Add the current player's location.
+            if (CurrentPlayer.Location != null)
+                retList.Add(CurrentPlayer.Location);
+
+            // Add the monsters.
+            foreach (Monster monster in ActiveMonsters)
+                retList.Add(monster.Location!);
+
+            // Add inventory
+            foreach (Inventory item in MapInventory)
+                retList.Add(item.Location!);
+
+            return retList;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="TextOutput"></param>
         public void UpdateDisplayFromText(string TextOutput)
         {
             string[] lines = TextOutput.Split('\n');
@@ -1126,9 +1119,7 @@ namespace RogueGame{
                 nx = 0;
                 ny += 1;
             }
-        }
-
-    }
+        }    }
 
     /// <summary>
     /// Class to hold information for a specific space on the map.

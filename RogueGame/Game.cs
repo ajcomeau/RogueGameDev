@@ -1679,6 +1679,7 @@ namespace RogueGame
             if (CurrentPlayer.Wielding != null)
             {
                 CurrentPlayer.Wielding.DmgIncrement++;
+                CurrentPlayer.Wielding.IsCursed = false;
                 UpdateStatus($"Your {CurrentPlayer.Wielding.RealName} gives off a bright flash of light.", false);
             }
             else
