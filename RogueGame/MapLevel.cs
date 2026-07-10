@@ -860,6 +860,31 @@ namespace RogueGame{
                 }
             }
         }
+
+        public void LightUpRoom(int xPos, int yPos)
+        {
+            // Get region limits
+            Tuple<MapSpace, MapSpace> corners = GetRegionLimits(xPos, yPos);
+
+            Debug.WriteLine($"Opening room {corners.Item1.X}, {corners.Item1.Y} to " +
+                $"{corners.Item2.X}, {corners.Item2.Y} in region " +
+                $"{GetRegionNumber(corners.Item1.X, corners.Item1.Y)}");
+
+            // For all room spaces in region, set Discovered = True and 
+            // Visible. Leave HALLWAY spaces alone and just focus on rooms.
+            for (int y = corners.Item1.Y; y <= corners.Item2.Y; y++)
+            {
+                for (int x = corners.Item1.X; x <= corners.Item2.X; x++)
+                {
+                    if (levelMap[x, y].MapCharacter.DisplayChar != HALLWAY.DisplayChar)
+                    {
+                        levelMap[x, y].Discovered = true;
+                        levelMap[x, y].Visible = true;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Set surrounding spaces to Discovered.  Return True if there's something in one of them.
         /// </summary>
@@ -924,9 +949,8 @@ namespace RogueGame{
                                      where inv.ItemCategory == Inventory.InvCategory.Food
                                      select inv).ToList();
 
-            mapInventory.ForEach(inv => {                
+            mapInventory.ForEach(inv => {
                 inv.Location.Discovered = true; inv.Location.Visible = true;
-                inv.Location.SearchRequired = false; inv.Location.AltMapCharacter = null;
                 retValue = true;
             });
 

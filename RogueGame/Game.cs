@@ -23,6 +23,7 @@ namespace RogueGame
         private const int KEY_R = 82;
         private const int KEY_S = 83;
         private const int KEY_D = 68;
+        private const int KEY_H = 72;
         private const int KEY_N = 78;
         private const int KEY_E = 69;
         private const int KEY_I = 73;
@@ -104,6 +105,10 @@ namespace RogueGame
         /// Developer mode ON / OFF
         /// </summary>
         public bool DevMode { get; set; }
+        /// <summary>
+        /// Hulk Mode - Monsters killed with a single punch
+        /// </summary>
+        public bool HulkMode { get; set; }
         /// <summary>
         /// Fast Play mode ON / OFF
         /// </summary>
@@ -393,6 +398,7 @@ namespace RogueGame
                 {new recKeyChord(KEY_W, false, false), (WieldProc, "w - Wield a weapon")},
                 {new recKeyChord(KEY_D, true, false), (DevModeProc, "CTRL-D - Dev Mode ON / OFF")},
                 {new recKeyChord(KEY_N, true, false), (NewMapProc, "CTRL-N - Draw new map (Dev mode)")},
+                {new recKeyChord(KEY_H, true, false), (HulkModeProc, "CTRL-H - Hulk mode (cheat)")},
             };
 
             //Searchable dictionary field to hold delegates for inventory items.
@@ -407,6 +413,8 @@ namespace RogueGame
             };
 
         }
+
+
 
         #endregion
 
@@ -693,8 +701,9 @@ namespace RogueGame
             Inventory? weapon = CurrentPlayer.Wielding;
 
             // Chance of landing a punch - 30% + (5% * XP level) - (5% * monster armor class).
+            // Hulk mode can be used for testing - certain punch with immediate kill.
             hitChance = 50 + (5 * CurrentPlayer.ExpLevel) - (5 * Defender.ArmorClass);
-            hitSuccess = rand.Next(1, 101) <= hitChance;
+            hitSuccess = HulkMode ? true : rand.Next(1, 101) <= hitChance;
 
             // Either way, if the monster wasn't angry before, it sure is now.
             Defender.CurrentState = Monster.Activity.Angered;
@@ -710,7 +719,7 @@ namespace RogueGame
             if (hitSuccess)
             {
                 UpdateStatus($"You hit the {Defender.MonsterName.ToLower()}.", false);
-                damage = rand.Next(minDamage, maxDamage + 1);
+                damage = HulkMode ? Defender.MaxHP : rand.Next(minDamage, maxDamage + 1);
             }
             else UpdateStatus($"You missed the {Defender.MonsterName.ToLower()}.", false);
 
@@ -1041,6 +1050,16 @@ namespace RogueGame
             // Show new map if in Dev mode.
             if (DevMode)
                 ReplaceMap();
+        }
+
+
+        private void HulkModeProc()
+        {
+            // Enable / disable hulk mode.
+            // Monsters killed with a single punch.
+            HulkMode = !HulkMode;
+            UpdateStatus(HulkMode ? "Hulk Mode ON" : "Hulk Mode OFF", false);
+
         }
 
         private void DevModeProc()
@@ -1706,14 +1725,14 @@ namespace RogueGame
             return retValue;
         }
 
-
         private bool ScrollOfLight()
         {
             // Reveal the current room.
-            CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
-
+            CurrentMap.LightUpRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
             UpdateStatus("The entire room is lighted by an unearthly glow.", false);
+
             ReturnFunction = null;
+
 
             return true;
         }
