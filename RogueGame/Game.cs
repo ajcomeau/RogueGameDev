@@ -701,7 +701,7 @@ namespace RogueGame
             Inventory? weapon = CurrentPlayer.Wielding;
 
             // Chance of landing a punch - 30% + (5% * XP level) - (5% * monster armor class).
-            // Hulk mode can be used for testing - certain punch with immediate kill.
+            // Hulk mode can be used for "testing" - certain punch with immediate kill.
             hitChance = 50 + (5 * CurrentPlayer.ExpLevel) - (5 * Defender.ArmorClass);
             hitSuccess = HulkMode ? true : rand.Next(1, 101) <= hitChance;
 
@@ -1682,9 +1682,9 @@ namespace RogueGame
 
         private bool ScrollOfEnchantArmor()
         {
-            // Raise the player's current armor by one level.
+            // Raise the player's current armor by one level and remove any curse.
             if(CurrentPlayer.Armor != null) {
-                UpdateStatus($"Your armor has been upgraded to class {CurrentPlayer.Armor.ArmorClass++}.", false);
+                UpdateStatus($"Your armor's rating has been upgraded to {CurrentPlayer.Armor.ArmorClass + ++CurrentPlayer.Armor.Increment}.", false);
                 CurrentPlayer.Armor.IsCursed = false;
             }
             else
@@ -1729,7 +1729,7 @@ namespace RogueGame
         {
             // Reveal the current room.
             CurrentMap.LightUpRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
-            UpdateStatus("The entire room is lighted by an unearthly glow.", false);
+            UpdateStatus("The entire room is lit by an unearthly glow.", false);
 
             ReturnFunction = null;
 

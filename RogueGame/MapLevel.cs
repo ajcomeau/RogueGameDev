@@ -10,6 +10,8 @@ namespace RogueGame{
 
     internal class MapLevel
     {
+        /* See https://www.andrewcomeau.com/programming/testing-mapping-review/ for an general overview of the MapLevel class */
+
         #region Supporting Lists
         /// <summary>
         /// Box drawing constants and other symbols.
@@ -33,7 +35,7 @@ namespace RogueGame{
         private MapSpace[,] levelMap = new MapSpace[80, 25]; // Internal game map.
         public MapGlyph[,] DisplayMap = new MapGlyph[80, 25]; // Map to be shown to user.
         /// <summary>
-        /// List of characters that will be marked as Visible during map discovery.
+        /// List of characters that will be marked as Lighted during map discovery.
         /// </summary>
         private static List<char> MapDiscovery = new List<char>(){HORIZONTAL.DisplayChar, VERTICAL.DisplayChar,
             CORNER_NW.DisplayChar, CORNER_SE.DisplayChar, CORNER_NE.DisplayChar, CORNER_SW.DisplayChar,
@@ -54,6 +56,19 @@ namespace RogueGame{
         private static List<char> GlideSpaces = new List<char>(){ROOM_INT.DisplayChar, HORIZONTAL.DisplayChar,
             VERTICAL.DisplayChar, CORNER_NE.DisplayChar, CORNER_NW.DisplayChar, CORNER_SE.DisplayChar,
             CORNER_SW.DisplayChar, HALLWAY.DisplayChar, EMPTY.DisplayChar};
+        /// <summary>
+        /// Dictionary to hold hallway endings during map generation.
+        /// </summary>
+        private Dictionary<MapSpace, Direction> deadEnds =
+            new Dictionary<MapSpace, Direction>();
+        /// <summary>
+        /// List of monsters on current map.
+        /// </summary>
+        public List<Monster> ActiveMonsters = new List<Monster>();
+        /// <summary>
+        /// List of inventory on current map, including gold.
+        /// </summary>
+        public List<Inventory> MapInventory = new List<Inventory>();
         #endregion
 
         #region Constants, Properties
@@ -145,14 +160,6 @@ namespace RogueGame{
         /// </summary>
         private static Random rand = new Random();
         /// <summary>
-        /// List of monsters on current map.
-        /// </summary>
-        public List<Monster> ActiveMonsters = new List<Monster>();
-        /// <summary>
-        /// List of inventory on current map, including gold.
-        /// </summary>
-        public List<Inventory> MapInventory = new List<Inventory>();
-        /// <summary>
         /// Current game level
         /// </summary>
         private int CurrentLevel { get; set; }
@@ -161,17 +168,10 @@ namespace RogueGame{
         /// </summary>
         private Player CurrentPlayer { get; }
         /// <summary>
-        /// Dictionary to hold hallway endings during map generation.
-        /// </summary>
-        private Dictionary<MapSpace, Direction> deadEnds =
-            new Dictionary<MapSpace, Direction>();
-        /// <summary>
         /// Class inventory object to be used as reference to game inventory instance.
         /// </summary>
         private Inventory GameInventory { get; }
-
         #endregion
-
         /// <summary>
         /// Constructor - generate a new map for this level.
         /// </summary>
@@ -229,7 +229,6 @@ namespace RogueGame{
 
             return retValue;
         }
-
         /// <summary>
         /// Primary map generation procedure
         /// </summary>
@@ -304,6 +303,7 @@ namespace RogueGame{
         {
             Monster? spawned;
             MapSpace itemSpace;
+            MapSpace? playerSpace = CurrentPlayer.Location;
 
             // Pick random monsters until its probability of appearing is 
             // within the random limit generated.
@@ -314,10 +314,18 @@ namespace RogueGame{
                     spawned = Monster.SpawnMonster(CurrentLevel);
                 } while (spawned != null && rand.Next(1, 101) <= spawned.AppearancePct);
 
-                // Place monster on map.
+                // Place monster on map. Make sure it's not in the same region as the player.
                 if (spawned != null)
                 {
                     itemSpace = GetOpenSpace(true);
+
+                    if (CurrentPlayer.Location != null)
+                    {
+                        while (GetRegionNumber(itemSpace.X, itemSpace.Y) == GetRegionNumber(playerSpace.X, playerSpace.Y))
+                        {
+                            itemSpace = GetOpenSpace(true);
+                        }
+                    }
                     spawned.Location = itemSpace;
                     ActiveMonsters.Add(spawned);
                 }
@@ -588,7 +596,7 @@ namespace RogueGame{
             foreach (MapSpace space in mapSpaces)
             {
                 space.Discovered = false;
-                space.Visible = false;
+                space.Lighted = false;
             }
         }
         /// <summary>
@@ -782,7 +790,7 @@ namespace RogueGame{
             // Inventory comes third as player and monsters can sit  on top.
             else if (invItem != null)
                 retValue = invItem.DisplayCharacter;
-            // Finally show the alternet char if the current space is hidden.
+            // Finally show the alternate char if the current space is hidden.
             else if (Space.AltMapCharacter != null && !ShowHidden)
                 retValue = (MapGlyph)Space.AltMapCharacter;
             else
@@ -826,12 +834,14 @@ namespace RogueGame{
         }
         /// <summary>
         /// For all room spaces in region, set Discovered = True and 
-        /// Visible according to ROOM_LIGHTED probability
+        /// Lighted according to ROOM_LIGHTED probability
         /// </summary>
         /// <param name="xPos"></param>
         /// <param name="yPos"></param>
         public void DiscoverRoom(int xPos, int yPos)
         {
+            // When the player enters a room, decide if the room should be lighted.
+
             // Get region limits
             Tuple<MapSpace, MapSpace> corners = GetRegionLimits(xPos, yPos);
             
@@ -842,9 +852,9 @@ namespace RogueGame{
                 $"{corners.Item2.X}, {corners.Item2.Y} in region " +
                 $"{GetRegionNumber(corners.Item1.X, corners.Item1.Y)}");
 
-            // For all room spaces in region, set Discovered = True and 
-            // Visible according to probability. Leave HALLWAY spaces alone
-            // and just focus on rooms.
+            // For all room spaces in region that have not been discovered,
+            // set Discovered = True and Lighted according to probability.
+            // Leave HALLWAY and already discovered spaces alone and just focus on rooms.
             for (int y = corners.Item1.Y; y <= corners.Item2.Y; y++)
             {
                 for (int x = corners.Item1.X; x <= corners.Item2.X; x++)
@@ -854,24 +864,24 @@ namespace RogueGame{
                         if(levelMap[x, y].MapCharacter.DisplayChar != HALLWAY.DisplayChar)
                         {
                             levelMap[x, y].Discovered = true;
-                            levelMap[x, y].Visible = roomLights;
+                            levelMap[x, y].Lighted = roomLights;
                         }
                     }
+                    //Turn off remote sight for spaces in the room if they're already visible.
+                    levelMap[x, y].RemoteSight = false;
                 }
             }
         }
 
         public void LightUpRoom(int xPos, int yPos)
         {
+            // Reveals a specific room, discovered or not.
+
             // Get region limits
             Tuple<MapSpace, MapSpace> corners = GetRegionLimits(xPos, yPos);
 
-            Debug.WriteLine($"Opening room {corners.Item1.X}, {corners.Item1.Y} to " +
-                $"{corners.Item2.X}, {corners.Item2.Y} in region " +
-                $"{GetRegionNumber(corners.Item1.X, corners.Item1.Y)}");
-
             // For all room spaces in region, set Discovered = True and 
-            // Visible. Leave HALLWAY spaces alone and just focus on rooms.
+            // Lighted. Leave HALLWAY spaces alone and just focus on the room.
             for (int y = corners.Item1.Y; y <= corners.Item2.Y; y++)
             {
                 for (int x = corners.Item1.X; x <= corners.Item2.X; x++)
@@ -879,7 +889,7 @@ namespace RogueGame{
                     if (levelMap[x, y].MapCharacter.DisplayChar != HALLWAY.DisplayChar)
                     {
                         levelMap[x, y].Discovered = true;
-                        levelMap[x, y].Visible = true;
+                        levelMap[x, y].Lighted = true;
                     }
                 }
             }
@@ -902,11 +912,11 @@ namespace RogueGame{
                     space.Discovered = true;
 
                 // If this is a wall, stairway or anything else
-                // that should remain visible, mark it as visible.
-                if (!space.Visible)
+                // that should remain visible, mark it as lighted.
+                if (!space.Lighted)
                 {
                     if (MapDiscovery.Contains(space.MapCharacter.DisplayChar))
-                        space.Visible = true;
+                        space.Lighted = true;
                 }
 
                 // If there's something one of the spaces, return True.
@@ -931,7 +941,7 @@ namespace RogueGame{
                                         where MapDiscovery.Contains(space.MapCharacter.DisplayChar)
                                         select space).ToList();
 
-            spaces.ForEach(space => { space.Discovered = true; space.Visible = true;
+            spaces.ForEach(space => { space.Discovered = true; space.Lighted = true;
                 space.SearchRequired = false; space.AltMapCharacter = null; });            
 
             return retValue;
@@ -950,7 +960,8 @@ namespace RogueGame{
                                      select inv).ToList();
 
             mapInventory.ForEach(inv => {
-                inv.Location.Discovered = true; inv.Location.Visible = true;
+                inv.Location.Discovered = true; inv.Location.Lighted = true;
+                inv.Location.RemoteSight = true;
                 retValue = true;
             });
 
@@ -1044,50 +1055,56 @@ namespace RogueGame{
         {
             StringBuilder sbReturn = new StringBuilder();
             List<MapSpace> surroundingSpaces = GetSurrounding(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
-            int playerRegion = GetRegionNumber(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
+            int playerRegion = GetRegionNumber(CurrentPlayer.Location.X, CurrentPlayer.Location.Y); 
             MapGlyph? priorityChar, appendChar;
-            bool inRoom = false;
+            bool playerInRoom = false;
+            int regionNo;
 
             // Iterate through the two-dimensional array and use StringBuilder to 
             // concatenate the proper characters into rows and columns for display.
-            
+
             for (int y = 0; y <= MAP_HT; y++)
             {
                 for (int x = 0; x <= MAP_WD; x++)
                 {
+                    appendChar = null;
+                    regionNo = GetRegionNumber(x, y);
                     // Get priority character
                     priorityChar = PriorityChar(levelMap[x, y], false);
 
-                    // Determine if player is actually in the room.
-                    inRoom = (GetRegionNumber(x, y) == playerRegion &&
+                    // Determine if player is actually in the current region's room.
+                    playerInRoom = (regionNo == playerRegion &&
                                 (RoomInterior.Contains(CurrentPlayer.Location.MapCharacter.DisplayChar)));
 
-                    // If the space is within one space of the character, show standard priority character.  
+                    // If the space is within one space of the character, show standard 
+                    // priority character no matter what.
                     appendChar = surroundingSpaces.Contains(levelMap[x, y]) ? priorityChar : null;
 
-                    // If the space is set to visible
+                    // Otherwise, if the space is lighted, check if the player is in the same region and within
+                    // the room's walls or if the space is marked for RemoteSight. If so, show the priority character.
+                    // Else, just show the map character or the alternate map character as appropriate.
                     if (appendChar == null)
                     {
-                        if (levelMap[x, y].Visible)
+                        if (levelMap[x, y].Lighted)
                         {
-                            // If the player is in the room, or the space represents the player,
-                            // show the standard priority character. Otherwise, just show the map character.
-                            if (inRoom)
+                            if (playerInRoom && RoomInterior.Contains(levelMap[x,y].MapCharacter.DisplayChar) || levelMap[x, y].RemoteSight)
                                 appendChar = priorityChar;
                             else
                                 appendChar = (levelMap[x, y].SearchRequired) ?
                                     levelMap[x, y].AltMapCharacter : levelMap[x, y].MapCharacter;
                         }
+
+                        if (appendChar == null) { appendChar = EMPTY; }
                     }
 
-                    if (appendChar == null) { appendChar = EMPTY; }
-
+                    // Set the corresponding space on the DisplayMap to the resulting MapGlyph character.
                     DisplayMap[x, y] = (MapGlyph)appendChar;
-                }          
+                }
             }
 
             return DisplayMap;
         }
+
         /// <summary>
         /// Reads directly from monster and inventory lists to provide a list
         /// of the occupied spaces.
@@ -1166,9 +1183,14 @@ namespace RogueGame{
         /// </summary>
         public bool Discovered { get; set; }
         /// <summary>
+        /// Should an item in this space be revealed regardless of
+        /// where the player is? Used by scrolls and potions.
+        /// </summary>
+        public bool RemoteSight { get; set; } = false;
+        /// <summary>
         /// Is space supposed to be visible.
         /// </summary>
-        public bool Visible { get; set; }
+        public bool Lighted { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
 
@@ -1184,8 +1206,9 @@ namespace RogueGame{
             this.SearchRequired = false;
             this.X = oldSpace.X; 
             this.Y = oldSpace.Y; 
-            this.Visible = oldSpace.Visible;
+            this.Lighted = oldSpace.Lighted;
             this.Discovered = oldSpace.Discovered;
+            this.RemoteSight = false;
         }
 
         /// <summary>
@@ -1199,8 +1222,9 @@ namespace RogueGame{
             this.MapCharacter = mapChar;
             this.AltMapCharacter = null;
             this.SearchRequired = false;
-            this.Visible = true;
+            this.Lighted = true;
             this.Discovered = true;
+            this.RemoteSight = false;
             this.X = X;
             this.Y = Y;
         }
@@ -1218,8 +1242,9 @@ namespace RogueGame{
             this.MapCharacter = mapChar;
             this.AltMapCharacter = null;
             this.SearchRequired = search;
-            this.Visible = !hidden;
+            this.Lighted = !hidden;
             this.Discovered = false;
+            this.RemoteSight = false;
             this.X = X;
             this.Y = Y;
         }
