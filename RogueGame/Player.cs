@@ -142,6 +142,16 @@ namespace RogueGame
         /// </summary>
         public int NextExpLevelUp { get; set; } = 10;
         /// <summary>
+        /// If the player is currently in a fight, store the 
+        /// opponent here.
+        /// </summary>
+        public Monster? Opponent { get; set; } = null;
+        /// <summary>
+        /// Tuple property to record ending turn for an inventory effect and
+        /// next delegate to be called when activated.
+        /// </summary>
+        public (int EndingTurn, Func<bool> TargetFunction)? InventoryEffect { get; set; } = null;
+        /// <summary>
         /// Primary constructor for creating new player when game starts.
         /// </summary>
         /// <param name="PlayerName"></param>

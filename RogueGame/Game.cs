@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using static RogueGame.Inventory;
 
 namespace RogueGame
@@ -60,6 +61,7 @@ namespace RogueGame
         /// Probability that wearables will be cursed.
         /// </summary>
         private const int ITEM_CURSE_PROB = 15;
+        
         /// <summary>
         /// Lists modes to be used for displaying different screens.
         /// </summary>
@@ -145,7 +147,7 @@ namespace RogueGame
         /// </summary>
         public static Random rand = new Random();
 
-        private bool startTurn = false;
+        private bool TurnInProgress = false;
 
         private bool keyHandled = false;
 
@@ -409,7 +411,8 @@ namespace RogueGame
                 {(InvCategory.Scroll, "Enchant Armor"), ScrollOfEnchantArmor},
                 {(InvCategory.Scroll, "Enchant Weapon"), ScrollOfEnchantWeapon},
                 {(InvCategory.Scroll, "Food Detection"), ScrollOfFoodDetection},
-                {(InvCategory.Scroll, "Light"), ScrollOfLight}
+                {(InvCategory.Scroll, "Light"), ScrollOfLight},
+                {(InvCategory.Scroll, "Confuse Monster"), ScrollOfConfuseMonsterBegin}
             };
 
         }
@@ -437,7 +440,6 @@ namespace RogueGame
                 // Increment current turn number
                 CurrentTurn++;
 
-
                 if (CurrentPlayer.Immobile > 0)
                 {
                     CurrentPlayer.Immobile = CurrentPlayer.Immobile <= CurrentTurn ? 0 : CurrentPlayer.Immobile;
@@ -445,6 +447,9 @@ namespace RogueGame
                     if (CurrentPlayer.Immobile == 0) UpdateStatus("You can move again.", false);
                 }
             } while (CurrentPlayer.Immobile > CurrentTurn);
+
+            // End turn
+            TurnInProgress = false;
         }
 
 
@@ -504,6 +509,20 @@ namespace RogueGame
 
                     UpdateStatus($"Welcome to Level {CurrentPlayer.ExpLevel}.", false);
                 }
+
+                // End any inventory effects if they haven't been used.
+                if (CurrentPlayer.InventoryEffect != null)
+                    if (CurrentPlayer.InventoryEffect?.EndingTurn <= CurrentTurn)
+                        CurrentPlayer.InventoryEffect?.TargetFunction.Invoke();
+
+
+                // Clear confusion, blindness
+                if (CurrentPlayer.Confused > 0 && CurrentPlayer.Confused >= CurrentTurn)
+                    CurrentPlayer.Confused = 0;
+
+                if (CurrentPlayer.Blind > 0 && CurrentPlayer.Blind >= CurrentTurn)
+                    CurrentPlayer.Blind = 0;
+
             }
         }
 
@@ -668,11 +687,11 @@ namespace RogueGame
                 }
                 else if (monster != null)
                 {
-                    Monster opponent = (from Monster monst in CurrentMap.ActiveMonsters
+                    /*Monster opponent = (from Monster monst in CurrentMap.ActiveMonsters
                                         where monst.Location == adjacent[direct]
-                                        select monst).First();
+                                        select monst).First();*/
                     
-                    Attack(CurrentPlayer, opponent);
+                    Attack(CurrentPlayer, monster);
 
                     // Player turn completed.
                     turnComplete = true;
@@ -700,9 +719,17 @@ namespace RogueGame
             int damage = 0, minDamage = 1, maxDamage = 4;
             Inventory? weapon = CurrentPlayer.Wielding;
 
+            // Set the monster as the current opponent.
+            CurrentPlayer.Opponent = Defender;
+
             // Chance of landing a punch - 30% + (5% * XP level) - (5% * monster armor class).
             // Hulk mode can be used for "testing" - certain punch with immediate kill.
             hitChance = 50 + (5 * CurrentPlayer.ExpLevel) - (5 * Defender.ArmorClass);
+
+            // If the player is confused, decrease the chance to 25%.
+            if (Attacker.Confused > 0)
+                hitChance = (int)(hitChance * 0.25);
+
             hitSuccess = HulkMode ? true : rand.Next(1, 101) <= hitChance;
 
             // Either way, if the monster wasn't angry before, it sure is now.
@@ -720,6 +747,9 @@ namespace RogueGame
             {
                 UpdateStatus($"You hit the {Defender.MonsterName.ToLower()}.", false);
                 damage = HulkMode ? Defender.MaxHP : rand.Next(minDamage, maxDamage + 1);
+
+                if (CurrentPlayer.InventoryEffect != null)
+                     CurrentPlayer.InventoryEffect?.TargetFunction.Invoke();
             }
             else UpdateStatus($"You missed the {Defender.MonsterName.ToLower()}.", false);
 
@@ -728,6 +758,7 @@ namespace RogueGame
             // If the monster has been defeated, remove it from the map and spawn another one.
             if (Defender.CurrentHP < 1)
             {
+                CurrentPlayer.Opponent = null;
                 CurrentMap.ActiveMonsters.Remove(Defender);
                 UpdateStatus($"You defeated the {Defender.MonsterName.ToLower()}.", false);
                 CurrentPlayer.Experience += Defender.ExpReward + (int)(Defender.MaxHP / 6);
@@ -750,6 +781,11 @@ namespace RogueGame
                 armorRating = 1;
 
             hitChance = 50 + (Attacker.MinStartingHP * 5) - (armorRating * 5);
+            
+            // If the monster is confused, decrease the chance to 25%.
+            if (Attacker.Confused > 0)
+                hitChance = (int)(hitChance * 0.25);
+
             hitSuccess = rand.Next(1, 101) <= hitChance;
 
             // Random HP between monster's min and max attack damage.
@@ -780,6 +816,16 @@ namespace RogueGame
             MapLevel.Direction? playerDirection = null;
             MapSpace destinationSpace = monster.Location!;
             Inventory? foundInventory;
+
+            // If the monster is confused, paralyzed, blind, decide if it's time to snap out of it.
+            if (monster.Confused > 0 && monster.Confused <= CurrentTurn)
+                monster.Confused = 0;
+
+            if (monster.Immobile > 0 && monster.Immobile <= CurrentTurn)
+                monster.Immobile = 0;
+
+            if (monster.Blind > 0 && monster.Blind <= CurrentTurn)
+                monster.Blind = 0;
 
             // Move monster if possible.
             timeToMove = (monster.CurrentState == Monster.Activity.Wandering &&
@@ -965,7 +1011,7 @@ namespace RogueGame
             }
 
             // Complete turn if one was started.
-            if (startTurn) CompleteTurn();
+            if (TurnInProgress) CompleteTurn();
             
             // Display the appropriate map mode.
             if (GameMode == DisplayMode.Primary)
@@ -995,28 +1041,28 @@ namespace RogueGame
         private void EatProc()
         {
             // Eat something
-            startTurn = true;
+            TurnInProgress = true;
             Eat(null);
         }
 
         private void SearchProc()
         {
             // Search for hidden items
-            startTurn = true;
+            TurnInProgress = true;
             SearchForHidden();
         }
 
         private void ReadProc()
         {
             // Read scroll
-            startTurn = true;
+            TurnInProgress = true;
             ReadScroll(null);
         }
 
         private void QuaffProc()
         {
             // Quaff potion
-            startTurn = true;
+            TurnInProgress = true;
             QuaffPotion(null);
         }
 
@@ -1072,13 +1118,13 @@ namespace RogueGame
         private void WearArmorProc()
         {
             // Wear armor
-            startTurn = true;
+            TurnInProgress = true;
             WearArmor(null);
         }
         private void RemoveArmorProc()
         {
             // Take off armor
-            startTurn = true;
+            TurnInProgress = true;
             RemoveArmor();
         }
         private void HelpProc()
@@ -1091,7 +1137,7 @@ namespace RogueGame
         private void UpstairsProc()
         {
             // Go up staircase if possible.
-            startTurn = true;
+            TurnInProgress = true;
             if (CurrentPlayer.Location!.MapCharacter.DisplayChar == MapLevel.STAIRWAY.DisplayChar)
                 ChangeLevel(-1);
             else
@@ -1101,7 +1147,7 @@ namespace RogueGame
         private void DownStairsProc()
         {
             // Go down staircase if possible.
-            startTurn = true;
+            TurnInProgress = true;
             if (CurrentPlayer.Location!.MapCharacter.DisplayChar == MapLevel.STAIRWAY.DisplayChar)
                 ChangeLevel(1);
             else
@@ -1705,7 +1751,7 @@ namespace RogueGame
             }
             else
                 UpdateStatus($"This is a scroll of enchant weapon. Too bad you aren't wielding one.", false);
-
+            
             ReturnFunction = null;
             return true;
         }
@@ -1733,10 +1779,34 @@ namespace RogueGame
 
             ReturnFunction = null;
 
+            return true;
+        }
+
+        private bool ScrollOfConfuseMonsterBegin()
+        {
+            //TODO: Review these values for possible new constants depending on other inventory effect ranges.
+            int turns = rand.Next(100, 150);
+            CurrentPlayer.InventoryEffect = (CurrentTurn + turns, ScrollOfConfuseMonsterEnd);            
+            UpdateStatus("Your hands begin to glow red.", false);
+
+            ReturnFunction = null;
 
             return true;
         }
 
+        private bool ScrollOfConfuseMonsterEnd()
+        {
+            if(CurrentPlayer.Opponent != null)
+            { 
+                CurrentPlayer.Opponent.Confused = CurrentTurn + rand.Next(2, 7);
+                UpdateStatus($"The {CurrentPlayer.Opponent.MonsterName.ToLower()} appears confused.", false);
+            }
+
+            CurrentPlayer.InventoryEffect = null;
+            UpdateStatus("Your hands stop glowing red.", false);
+
+            return true;
+        }
 
         #endregion
 
