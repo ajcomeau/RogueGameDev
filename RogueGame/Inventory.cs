@@ -417,7 +417,7 @@ namespace RogueGame
                 new Inventory(InvCategory.Scroll, 6, "", "Enchant Weapon", "Enchant Weapon", false, true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('♪', Color.Blue, Color.Black), null),
                 new Inventory(InvCategory.Scroll, 7, "", "Food Detection", "Food Detection", false, true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('♪', Color.Blue, Color.Black), null),
                 new Inventory(InvCategory.Scroll, 8, "", "Light", "Light", false, true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('♪', Color.Blue, Color.Black), null),
-                new Inventory(InvCategory.Scroll, 9, "", "Confuse Monster", "Confuse Monster", false, true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 85, new MapGlyph('♪', Color.HotPink, Color.Black), null),
+                new Inventory(InvCategory.Scroll, 9, "", "Confuse Monster", "Confuse Monster", false, true, false, false, false, 0, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('♪', Color.Blue, Color.Black), null),
                 new Inventory(InvCategory.Armor, 19, "studded leather armor", "studded leather armor", "studded leather armor", false, false, true, false, false, 3, 1, 0, 0, 0, 0, 0, 15, new MapGlyph('◘', Color.Blue, Color.Black), null),
                 new Inventory(InvCategory.Armor, 20, "leather armor", "leather armor", "leather armor", false, false, false, false, false, 2, 1, 0, 0, 0, 0, 0, 20, new MapGlyph('◘', Color.Blue, Color.Black), null),
                 new Inventory(InvCategory.Armor, 21, "ring mail", "ring mail", "ring mail", false, false, false, false, false, 3, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('◘', Color.Blue, Color.Black), null),
