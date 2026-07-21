@@ -61,7 +61,10 @@ namespace RogueGame
         /// Probability that wearables will be cursed.
         /// </summary>
         private const int ITEM_CURSE_PROB = 15;
-        
+        /// <summary>
+        /// Degree of confusion caused by various items.
+        /// </summary>
+        private const int DEGREE_CONFUSION = 50;        
         /// <summary>
         /// Lists modes to be used for displaying different screens.
         /// </summary>
@@ -412,9 +415,12 @@ namespace RogueGame
                 {(InvCategory.Scroll, "Enchant Weapon"), ScrollOfEnchantWeapon},
                 {(InvCategory.Scroll, "Food Detection"), ScrollOfFoodDetection},
                 {(InvCategory.Scroll, "Light"), ScrollOfLight},
-                {(InvCategory.Scroll, "Confuse Monster"), ScrollOfConfuseMonsterBegin}
+                {(InvCategory.Scroll, "Confuse Monster"), ScrollOfConfuseMonsterBegin},
+                {(InvCategory.Scroll, "Remove Curse"), ScrollOfRemoveCurse},
+                {(InvCategory.Scroll, "Sleep"), ScrollOfSleep},
+                {(InvCategory.Scroll, "Teleportation"), ScrollOfTeleportation},
+                {(InvCategory.Scroll, "Aggravate Monsters"), ScrollOfAggravateMonsters}
             };
-
         }
 
 
@@ -493,7 +499,7 @@ namespace RogueGame
 
                 // Regenerate hit points.
                 if (CurrentTurn % HEAL_RATE == 0 && CurrentPlayer.HPDamage > 0)
-                    CurrentPlayer.HPDamage -= rand.Next(1, (int)(CurrentPlayer.ExpLevel / 2 + 1));
+                    CurrentPlayer.HPDamage -= rand.Next(1, (int)(CurrentPlayer.ExpLevel / 3 + 1));
 
                 if (CurrentPlayer.HPDamage < 0) CurrentPlayer.HPDamage = 0;
 
@@ -518,11 +524,16 @@ namespace RogueGame
 
                 // Clear confusion, blindness
                 if (CurrentPlayer.Confused > 0 && CurrentPlayer.Confused >= CurrentTurn)
+                {
+                    UpdateStatus("You feel less confused now.", false);
                     CurrentPlayer.Confused = 0;
+                }
 
                 if (CurrentPlayer.Blind > 0 && CurrentPlayer.Blind >= CurrentTurn)
+                {
+                    UpdateStatus("You can see again.", false);
                     CurrentPlayer.Blind = 0;
-
+                }
             }
         }
 
@@ -645,8 +656,11 @@ namespace RogueGame
             Dictionary<MapLevel.Direction, MapSpace> adjacent =
                 CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
-            // Move character if possible.
+            // If player is confused, there's a chance of reversed movement.
+            if (player.Confused > 0 && rand.Next(100) > DEGREE_CONFUSION)
+                direct = CurrentMap.GetDirection180(direct);
 
+            // Move character if possible.
             do
             {
                 // Inspect target character
@@ -676,8 +690,12 @@ namespace RogueGame
                     if (player.Location.MapCharacter.DisplayChar == MapLevel.ROOM_DOOR.DisplayChar)
                         CurrentMap.DiscoverRoom(player.Location.X, player.Location.Y);
 
+                    // Show the surrounding spaces if the player can see.
+                    if (CurrentPlayer.Blind == 0)
+                        CurrentMap.ShowSurrounding(player.Location.X, player.Location.Y);
+
                     // Discover the spaces surrounding the player and note if something is found.
-                    stopMoving = CurrentMap.DiscoverSurrounding(player.Location.X, player.Location.Y);
+                    stopMoving = CurrentMap.DetectObstruction(player.Location.X, player.Location.Y);
 
                     // Respond to items on map.
                     if (invFound != null) UpdateStatus(AddInventory(), false);
@@ -686,11 +704,7 @@ namespace RogueGame
                     turnComplete = true;
                 }
                 else if (monster != null)
-                {
-                    /*Monster opponent = (from Monster monst in CurrentMap.ActiveMonsters
-                                        where monst.Location == adjacent[direct]
-                                        select monst).First();*/
-                    
+                {                    
                     Attack(CurrentPlayer, monster);
 
                     // Player turn completed.
@@ -811,7 +825,7 @@ namespace RogueGame
         {
             char visibleCharacter;
             int tentativeDistance, playerDistance;
-            bool timeToMove, canMove;
+            bool timeToMove, canMove, wrongMove;
             MapLevel.Direction direct, direct90, direct270;
             MapLevel.Direction? playerDirection = null;
             MapSpace destinationSpace = monster.Location!;
@@ -888,8 +902,10 @@ namespace RogueGame
                     } while (monster.Direction == MapLevel.Direction.None);
                 }
 
-                // Get relative directions to monster's choice.
+                // Get relative directions to monster's choice. Chance to reverse movement if the monster is confused.
+                wrongMove = (monster.Confused > 0 && rand.Next(100) > DEGREE_CONFUSION); 
                 direct = (MapLevel.Direction)monster.Direction!;
+                if(wrongMove) { direct = CurrentMap.GetDirection180(direct); }
                 direct90 = CurrentMap.GetDirection90(direct);
                 direct270 = CurrentMap.GetDirection270(direct);
 
@@ -986,7 +1002,7 @@ namespace RogueGame
                     // For letters, call the current return function.
                     if (lowerCase >= 'a' && lowerCase <= 'z')
                     {
-                        if (ReturnFunction != null)
+                        if (ReturnFunction != null) 
                             ReturnFunction(lowerCase);
                     }
                     keyHandled = true;
@@ -1581,6 +1597,7 @@ namespace RogueGame
                         {
                             // Remove the item from the player's inventory and invoke delegate.
                             CurrentPlayer.PlayerInventory.Remove(items[0]);
+                            ReturnFunction = null;
                             readScroll = taskInfo.Invoke();
                         }
 
@@ -1709,8 +1726,11 @@ namespace RogueGame
                 UpdateStatus("That item doesn't exist.", false);
             }
 
-            ReturnFunction = null;
+            ReturnFunction = null;            
+
             retValue = true;
+
+            RestoreMap();
 
             return retValue;
 
@@ -1721,7 +1741,6 @@ namespace RogueGame
             // Reveal entire map
             UpdateStatus("This scroll has a map on it!", false);
             CurrentMap.DiscoverMap();
-            ReturnFunction = null;
             
             return true;
         }
@@ -1736,7 +1755,6 @@ namespace RogueGame
             else
                 UpdateStatus($"This is a scroll of enchant armor. Alas, you aren't wearing any.", false);
 
-            ReturnFunction = null;
             return true;
         }
 
@@ -1752,7 +1770,6 @@ namespace RogueGame
             else
                 UpdateStatus($"This is a scroll of enchant weapon. Too bad you aren't wielding one.", false);
             
-            ReturnFunction = null;
             return true;
         }
 
@@ -1767,17 +1784,17 @@ namespace RogueGame
             else
                 UpdateStatus("You hear a growling noise very close to you.", false);
 
-            ReturnFunction = null;
             return retValue;
         }
 
         private bool ScrollOfLight()
         {
-            // Reveal the current room.
-            CurrentMap.LightUpRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
-            UpdateStatus("The entire room is lit by an unearthly glow.", false);
-
-            ReturnFunction = null;
+            if (CurrentPlayer.Location != null)
+            {
+                // Reveal the current room.
+                CurrentMap.LightUpRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
+                UpdateStatus("The entire room is lit by an unearthly glow.", false);
+            }
 
             return true;
         }
@@ -1785,17 +1802,17 @@ namespace RogueGame
         private bool ScrollOfConfuseMonsterBegin()
         {
             //TODO: Review these values for possible new constants depending on other inventory effect ranges.
+            // Activate the player's ability to confuse the next monster hit.
             int turns = rand.Next(100, 150);
             CurrentPlayer.InventoryEffect = (CurrentTurn + turns, ScrollOfConfuseMonsterEnd);            
             UpdateStatus("Your hands begin to glow red.", false);
-
-            ReturnFunction = null;
 
             return true;
         }
 
         private bool ScrollOfConfuseMonsterEnd()
         {
+            // Confuse the next monster the player hits for a random number of turns.
             if(CurrentPlayer.Opponent != null)
             { 
                 CurrentPlayer.Opponent.Confused = CurrentTurn + rand.Next(2, 7);
@@ -1804,6 +1821,57 @@ namespace RogueGame
 
             CurrentPlayer.InventoryEffect = null;
             UpdateStatus("Your hands stop glowing red.", false);
+
+            return true;
+        }
+
+        private bool ScrollOfRemoveCurse()
+        {
+            // Remove any curses on weapons and armor in use.
+
+            if(CurrentPlayer.Armor != null)
+                CurrentPlayer.Armor.IsCursed = false;
+
+            if (CurrentPlayer.Wielding != null)
+                CurrentPlayer.Wielding.IsCursed = false;
+
+            UpdateStatus("You suddenly feel someone watching over you.", false);
+
+            return true;
+        }
+
+        private bool ScrollOfSleep()
+        {
+            // Put the player to sleep for a few turns.
+            CurrentPlayer.Immobile = CurrentTurn + rand.Next(2, 5);
+            UpdateStatus("You fall asleep.", false);
+
+            return true;
+        }
+
+        private bool ScrollOfTeleportation()
+        {
+            // Move the player to a random spot on the map and confuse them
+            // for a few moves.
+            CurrentPlayer.Location = CurrentMap.GetOpenSpace(true);
+            UpdateStatus("This is a scroll of teleportation!", false);
+
+            CurrentPlayer.Confused = CurrentTurn + rand.Next(3, 10);
+            UpdateStatus("You feel rather disoriented ...", false);
+
+            return true;
+        }
+
+        private bool ScrollOfAggravateMonsters()
+        {
+            // Make every monster on the map aggressive.
+
+            foreach (Monster monster in (from Monster in CurrentMap.ActiveMonsters 
+                                         select Monster))
+                monster.Aggressive = true;
+            
+            UpdateStatus("The scroll emits a high pitched whistling noise.", false);
+            UpdateStatus("From every direction, you hear howls of outrage.", false);
 
             return true;
         }

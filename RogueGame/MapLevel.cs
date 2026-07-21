@@ -896,15 +896,12 @@ namespace RogueGame{
         }
 
         /// <summary>
-        /// Set surrounding spaces to Discovered.  Return True if there's something in one of them.
+        /// Set surrounding spaces to Discovered and Lighted.
         /// </summary>
         /// <param name="xPos"></param>
         /// <param name="yPos"></param>
-        /// <returns></returns>
-        public bool DiscoverSurrounding(int xPos, int yPos)
+        public void ShowSurrounding(int xPos, int yPos)
         {
-            bool retValue = false;
-
             foreach (MapSpace space in GetSurrounding(xPos, yPos))
             {
                 // Mark the space as discovered.
@@ -918,7 +915,21 @@ namespace RogueGame{
                     if (MapDiscovery.Contains(space.MapCharacter.DisplayChar))
                         space.Lighted = true;
                 }
+            }
+        }
 
+        /// <summary>
+        /// Return True if there's something in one of the surrounding spaces.
+        /// </summary>
+        /// <param name="xPos"></param>
+        /// <param name="yPos"></param>
+        /// <returns></returns>
+        public bool DetectObstruction(int xPos, int yPos)
+        {
+            bool retValue = false;
+
+            foreach (MapSpace space in GetSurrounding(xPos, yPos))
+            {
                 // If there's something one of the spaces, return True.
                 // Ignore player's space.
                 if (!retValue) 
