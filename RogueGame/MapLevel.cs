@@ -1006,13 +1006,13 @@ namespace RogueGame{
         /// Show all the food on the map.
         /// </summary>
         /// <returns></returns>
-        public bool DiscoverFood()
+        public bool DiscoverInventoryByCat(Inventory.InvCategory Category)
         {
             // Set all the food on the map to discovered and visible.
             bool retValue = false;
             
             List<Inventory> mapInventory = (from Inventory inv in MapInventory
-                                     where inv.ItemCategory == Inventory.InvCategory.Food
+                                     where inv.ItemCategory == Category
                                      select inv).ToList();
 
             mapInventory.ForEach(inv => {

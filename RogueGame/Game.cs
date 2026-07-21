@@ -420,7 +420,8 @@ namespace RogueGame
                 {(InvCategory.Scroll, "Sleep"), ScrollOfSleep},
                 {(InvCategory.Scroll, "Teleportation"), ScrollOfTeleportation},
                 {(InvCategory.Scroll, "Aggravate Monsters"), ScrollOfAggravateMonsters},
-                {(InvCategory.Scroll, "Create Monster"), ScrollOfCreateMonster}
+                {(InvCategory.Scroll, "Create Monster"), ScrollOfCreateMonster},
+                {(InvCategory.Scroll, "Gold Detection"), ScrollOfGoldDetection}
             };
         }
 
@@ -1778,12 +1779,26 @@ namespace RogueGame
         {
             bool retValue = false;
             // Reveal all the food on the map.
-            retValue = CurrentMap.DiscoverFood();
+            retValue = CurrentMap.DiscoverInventoryByCat(InvCategory.Food);
             
             if (retValue) 
                 UpdateStatus("Your nose tingles as you smell food nearby.", false);
             else
                 UpdateStatus("You hear a growling noise very close to you.", false);
+
+            return retValue;
+        }
+
+        private bool ScrollOfGoldDetection()
+        {
+            bool retValue = false;
+            // Reveal all the gold on the map.
+            retValue = CurrentMap.DiscoverInventoryByCat(InvCategory.Gold);
+
+            if (retValue)
+                UpdateStatus("You hear the jingle of coins somewhere on this level.", false);
+            else
+                UpdateStatus("'Check out the Dungeon,' they said. 'There's PLENTY of gold down there!' they said.", false);
 
             return retValue;
         }
