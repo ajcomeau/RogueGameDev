@@ -227,6 +227,20 @@ namespace RogueGame{
                 }
             }
 
+            // Verify there's a stairway
+
+            if(retValue)
+                retValue = (from MapSpace space in levelMap
+                            where space.MapCharacter.DisplayChar == STAIRWAY.DisplayChar
+                            select space).ToList().Count > 0;
+
+            // On the game's final level, verify the amulet is there.
+
+            if (retValue && CurrentLevel == Game.MAX_LEVEL)
+                retValue = (from MapSpace space in levelMap
+                            where space.MapCharacter.DisplayChar == AMULET.DisplayChar
+                            select space).ToList().Count > 0;
+
             return retValue;
         }
         /// <summary>
@@ -239,7 +253,7 @@ namespace RogueGame{
             // size of its cell region, minus one space, to allow for hallways between rooms.
             
             int roomWidth = 0, roomHeight = 0, roomAnchorX = 0, roomAnchorY = 0;
-            MapSpace stairway;
+            MapSpace? stairway, amulet;
 
             // Clear map by creating new array of map spaces.
             levelMap = new MapSpace[80, 25];
@@ -289,43 +303,59 @@ namespace RogueGame{
 
             // Add stairway
             stairway = GetOpenSpace(false);
-            levelMap[stairway.X, stairway.Y] = new MapSpace(STAIRWAY, stairway.X, stairway.Y);
+
+            if(stairway != null)
+                levelMap[stairway.X, stairway.Y] = new MapSpace(STAIRWAY, stairway.X, stairway.Y);
 
             // Add Amulet to final level.
             if (CurrentLevel == Game.MAX_LEVEL)
-                MapInventory.Add(GameInventory.GetInventoryItem(Inventory.InvCategory.Amulet, GetOpenSpace(false)));
+            {
+                amulet = GetOpenSpace(false);
+                if (amulet != null)
+                    MapInventory.Add(GameInventory.GetInventoryItem(Inventory.InvCategory.Amulet, amulet));
+            }
+
+            
+
         }
         /// <summary>
         /// Add a specific number of monsters to the map.
         /// </summary>
         /// <param name="Number"></param>
-        public void AddMonsters(int Number)
+        public void AddMonsters(int Number, List<MapSpace>? spaces = null)
         {
             Monster? spawned;
-            MapSpace itemSpace;
+            MapSpace? itemSpace;
             MapSpace? playerSpace = CurrentPlayer.Location;
+            int startingCount = ActiveMonsters.Count();
+            int maxMonster = 50, maxSpace = 50;
 
             // Pick random monsters until its probability of appearing is 
             // within the random limit generated.
-            for (int i = 1; i <= Number; i++)
+            while (ActiveMonsters.Count < startingCount + Number && --maxMonster > 0)
             {
                 do
                 {
                     spawned = Monster.SpawnMonster(CurrentLevel);
                 } while (spawned != null && rand.Next(1, 101) <= spawned.AppearancePct);
 
-                // Place monster on map. Make sure it's not in the same region as the player.
-                if (spawned != null)
+                // Place monster on map. If the spaces are specified, then make sure
+                // it's not in the same region as the player.
+                do
                 {
-                    itemSpace = GetOpenSpace(true);
+                    itemSpace = GetOpenSpace(true, spaces);
 
-                    if (CurrentPlayer.Location != null)
+                    if (itemSpace != null)
                     {
-                        while (GetRegionNumber(itemSpace.X, itemSpace.Y) == GetRegionNumber(playerSpace.X, playerSpace.Y))
-                        {
-                            itemSpace = GetOpenSpace(true);
-                        }
+                        if (spaces == null && playerSpace != null &&
+                                GetRegionNumber(itemSpace.X, itemSpace.Y) == GetRegionNumber(playerSpace.X, playerSpace.Y))
+                            itemSpace = null;
                     }
+
+                } while (itemSpace == null & --maxSpace > 0);
+                
+                if (spawned != null && itemSpace != null)
+                {                    
                     spawned.Location = itemSpace;
                     ActiveMonsters.Add(spawned);
                 }
@@ -338,17 +368,23 @@ namespace RogueGame{
         public void AddInventory(int Number)
         {            
             Inventory invItem;
-            MapSpace itemSpace;
+            MapSpace? itemSpace;
             int startingCount = MapInventory.Count;
+            int maxAttempts = 100;
 
             // Add up to the number of specified inventory items.
-            while (MapInventory.Count < startingCount + Number)
+            while (MapInventory.Count < startingCount + Number && --maxAttempts > 0) 
             {
-                itemSpace = GetOpenSpace(false);
-                invItem = GameInventory.GetInventoryItem(itemSpace);
+                do
+                    itemSpace = GetOpenSpace(false);
+                while (itemSpace == null);
 
-                // Place the inventory according to its chances of showing up.
-                if (rand.Next(1, 101) <= invItem.AppearancePct)
+                do
+                    invItem = GameInventory.GetInventoryItem(itemSpace);
+                while (invItem != null
+                        && rand.Next(1, 101) >= invItem.AppearancePct);
+
+                if (itemSpace != null && invItem != null)
                 {
                     // For ammunition that's groupable, decide how many items are in the batch.
                     if (invItem.ItemCategory == Inventory.InvCategory.Ammunition
@@ -804,11 +840,11 @@ namespace RogueGame{
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public List<MapSpace> GetSurrounding(int x, int y)
+        public List<MapSpace> GetSurrounding(int x, int y, int spaces)
         {
             List<MapSpace> surrounding = (from MapSpace space in levelMap
-                                        where Math.Abs(space.X - x) <= 1
-                                        && Math.Abs(space.Y - y) <= 1
+                                        where Math.Abs(space.X - x) <= spaces
+                                        && Math.Abs(space.Y - y) <= spaces
                                         select space).ToList();
 
             return surrounding;
@@ -818,11 +854,13 @@ namespace RogueGame{
         /// </summary>
         /// <param name="hallways"></param>
         /// <returns></returns>
-        public MapSpace GetOpenSpace(bool hallways)
+        public MapSpace? GetOpenSpace(bool hallways, List<MapSpace>? limitTo = null)
         {
+            // List of map characters that qualify as open for this list.
             string charList = hallways ? (HALLWAY.DisplayChar.ToString() + ROOM_INT.DisplayChar.ToString()) : 
                 ROOM_INT.DisplayChar.ToString();
 
+            // Get qualifying open spaces with no inventory or monsters or the current player.
             List<MapSpace> spaces = (from MapSpace space in levelMap
                                      where charList.Contains(space.MapCharacter.DisplayChar)
                                      && DetectInventory(space) == null
@@ -830,7 +868,14 @@ namespace RogueGame{
                                      && space != CurrentPlayer.Location
                                      select space).ToList();
 
-            return spaces[rand.Next(0, spaces.Count)];
+            // Limit further based on any list passed in.
+            if (limitTo != null)
+                spaces = (from MapSpace space in spaces
+                          where limitTo.Contains(space)
+                          select space).ToList();
+
+            // Return random space in remaining list or null if there are none.
+            return (spaces.Count > 0) ? spaces[rand.Next(0, spaces.Count)] : null;
         }
         /// <summary>
         /// For all room spaces in region, set Discovered = True and 
@@ -902,7 +947,7 @@ namespace RogueGame{
         /// <param name="yPos"></param>
         public void ShowSurrounding(int xPos, int yPos)
         {
-            foreach (MapSpace space in GetSurrounding(xPos, yPos))
+            foreach (MapSpace space in GetSurrounding(xPos, yPos, 1))
             {
                 // Mark the space as discovered.
                 if (!space.Discovered)
@@ -928,7 +973,7 @@ namespace RogueGame{
         {
             bool retValue = false;
 
-            foreach (MapSpace space in GetSurrounding(xPos, yPos))
+            foreach (MapSpace space in GetSurrounding(xPos, yPos, 1))
             {
                 // If there's something one of the spaces, return True.
                 // Ignore player's space.
@@ -1065,7 +1110,7 @@ namespace RogueGame{
         public MapGlyph[,] MapText()
         {
             StringBuilder sbReturn = new StringBuilder();
-            List<MapSpace> surroundingSpaces = GetSurrounding(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
+            List<MapSpace> surroundingSpaces = GetSurrounding(CurrentPlayer.Location.X, CurrentPlayer.Location.Y, 1);
             int playerRegion = GetRegionNumber(CurrentPlayer.Location.X, CurrentPlayer.Location.Y); 
             MapGlyph? priorityChar, appendChar;
             bool playerInRoom = false;

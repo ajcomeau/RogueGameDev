@@ -419,7 +419,8 @@ namespace RogueGame
                 {(InvCategory.Scroll, "Remove Curse"), ScrollOfRemoveCurse},
                 {(InvCategory.Scroll, "Sleep"), ScrollOfSleep},
                 {(InvCategory.Scroll, "Teleportation"), ScrollOfTeleportation},
-                {(InvCategory.Scroll, "Aggravate Monsters"), ScrollOfAggravateMonsters}
+                {(InvCategory.Scroll, "Aggravate Monsters"), ScrollOfAggravateMonsters},
+                {(InvCategory.Scroll, "Create Monster"), ScrollOfCreateMonster}
             };
         }
 
@@ -630,7 +631,7 @@ namespace RogueGame
             if (rand.Next(1, 101) <= SEARCH_PCT)
             {
                 UpdateStatus("Searching ...", false);
-                spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y);
+                spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 1);
 
                 foreach (MapSpace space in spaces)
                 {
@@ -986,7 +987,7 @@ namespace RogueGame
             // Process whatever key is sent by the form.
             // Putting a break point in this function to test causes it to lose keystrokes
             // following CTRL and SHIFT so they're not being sent here on their own anymore.
-            Action? method;
+
             keyHandled = false;
             char lowerCase = char.ToLower((char)KeyVal);
 
@@ -1872,6 +1873,16 @@ namespace RogueGame
             
             UpdateStatus("The scroll emits a high pitched whistling noise.", false);
             UpdateStatus("From every direction, you hear howls of outrage.", false);
+
+            return true;
+        }
+
+        private bool ScrollOfCreateMonster()
+        {
+            List<MapSpace> spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location.X, CurrentPlayer.Location.Y, 2);
+            // Create a new monster near the player.
+            CurrentMap.AddMonsters(1, spaces);
+            UpdateStatus("The room suddenly got a bit more crowded.", false);
 
             return true;
         }
