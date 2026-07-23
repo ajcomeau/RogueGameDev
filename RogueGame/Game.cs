@@ -421,7 +421,11 @@ namespace RogueGame
                 {(InvCategory.Scroll, "Teleportation"), ScrollOfTeleportation},
                 {(InvCategory.Scroll, "Aggravate Monsters"), ScrollOfAggravateMonsters},
                 {(InvCategory.Scroll, "Create Monster"), ScrollOfCreateMonster},
-                {(InvCategory.Scroll, "Gold Detection"), ScrollOfGoldDetection}
+                {(InvCategory.Scroll, "Gold Detection"), ScrollOfGoldDetection},
+                {(InvCategory.Scroll, "Hold Monsters"), ScrollofHoldMonsters},
+                {(InvCategory.Scroll, "Protect Armor"), ScrollOfProtectArmor},
+                {(InvCategory.Scroll, "Clear Monsters"), ScrollOfClearMonsters},
+                {(InvCategory.Scroll, "Blank Paper"), ScrollOfPaper}
             };
         }
 
@@ -844,7 +848,7 @@ namespace RogueGame
                 monster.Blind = 0;
 
             // Move monster if possible.
-            timeToMove = (monster.CurrentState == Monster.Activity.Wandering &&
+            timeToMove = (monster.CurrentState == Monster.Activity.Wandering && monster.Immobile == 0 &&
                 rand.Next(1, 101) >= monster.Inertia) || monster.CurrentState == Monster.Activity.Angered;
 
             if (timeToMove)
@@ -1900,6 +1904,62 @@ namespace RogueGame
             UpdateStatus("The room suddenly got a bit more crowded.", false);
 
             return true;
+        }
+
+        private bool ScrollofHoldMonsters()
+        {
+            List<MapSpace> surrounding = CurrentMap.GetSurrounding(CurrentPlayer.Location.X, CurrentPlayer.Location.Y, 2);
+
+            // Make every monster within two paces immobile for up to 25 turns.
+            List<Monster> monsters = 
+                CurrentMap.ActiveMonsters.Where(monster => surrounding
+                .Any(space => space.X == monster.Location.X && space.Y == monster.Location.Y))
+                .ToList();
+
+            foreach (Monster monster in monsters)
+                monster.Immobile = CurrentTurn + rand.Next(25);
+
+            UpdateStatus("The monsters around you suddenly freeze in their tracks. A fast and quiet exit would be wise at this point.", false);
+
+            return true;
+
+        }
+
+        private bool ScrollOfProtectArmor()
+        {
+            if (CurrentPlayer.Armor != null)
+            {
+                CurrentPlayer.Armor.IsProtected = true;
+                CurrentPlayer.Armor.IsCursed = false;
+                UpdateStatus($"Great news! Your {CurrentPlayer.Armor.RealName} is protected against damage, theft and arcane curses up to 1,000,000 gold.", false);
+                UpdateStatus($"At Dungeon Insurance, your safety is our first concern!", false);
+            }
+            else
+            {
+                UpdateStatus($"Hello, {CurrentPlayer.PlayerName}. We've been trying to reach you about your extended armor insurance...", false);
+            }
+
+            return true;
+
+        }
+
+        private bool ScrollOfClearMonsters()
+        {
+
+            CurrentMap.ActiveMonsters.Clear();
+            UpdateStatus($"Somewhere near, you hear a disembodied voice quietly say 'No more monsters ...'.", false);
+            UpdateStatus($"You feel a chill in your bones as these rooms suddenly go strangely quiet.", false);
+
+            return true;
+
+        }
+
+        private bool ScrollOfPaper()
+        {
+            UpdateStatus($"The scroll's parchment has a rich and elegant feel to it but is otherwise blank.", false);
+
+            return true;
+
         }
 
         #endregion
