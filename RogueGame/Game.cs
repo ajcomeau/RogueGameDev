@@ -1898,7 +1898,7 @@ namespace RogueGame
 
         private bool ScrollOfCreateMonster()
         {
-            List<MapSpace> spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location.X, CurrentPlayer.Location.Y, 2);
+            List<MapSpace> spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 2);
             // Create a new monster near the player.
             CurrentMap.AddMonsters(1, spaces);
             UpdateStatus("The room suddenly got a bit more crowded.", false);
@@ -1908,12 +1908,12 @@ namespace RogueGame
 
         private bool ScrollofHoldMonsters()
         {
-            List<MapSpace> surrounding = CurrentMap.GetSurrounding(CurrentPlayer.Location.X, CurrentPlayer.Location.Y, 2);
+            List<MapSpace> surrounding = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 2);
 
             // Make every monster within two paces immobile for up to 25 turns.
             List<Monster> monsters = 
                 CurrentMap.ActiveMonsters.Where(monster => surrounding
-                .Any(space => space.X == monster.Location.X && space.Y == monster.Location.Y))
+                .Any(space => space.X == monster.Location!.X && space.Y == monster.Location.Y))
                 .ToList();
 
             foreach (Monster monster in monsters)
@@ -1927,6 +1927,7 @@ namespace RogueGame
 
         private bool ScrollOfProtectArmor()
         {
+            // Set the player's current armor as protected.
             if (CurrentPlayer.Armor != null)
             {
                 CurrentPlayer.Armor.IsProtected = true;
@@ -1935,9 +1936,7 @@ namespace RogueGame
                 UpdateStatus($"At Dungeon Insurance, your safety is our first concern!", false);
             }
             else
-            {
-                UpdateStatus($"Hello, {CurrentPlayer.PlayerName}. We've been trying to reach you about your extended armor insurance...", false);
-            }
+                UpdateStatus($"Hello, {CurrentPlayer.PlayerName}. We've been trying to reach you about your extended armor insurance.", false);
 
             return true;
 
@@ -1945,10 +1944,29 @@ namespace RogueGame
 
         private bool ScrollOfClearMonsters()
         {
+            Inventory invItem;
 
+            // Transfer monsters gold and inventory back to map.
+            foreach (Monster monster in CurrentMap.ActiveMonsters)
+            {
+                if (monster.Gold > 0)
+                {
+                    invItem = GameInventory.GetInventoryItem(InvCategory.Gold, CurrentMap.GetOpenSpace(true)!);
+                    CurrentMap.AddInventory(invItem, invItem.Location, false);
+                }
+
+                foreach(Inventory item in monster.MonsterInventory)
+                {
+                    invItem = GameInventory.GetInventoryItem(item.RealName)!;
+                    CurrentMap.AddInventory(item, CurrentMap.GetOpenSpace(true)!, true);
+                }
+                    
+            }
+
+            // Clear the monsters off the current level map.
             CurrentMap.ActiveMonsters.Clear();
-            UpdateStatus($"Somewhere near, you hear a disembodied voice quietly say 'No more monsters ...'.", false);
-            UpdateStatus($"You feel a chill in your bones as these rooms suddenly go strangely quiet.", false);
+            UpdateStatus($"Somewhere near, you hear a disembodied voice whisper 'No more monsters ...'", false);
+            UpdateStatus($"You feel a chill in your bones as these rooms suddenly go quiet.", false);
 
             return true;
 
@@ -1956,6 +1974,7 @@ namespace RogueGame
 
         private bool ScrollOfPaper()
         {
+            // Blank scroll
             UpdateStatus($"The scroll's parchment has a rich and elegant feel to it but is otherwise blank.", false);
 
             return true;

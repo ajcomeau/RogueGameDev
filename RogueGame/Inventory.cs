@@ -432,7 +432,7 @@ namespace RogueGame
                 new Inventory(InvCategory.Scroll, 15, "", "Gold Detection", "Gold Detection", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('♪', Color.Blue, Color.Black), null),
                 new Inventory(InvCategory.Scroll, 16, "", "Hold Monsters", "Hold Monsters", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('♪', Color.Blue, Color.Black), null),
                 new Inventory(InvCategory.Scroll, 17, "", "Protect Armor", "Protect Armor", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('♪', Color.Blue, Color.Black), null),
-                new Inventory(InvCategory.Scroll, 18, "", "Clear Monsters", "Clear Monsters", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('♪', Color.Blue, Color.Black), null),
+                new Inventory(InvCategory.Scroll, 18, "", "Clear Monsters", "Clear Monsters", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 85, new MapGlyph('♪', Color.HotPink, Color.Black), null),
                 new Inventory(InvCategory.Scroll, 19, "", "Blank Paper", "Blank Paper", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 15, new MapGlyph('♪', Color.Blue, Color.Black), null),
                 new Inventory(InvCategory.Armor, 20, "studded leather armor", "studded leather armor", "studded leather armor", false, false, true, false, false,  false,3, 1, 0, 0, 0, 0, 0, 15, new MapGlyph('◘', Color.Blue, Color.Black), null),
                 new Inventory(InvCategory.Armor, 21, "leather armor", "leather armor", "leather armor", false, false, false, false, false,  false,2, 1, 0, 0, 0, 0, 0, 20, new MapGlyph('◘', Color.Blue, Color.Black), null),

@@ -397,6 +397,26 @@ namespace RogueGame{
             }
         }
         /// <summary>
+        /// Add a specific item to the map at a specific location.
+        /// </summary>
+        /// <param name="Item">Inventory object</param>
+        /// <param name="Location">MapSpace location for inventory.</param>
+        /// <param name="Clone">True value copies the inventory object.</param>
+        public void AddInventory(Inventory Item, MapSpace Location, Boolean Clone)
+        {
+            Inventory invItem;
+
+            if (Clone)
+                invItem = GameInventory.GetInventoryItem(Item.RealName)!;
+            else
+                invItem = Item;
+
+            invItem.Location = new MapSpace(Location.MapCharacter, Location);
+
+            MapInventory.Add(invItem);
+
+        }
+        /// <summary>
         /// Create room on map based on inputs
         /// </summary>
         /// <param name="westWallX"></param>
