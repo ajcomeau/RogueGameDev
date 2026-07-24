@@ -149,9 +149,13 @@ namespace RogueGame
         /// Random number generator
         /// </summary>
         public static Random rand = new Random();
-
+        /// <summary>
+        /// Class boolean to indicate if there's a turn in progress.
+        /// </summary>
         private bool TurnInProgress = false;
-
+        /// <summary>
+        /// Class boolean to indicate if a key command has been processed.
+        /// </summary>
         private bool keyHandled = false;
 
         #endregion
@@ -179,8 +183,6 @@ namespace RogueGame
 
             this.CurrentMap.UpdateDisplayFromText(screenText);
         }
-
-
         /// <summary>
         /// Creates and returns R.I.P. screen.
         /// </summary>
@@ -213,12 +215,11 @@ namespace RogueGame
             this.CurrentMap.UpdateDisplayFromText(screen);
 
         }
-
         /// <summary>
         /// Add status line to status box.
         /// </summary>
-        /// <param name="Status"></param>
-        /// <param name="Confirm"></param>
+        /// <param name="Status">Message to add to status display.</param>
+        /// <param name="Confirm">True to display a message box requiring user confirmation.</param>
         private void UpdateStatus(string Status, bool Confirm)
         {
             if (Confirm)
@@ -257,10 +258,10 @@ namespace RogueGame
 
             return retValue;
         }
-
         /// <summary>
         /// Get current player stats display for bottom of screen.
         /// </summary>
+        /// <returns></returns>
         public string StatsDisplay()
         {
             string retValue = "";
@@ -284,7 +285,6 @@ namespace RogueGame
 
             return retValue;
         }
-
         /// <summary>
         /// Restore current map after viewing another screen.
         /// </summary>
@@ -300,8 +300,6 @@ namespace RogueGame
                     CurrentMap.MapText();
             }
         }
-
-
         /// <summary>
         /// Dev mode: Change out current map for a new one.
         /// </summary>
@@ -311,8 +309,6 @@ namespace RogueGame
             CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer, GameInventory);
             CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
         }
-
-
         /// <summary>
         /// Bring up inventory screen for viewing.
         /// </summary>
@@ -336,7 +332,6 @@ namespace RogueGame
 
             this.CurrentMap.UpdateDisplayFromText(screenText);
         }
-
         #endregion
 
         #region Constructor
@@ -344,7 +339,7 @@ namespace RogueGame
         /// <summary>
         /// Primary constructor for starting new game.
         /// </summary>
-        /// <param name="PlayerName"></param>
+        /// <param name="PlayerName">Name of current player.</param>
         public Game(string PlayerName)
         {
             this.GameInventory = new Inventory(true);
@@ -428,13 +423,9 @@ namespace RogueGame
                 {(InvCategory.Scroll, "Blank Paper"), ScrollOfPaper}
             };
         }
-
-
-
         #endregion
 
         #region Procedures
-
         /// <summary>
         /// Carries out necessary actions to finish the turn.
         /// </summary>
@@ -463,8 +454,6 @@ namespace RogueGame
             // End turn
             TurnInProgress = false;
         }
-
-
         /// <summary>
         /// Evaluate and adjust all player stats at end of turn.
         /// </summary>
@@ -542,13 +531,10 @@ namespace RogueGame
                 }
             }
         }
-
-
-
         /// <summary>
         /// Change the current map level number.
         /// </summary>
-        /// <param name="Change"></param>
+        /// <param name="Change">Number of levels to move.</param>
         private void ChangeLevel(int Change)
         {
             bool allowPass = false;
@@ -580,9 +566,11 @@ namespace RogueGame
                 UpdateStatus(failMessage, false);
 
         }
-
-
-
+        /// <summary>
+        /// Capitalize first letter of text passed in.
+        /// </summary>
+        /// <param name="Text"></param>
+        /// <returns></returns>
         public static string CapitalFirstLetter(string Text)
         {
             // Capitalize as needed.
@@ -593,7 +581,11 @@ namespace RogueGame
             else
                 return Text[0].ToString().ToUpper() + Text[1..];
         }
-
+        /// <summary>
+        /// Add 'a' or 'an' as appropriate
+        /// </summary>
+        /// <param name="Text"></param>
+        /// <returns></returns>
         public static string AddEnglishArticle(string Text)
         {
             // Add appropriate article - "a" or "an".
@@ -607,7 +599,7 @@ namespace RogueGame
         /// When the player identifies a certain inventory type, mark it
         /// so that future items will be identified.
         /// </summary>
-        /// <param name="PriorityID"></param>
+        /// <param name="PriorityID">PriorityID of selected item</param>
         public void SetInventoryAsIdentified(int PriorityID)
         {
             Inventory? template = GameInventory.InventoryItems.FirstOrDefault(x => x.PriorityId == PriorityID);
@@ -622,7 +614,6 @@ namespace RogueGame
                     item.IsIdentified = true;
             }
         }
-
         /// <summary>
         /// Search surrounding area for hidden items and display them.
         /// </summary>
@@ -728,10 +719,10 @@ namespace RogueGame
         }
 
         /// <summary>
-        /// Attach routine with calculations.
+        /// Attack routine with calculations - player attacking
         /// </summary>
-        /// <param name="Attacker"></param>
-        /// <param name="Defender"></param>
+        /// <param name="Attacker">Player object as attacker</param>
+        /// <param name="Defender">Monster object as defender</param>
         private void Attack(Player Attacker, Monster Defender)
         {
             int hitChance;
@@ -785,7 +776,11 @@ namespace RogueGame
                 CurrentMap.AddMonsters(1);
             }
         }
-
+        /// <summary>
+        /// Attack routine with calculation - monster attacking
+        /// </summary>
+        /// <param name="Attacker">Monster object as attacker</param>
+        /// <param name="Defender">Player object as defender</param>
         private void Attack(Monster Attacker, Player Defender)
         {
             int hitChance, armorRating, damage = 0;
@@ -826,7 +821,10 @@ namespace RogueGame
                 CauseOfDeath = (AddEnglishArticle(Attacker.MonsterName.ToLower()));
             }
         }
-
+        /// <summary>
+        /// Move the monster in response to player's move.
+        /// </summary>
+        /// <param name="monster">Monster object</param>
         public void MoveMonster(Monster monster)
         {
             char visibleCharacter;
@@ -953,9 +951,6 @@ namespace RogueGame
             else
                 // If the monster couldn't move, it might be resting. Decide if it should come out of nap time.
                 if (rand.Next(1, 101) > monster.Inertia) monster.CurrentState = Monster.Activity.Wandering;
-
-
-
         }
 
         /// <summary>
@@ -1046,8 +1041,6 @@ namespace RogueGame
 
         #region KeyProcs
 
-
-
         private void WieldProc()
         {
             // Wield a weapon
@@ -1111,16 +1104,18 @@ namespace RogueGame
             // Move player south
             MovePlayer(CurrentPlayer, MapLevel.Direction.South);
         }
-
-
+        /// <summary>
+        /// Allows the dev to cycle through many maps for testing
+        /// </summary>
         private void NewMapProc()
         {
             // Show new map if in Dev mode.
             if (DevMode)
                 ReplaceMap();
         }
-
-
+        /// <summary>
+        /// Hulk mode is a cheat code that lets the player quickly kill monsters.
+        /// </summary>
         private void HulkModeProc()
         {
             // Enable / disable hulk mode.
@@ -1129,7 +1124,9 @@ namespace RogueGame
             UpdateStatus(HulkMode ? "Hulk Mode ON" : "Hulk Mode OFF", false);
 
         }
-
+        /// <summary>
+        /// Turn Dev Mode ON / OFF
+        /// </summary>
         private void DevModeProc()
         {
             // Toggle Dev mode
@@ -1155,26 +1152,31 @@ namespace RogueGame
             GameMode = DisplayMode.Help;
             HelpScreen();
         }
-
+        /// <summary>
+        /// Go up staircase if possible.
+        /// </summary>
         private void UpstairsProc()
-        {
-            // Go up staircase if possible.
+        {           
             TurnInProgress = true;
             if (CurrentPlayer.Location!.MapCharacter.DisplayChar == MapLevel.STAIRWAY.DisplayChar)
                 ChangeLevel(-1);
             else
                 UpdateStatus("There's no stairway here.", false);
         }
-
+        /// <summary>
+        /// Go down staircase if possible. 
+        /// </summary>
         private void DownStairsProc()
-        {
-            // Go down staircase if possible.
+        {            
             TurnInProgress = true;
             if (CurrentPlayer.Location!.MapCharacter.DisplayChar == MapLevel.STAIRWAY.DisplayChar)
                 ChangeLevel(1);
             else
                 UpdateStatus("There's no stairway here.", false);
         }
+        /// <summary>
+        /// Turn Fast Play ON / OFF, enables player to continuously move until an obstruction.
+        /// </summary>
         private void FastPlayProc()
         {
             // Fast Play Toggle
@@ -1182,7 +1184,11 @@ namespace RogueGame
             UpdateStatus(FastPlay ? "Fast Play mode ON." : "Fast Play mode OFF", false);
         }
         #endregion
-
+        /// <summary>
+        /// Wield a specific weapon.
+        /// </summary>
+        /// <param name="ListItem">Menu character of chosen item</param>
+        /// <returns></returns>
         private bool Wield(char? ListItem)
         {
             bool retValue = false;
@@ -1277,8 +1283,8 @@ namespace RogueGame
         /// <summary>
         /// Wear specified armor.
         /// </summary>
-        /// <param name="ListItem">Selected list item</param>
-        /// <returns>True / False indicating if item was eaten</returns>
+        /// <param name="ListItem">Menu character of chosen item</param>
+        /// <returns>True / False indicating if item was sucessfuly worn</returns>
         private bool WearArmor(char? ListItem)
         {
             bool retValue = false;
@@ -1346,11 +1352,10 @@ namespace RogueGame
             return retValue;
         }
 
-
         /// <summary>
         /// Eat specified food.
         /// </summary>
-        /// <param name="ListItem">Selected list item</param>
+        /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns>True / False indicating if item was eaten</returns>
         private bool Eat(char? ListItem)
         {
@@ -1424,7 +1429,7 @@ namespace RogueGame
         /// <summary>
         /// Drop specified inventory on map.
         /// </summary>
-        /// <param name="ListItem">Selected item to be dropped</param>
+        /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns>True / False indicating success</returns>
         private bool DropInventory(char? ListItem)
         {
@@ -1552,7 +1557,11 @@ namespace RogueGame
 
             return retValue;
         }
-
+        /// <summary>
+        /// Read a selected scroll item.
+        /// </summary>
+        /// <param name="ListItem">Menu character of chosen item</param>
+        /// <returns></returns>
         private bool ReadScroll(char? ListItem)
         {
             bool retValue = false, readScroll = false;
@@ -1625,7 +1634,11 @@ namespace RogueGame
 
             return retValue;
         }
-
+        /// <summary>
+        /// Quaff the selected potion.
+        /// </summary>
+        /// <param name="ListItem">Menu character of chosen item</param>
+        /// <returns></returns>
         private bool QuaffPotion(char? ListItem)
         {
             bool retValue = false, quaffPotion = false;
