@@ -14,53 +14,91 @@ namespace RogueGame{
 
         #region Supporting Lists
         /// <summary>
-        /// Box drawing constants and other symbols.
+        /// Horizontal wall piece
         /// </summary>
-        public static readonly MapGlyph HORIZONTAL = new MapGlyph('═', Color.SaddleBrown, Color.Black);      // Unicode symbols can be copy-pasted from https://www.w3.org/TR/xml-entity-names/025.html.  
+        public static readonly MapGlyph HORIZONTAL = new MapGlyph('═', Color.SaddleBrown, Color.Black);      // Unicode symbols can be copy-pasted from https://www.w3.org/TR/xml-entity-names/025.html.
+        /// <summary>
+        /// Vertical wall piece.
+        /// </summary>
         public static readonly MapGlyph VERTICAL = new MapGlyph('║', Color.SaddleBrown, Color.Black);
+        /// <summary>
+        /// Northwest room corner
+        /// </summary>
         public static readonly MapGlyph CORNER_NW = new MapGlyph('╔', Color.SaddleBrown, Color.Black);
+        /// <summary>
+        /// Southeast room corner
+        /// </summary>
         public static readonly MapGlyph CORNER_SE = new MapGlyph('╝', Color.SaddleBrown, Color.Black);
+        /// <summary>
+        /// Northeast room corner
+        /// </summary>
         public static readonly MapGlyph CORNER_NE = new MapGlyph('╗', Color.SaddleBrown, Color.Black);
+        /// <summary>
+        /// Southwest room corner
+        /// </summary>
         public static readonly MapGlyph CORNER_SW = new MapGlyph('╚', Color.SaddleBrown, Color.Black);
+        /// <summary>
+        /// Room interior space
+        /// </summary>
         public static readonly MapGlyph ROOM_INT = new MapGlyph('·', Color.Gray, Color.Black);
+        /// <summary>
+        /// Room door piece
+        /// </summary>
         public static readonly MapGlyph ROOM_DOOR = new MapGlyph('╬', Color.SaddleBrown, Color.Black);
+        /// <summary>
+        /// Hallway space
+        /// </summary>
         public static readonly MapGlyph HALLWAY = new MapGlyph('▒', Color.White, Color.Black);
+        /// <summary>
+        /// Stairway symbol
+        /// </summary>
         public static readonly MapGlyph STAIRWAY = new MapGlyph('≣', Color.Black, Color.Green);
+        /// <summary>
+        /// Gold map symbol
+        /// </summary>
         public static readonly MapGlyph GOLD = new MapGlyph('*', Color.LightYellow, Color.Black);
+        /// <summary>
+        /// Amulet of Yendor symbol
+        /// </summary>
         public static readonly MapGlyph AMULET = new MapGlyph('♀', Color.Yellow, Color.Black);
+        /// <summary>
+        /// Empty map space
+        /// </summary>
         public static readonly MapGlyph EMPTY = new MapGlyph(' ', Color.Black, Color.Black);
         /// <summary>
-        /// Array to hold map definitions.
+        /// Private array of MapSpace objects to hold map definitions.
         /// </summary>
         private MapSpace[,] levelMap = new MapSpace[80, 25]; // Internal game map.
+        /// <summary>
+        /// Public array of MapGlyph objects to define user's view of finalized map.
+        /// </summary>
         public MapGlyph[,] DisplayMap = new MapGlyph[80, 25]; // Map to be shown to user.
         /// <summary>
         /// List of characters that will be marked as Lighted during map discovery.
         /// </summary>
-        private static List<char> MapDiscovery = new List<char>(){HORIZONTAL.DisplayChar, VERTICAL.DisplayChar,
+        private static List<char> MapDiscoveryGlyphList = new List<char>(){HORIZONTAL.DisplayChar, VERTICAL.DisplayChar,
             CORNER_NW.DisplayChar, CORNER_SE.DisplayChar, CORNER_NE.DisplayChar, CORNER_SW.DisplayChar,
             ROOM_DOOR.DisplayChar, HALLWAY.DisplayChar, STAIRWAY.DisplayChar};
         /// <summary>
         /// List of characters that occur inside a room.
         /// </summary>
-        private static List<char> RoomInterior = new List<char>(){ROOM_DOOR.DisplayChar, ROOM_INT.DisplayChar,
+        private static List<char> RoomInteriorGlyphList = new List<char>(){ROOM_DOOR.DisplayChar, ROOM_INT.DisplayChar,
             STAIRWAY.DisplayChar };
         /// <summary>
         /// List of characters a player or monster can move onto.
         /// </summary>
-        public static List<char> SpacesAllowed = new List<char>(){ROOM_INT.DisplayChar, STAIRWAY.DisplayChar,
+        public static List<char> InhabitableSpacesGlyphList = new List<char>(){ROOM_INT.DisplayChar, STAIRWAY.DisplayChar,
             ROOM_DOOR.DisplayChar, HALLWAY.DisplayChar };
         /// <summary>
         /// List of characters that can be moved past on Fast Play.
         /// </summary>
-        private static List<char> GlideSpaces = new List<char>(){ROOM_INT.DisplayChar, HORIZONTAL.DisplayChar,
+        private static List<char> PassableSpacesGlyphList = new List<char>(){ROOM_INT.DisplayChar, HORIZONTAL.DisplayChar,
             VERTICAL.DisplayChar, CORNER_NE.DisplayChar, CORNER_NW.DisplayChar, CORNER_SE.DisplayChar,
             CORNER_SW.DisplayChar, HALLWAY.DisplayChar, EMPTY.DisplayChar};
         /// <summary>
         /// Dictionary to hold hallway endings during map generation.
         /// </summary>
-        private Dictionary<MapSpace, Direction> deadEnds =
-            new Dictionary<MapSpace, Direction>();
+        private Dictionary<MapSpace, Direction> hallwayDeadEnds = new Dictionary<MapSpace, Direction>();
         /// <summary>
         /// List of monsters on current map.
         /// </summary>
@@ -78,7 +116,7 @@ namespace RogueGame{
         public enum Direction
         {
             None = 0,
-            North = 1,
+            North = 1,            
             East = 2,
             South = -1,
             West = -2
@@ -175,6 +213,9 @@ namespace RogueGame{
         /// <summary>
         /// Constructor - generate a new map for this level.
         /// </summary>
+        /// <param name="levelNumber">Map level</param>
+        /// <param name="currentPlayer">Current Player object</param>
+        /// <param name="GameInventory">Inventory dummy object reference for method access</param>
         public MapLevel(int levelNumber, Player currentPlayer, Inventory GameInventory)
         {
             this.CurrentLevel = levelNumber;
@@ -313,15 +354,14 @@ namespace RogueGame{
                 amulet = GetOpenSpace(false);
                 if (amulet != null)
                     MapInventory.Add(GameInventory.GetInventoryItem(Inventory.InvCategory.Amulet, amulet));
-            }
-
-            
+            }           
 
         }
         /// <summary>
         /// Add a specific number of monsters to the map.
         /// </summary>
-        /// <param name="Number"></param>
+        /// <param name="Number">Number of monsters to add.</param>
+        /// <param name="spaces">List of MapSpace objects in which monsters may be placed.</param>
         public void AddMonsters(int Number, List<MapSpace>? spaces = null)
         {
             Monster? spawned;
@@ -364,7 +404,7 @@ namespace RogueGame{
         /// <summary>
         /// Add specified number of inventory items to map.
         /// </summary>
-        /// <param name="Number"></param>
+        /// <param name="Number">Number of Inventory items to add.</param>
         public void AddInventory(int Number)
         {            
             Inventory invItem;
@@ -419,31 +459,31 @@ namespace RogueGame{
         /// <summary>
         /// Create room on map based on inputs
         /// </summary>
-        /// <param name="westWallX"></param>
-        /// <param name="northWallY"></param>
-        /// <param name="roomWidth"></param>
-        /// <param name="roomHeight"></param>
-        private void RoomGeneration(int westWallX, int northWallY, int roomWidth, int roomHeight)
+        /// <param name="westWallX">X-coord of northwest corner</param>
+        /// <param name="northWallY">Y-coord of northwest corner</param>
+        /// <param name="roomWidth">Width of room in spaces</param>
+        /// <param name="roomHeight">Height of room in spaces</param>
+        private void RoomGeneration(int WestWallX, int NorthWallY, int RoomWidth, int RoomHeight)
         {
-            int eastWallX = westWallX + roomWidth;          // Calculate room east
-            int southWallY = northWallY + roomHeight;       // Calculate room south
+            int eastWallX = WestWallX + RoomWidth;          // Calculate room east
+            int southWallY = NorthWallY + RoomHeight;       // Calculate room south
 
             // Regions are defined 1 to 9, L to R, top to bottom.
-            int regionNumber = GetRegionNumber(westWallX, northWallY);
+            int regionNumber = GetRegionNumber(WestWallX, NorthWallY);
             int doorway = 0, doorCount = 0, openX, openY;
 
             bool searchRequired;
 
             // Create horizontal and vertical walls for room and fill interior spaces.
-            for (int y = northWallY; y <= southWallY; y++)
+            for (int y = NorthWallY; y <= southWallY; y++)
             {
-                for (int x = westWallX; x <= eastWallX; x++)
+                for (int x = WestWallX; x <= eastWallX; x++)
                 {
-                    if (y == northWallY || y == southWallY)
+                    if (y == NorthWallY || y == southWallY)
                     {
                         levelMap[x, y] = new MapSpace(HORIZONTAL, false, false, x, y);
                     }
-                    else if (x == westWallX || x == eastWallX)
+                    else if (x == WestWallX || x == eastWallX)
                     {
                         levelMap[x, y] = new MapSpace(VERTICAL, false, false, x, y);
                     }
@@ -458,57 +498,57 @@ namespace RogueGame{
             while (doorCount == 0) { 
                 if (regionNumber >= 4 && rand.Next(1, 101) <= ROOM_EXIT_PCT)  // North doorways
                 {
-                    doorway = rand.Next(westWallX + 1, eastWallX);  // Random point on wall.
+                    doorway = rand.Next(WestWallX + 1, eastWallX);  // Random point on wall.
                     searchRequired = rand.Next(1, 101) <= HIDDEN_EXIT_PCT;  // Is the doorway hidden?
-                    levelMap[doorway, northWallY] = new MapSpace(ROOM_DOOR, false, searchRequired, doorway, northWallY);
-                    levelMap[doorway, northWallY].AltMapCharacter = searchRequired ? HORIZONTAL : null;
-                    levelMap[doorway, northWallY - 1] = new MapSpace(HALLWAY, false, false, doorway, northWallY - 1);
-                    deadEnds.Add(levelMap[doorway, northWallY - 1], Direction.North);  // Add to dead ends list.
+                    levelMap[doorway, NorthWallY] = new MapSpace(ROOM_DOOR, false, searchRequired, doorway, NorthWallY);
+                    levelMap[doorway, NorthWallY].AltMapCharacter = searchRequired ? HORIZONTAL : null;
+                    levelMap[doorway, NorthWallY - 1] = new MapSpace(HALLWAY, false, false, doorway, NorthWallY - 1);
+                    hallwayDeadEnds.Add(levelMap[doorway, NorthWallY - 1], Direction.North);  // Add to dead ends list.
                     doorCount++;  // Increment the count of doors created.
                 }
 
                 if (regionNumber <= 6 && rand.Next(1, 101) <= ROOM_EXIT_PCT)  // South doorways
                 {
-                    doorway = rand.Next(westWallX + 1, eastWallX);
+                    doorway = rand.Next(WestWallX + 1, eastWallX);
                     searchRequired = rand.Next(1, 101) <= HIDDEN_EXIT_PCT;
                     levelMap[doorway, southWallY] = new MapSpace(ROOM_DOOR, false, searchRequired, doorway, southWallY);
                     levelMap[doorway, southWallY].AltMapCharacter = searchRequired ? HORIZONTAL : null;
                     levelMap[doorway, southWallY + 1] = new MapSpace(HALLWAY, false, false, doorway, southWallY + 1);
-                    deadEnds.Add(levelMap[doorway, southWallY + 1], Direction.South);
+                    hallwayDeadEnds.Add(levelMap[doorway, southWallY + 1], Direction.South);
                     doorCount++;
                 }
 
                 if ("147258".Contains(regionNumber.ToString()) && rand.Next(1, 101) <= ROOM_EXIT_PCT)  // East doorways
                 {
-                    doorway = rand.Next(northWallY + 1, southWallY);
+                    doorway = rand.Next(NorthWallY + 1, southWallY);
                     searchRequired = rand.Next(1, 101) <= HIDDEN_EXIT_PCT;
                     levelMap[eastWallX, doorway] = new MapSpace(ROOM_DOOR, false, searchRequired, eastWallX, doorway);
                     levelMap[eastWallX, doorway].AltMapCharacter = searchRequired ? VERTICAL : null;
                     levelMap[eastWallX + 1, doorway] = new MapSpace(HALLWAY, false, false, eastWallX + 1, doorway);
-                    deadEnds.Add(levelMap[eastWallX + 1, doorway], Direction.East);
+                    hallwayDeadEnds.Add(levelMap[eastWallX + 1, doorway], Direction.East);
                     doorCount++;
                 }
 
                 if ("258369".Contains(regionNumber.ToString()) && rand.Next(1, 101) <= ROOM_EXIT_PCT)  // West doorways
                 {
-                    doorway = rand.Next(northWallY + 1, southWallY);
+                    doorway = rand.Next(NorthWallY + 1, southWallY);
                     searchRequired = rand.Next(1, 101) <= HIDDEN_EXIT_PCT;
-                    levelMap[westWallX, doorway] = new MapSpace(ROOM_DOOR, false, searchRequired, westWallX, doorway);
-                    levelMap[westWallX, doorway].AltMapCharacter = searchRequired ? VERTICAL : null;
-                    levelMap[westWallX - 1, doorway] = new MapSpace(HALLWAY, false, false, westWallX - 1, doorway);
-                    deadEnds.Add(levelMap[westWallX - 1, doorway], Direction.West);
+                    levelMap[WestWallX, doorway] = new MapSpace(ROOM_DOOR, false, searchRequired, WestWallX, doorway);
+                    levelMap[WestWallX, doorway].AltMapCharacter = searchRequired ? VERTICAL : null;
+                    levelMap[WestWallX - 1, doorway] = new MapSpace(HALLWAY, false, false, WestWallX - 1, doorway);
+                    hallwayDeadEnds.Add(levelMap[WestWallX - 1, doorway], Direction.West);
                     doorCount++;
                 }
             }
 
             // Set the room corners.
-            levelMap[westWallX, northWallY] = new MapSpace(CORNER_NW, false, false, westWallX, northWallY);
-            levelMap[eastWallX, northWallY] = new MapSpace(CORNER_NE, false, false, eastWallX, northWallY);
-            levelMap[westWallX, southWallY] = new MapSpace(CORNER_SW, false, false, westWallX, southWallY);
+            levelMap[WestWallX, NorthWallY] = new MapSpace(CORNER_NW, false, false, WestWallX, NorthWallY);
+            levelMap[eastWallX, NorthWallY] = new MapSpace(CORNER_NE, false, false, eastWallX, NorthWallY);
+            levelMap[WestWallX, southWallY] = new MapSpace(CORNER_SW, false, false, WestWallX, southWallY);
             levelMap[eastWallX, southWallY] = new MapSpace(CORNER_SE, false, false, eastWallX, southWallY);
 
             // Set starting point to northwest corner
-            openX = westWallX; openY = northWallY;
+            openX = WestWallX; openY = NorthWallY;
 
             // Evaluate room for a gold deposit
             if (rand.Next(1, 101) < ROOM_GOLD_PCT)
@@ -517,8 +557,8 @@ namespace RogueGame{
                 // and mark it as a gold deposit.
                 while (PriorityChar(levelMap[openX, openY], true).DisplayChar != ROOM_INT.DisplayChar)
                 {
-                    openX = rand.Next(westWallX + 1, eastWallX);
-                    openY = rand.Next(northWallY + 1, southWallY);
+                    openX = rand.Next(WestWallX + 1, eastWallX);
+                    openY = rand.Next(NorthWallY + 1, southWallY);
                 }
 
                 MapInventory.Add(GameInventory.GetInventoryItem(Inventory.InvCategory.Gold, levelMap[openX, openY]));
@@ -538,13 +578,13 @@ namespace RogueGame{
             // Iterate through the list of hallway endings (deadends) until all are resolved one way or another.
             // Count backwards so we can remove processed items.
 
-            while (deadEnds.Count > 0)
+            while (hallwayDeadEnds.Count > 0)
             {
-                for (int i = deadEnds.Count - 1; i >= 0; i--)
+                for (int i = hallwayDeadEnds.Count - 1; i >= 0; i--)
                 {
                     // Establish current space and three directions - forward and to the sides.
-                    hallwaySpace = deadEnds.ElementAt(i).Key;
-                    hallDirection = deadEnds.ElementAt(i).Value;
+                    hallwaySpace = hallwayDeadEnds.ElementAt(i).Key;
+                    hallDirection = hallwayDeadEnds.ElementAt(i).Value;
                     direction90 = GetDirection90(hallDirection);
                     direction270 = GetDirection270(hallDirection);
                     hallwayDug = false;
@@ -580,27 +620,27 @@ namespace RogueGame{
                                 {
                                     newSpace = new MapSpace(HALLWAY, adjacentChars[direct]);
                                     levelMap[adjacentChars[direct].X, adjacentChars[direct].Y] = newSpace;
-                                    deadEnds.Remove(hallwaySpace);
-                                    deadEnds.Add(newSpace, direct);
+                                    hallwayDeadEnds.Remove(hallwaySpace);
+                                    hallwayDeadEnds.Add(newSpace, direct);
                                     break;
                                 }
                             }
                             break;
                         }
 
-                        deadEnds.Remove(hallwaySpace);
+                        hallwayDeadEnds.Remove(hallwaySpace);
                     }
                     else
-                        deadEnds.Remove(hallwaySpace);
+                        hallwayDeadEnds.Remove(hallwaySpace);
                 }
             }
         }        
         /// <summary>
         /// Draw a hallway between specified spaces.  Break off if another hallway
-            /// is discovered to the side.
+        /// is discovered to the side.
         /// </summary>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
+        /// <param name="start">Starting space</param>
+        /// <param name="end">Ending space</param>
         /// <param name="hallDirection"></param>
         private void DrawHallway(MapSpace start, MapSpace end, Direction hallDirection)
         {
@@ -641,7 +681,7 @@ namespace RogueGame{
 
         }        
         /// <summary>
-        /// Raise the fog of war and hide the map.
+        /// Raise the fog of war and hide the map contents.
         /// </summary>
         public void ShroudMap()
         {
@@ -658,7 +698,7 @@ namespace RogueGame{
         /// <summary>
         /// Return direction 90 degrees from original based on forward direction.
         /// </summary>
-        /// <param name="startingDirection"></param>
+        /// <param name="startingDirection">Initial direction from which to calculate new direction.</param>
         /// <returns></returns>
         public Direction GetDirection90(Direction startingDirection)
         {
@@ -668,7 +708,7 @@ namespace RogueGame{
         /// <summary>
         /// Return direction 270 degrees from original (opposite of 90 degrees) based on forward direction.
         /// </summary>
-        /// <param name="startingDirection"></param>
+        /// <param name="startingDirection">Initial direction from which to calculate new direction.</param>
         /// <returns></returns>
         public Direction GetDirection270(Direction startingDirection)
         {
@@ -679,7 +719,7 @@ namespace RogueGame{
         /// <summary>
         /// Return direction 180 degrees from original (opposite) based on forward direction.
         /// </summary>
-        /// <param name="startingDirection"></param>
+        /// <param name="startingDirection">Initial direction from which to calculate new direction.</param>
         /// <returns></returns>
         public Direction GetDirection180(Direction startingDirection)
         {
@@ -715,8 +755,8 @@ namespace RogueGame{
         /// <summary>
         /// Search in four directions around point. Return list of directions and characters found.
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
+        /// <param name="x">Starting X point</param>
+        /// <param name="y">Starting Y point</param>
         /// <returns>Dictionary of directions and characters found.</returns>
         public Dictionary<Direction, MapSpace> SearchAdjacent(int x, int y)
         {
@@ -740,26 +780,26 @@ namespace RogueGame{
         /// <summary>
         /// Look in all directions and return a Dictionary of the first non-space characters found.
         /// </summary>
-        /// <param name="currentX"></param>
-        /// <param name="currentY"></param>
+        /// <param name="currentX">Starting X point</param>
+        /// <param name="currentY">Starting Y point</param>
         /// <returns></returns>
         public Dictionary<Direction, MapSpace> SearchAllDirections(int currentX, int currentY)
         {
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
 
-            retValue.Add(Direction.North, SearchDirection(Direction.North, currentX, currentY - 1));
-            retValue.Add(Direction.South, SearchDirection(Direction.South, currentX, currentY + 1));
-            retValue.Add(Direction.East, SearchDirection(Direction.East, currentX + 1, currentY));
-            retValue.Add(Direction.West, SearchDirection(Direction.West, currentX - 1, currentY));
+            retValue.Add(Direction.North, SearchDirection(Direction.North, currentX, currentY - 1)!);
+            retValue.Add(Direction.South, SearchDirection(Direction.South, currentX, currentY + 1)!);
+            retValue.Add(Direction.East, SearchDirection(Direction.East, currentX + 1, currentY)!);
+            retValue.Add(Direction.West, SearchDirection(Direction.West, currentX - 1, currentY)!);
 
             return retValue;
         }
         /// <summary>
         /// Get the next non-space object found in a given direction. Return null if none is found.
         /// </summary>
-        /// <param name="direction"></param>
-        /// <param name="startX"></param>
-        /// <param name="startY"></param>
+        /// <param name="direction">Direction to search</param>
+        /// <param name="startX">Starting X point</param>
+        /// <param name="startY">Starting Y point</param>
         /// <returns></returns>
         public MapSpace? SearchDirection(Direction direction, int startX, int startY)
         {
@@ -799,7 +839,7 @@ namespace RogueGame{
         /// <summary>
         /// Look for and return an inventory item at a specific location.
         /// </summary>
-        /// <param name="Location"></param>
+        /// <param name="Location">MapSpace object to search</param>
         /// <returns></returns>
         public Inventory? DetectInventory(MapSpace Location)
         {
@@ -814,8 +854,7 @@ namespace RogueGame{
         /// Search for a monster at a specific location based on the locations
         /// recorded in the ActiveMonsters list.
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
+        /// <param name="Location">MapSpace object to search</param>
         /// <returns></returns>
         public Monster? DetectMonster(MapSpace Location)
         {
@@ -829,8 +868,8 @@ namespace RogueGame{
         /// <summary>
         /// Get the highest priority character for display to the user.
         /// </summary>
-        /// <param name="Space"></param>
-        /// <param name="ShowHidden"></param>
+        /// <param name="Space">MapSpace object to search</param>
+        /// <param name="ShowHidden">Show objects that are marked as hidden and require searching.</param>
         /// <returns></returns>
         public MapGlyph PriorityChar(MapSpace Space, bool ShowHidden)
         {
@@ -857,8 +896,9 @@ namespace RogueGame{
         /// <summary>
         /// Return a list of all spaces around given space in eight directions.
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
+        /// <param name="x">Starting X point</param>
+        /// <param name="y">Starting Y point</param>
+        /// <param name="spaces">Number of spaces outward to search</param>
         /// <returns></returns>
         public List<MapSpace> GetSurrounding(int x, int y, int spaces)
         {
@@ -872,7 +912,8 @@ namespace RogueGame{
         /// <summary>
         /// Return a random open space on the map.
         /// </summary>
-        /// <param name="hallways"></param>
+        /// <param name="hallways">Include hallway spaces</param>
+        /// <param name="limitTo">List of MapSpace objects to filter the selection</param>
         /// <returns></returns>
         public MapSpace? GetOpenSpace(bool hallways, List<MapSpace>? limitTo = null)
         {
@@ -937,11 +978,13 @@ namespace RogueGame{
                 }
             }
         }
-
+        /// <summary>
+        /// Reveals a specific room, discovered or not.
+        /// </summary>
+        /// <param name="xPos">Starting X point</param>
+        /// <param name="yPos">Startign Y point</param>
         public void LightUpRoom(int xPos, int yPos)
         {
-            // Reveals a specific room, discovered or not.
-
             // Get region limits
             Tuple<MapSpace, MapSpace> corners = GetRegionLimits(xPos, yPos);
 
@@ -963,8 +1006,8 @@ namespace RogueGame{
         /// <summary>
         /// Set surrounding spaces to Discovered and Lighted.
         /// </summary>
-        /// <param name="xPos"></param>
-        /// <param name="yPos"></param>
+        /// <param name="xPos">Starting X point</param>
+        /// <param name="yPos">Starting Y point</param>
         public void ShowSurrounding(int xPos, int yPos)
         {
             foreach (MapSpace space in GetSurrounding(xPos, yPos, 1))
@@ -977,7 +1020,7 @@ namespace RogueGame{
                 // that should remain visible, mark it as lighted.
                 if (!space.Lighted)
                 {
-                    if (MapDiscovery.Contains(space.MapCharacter.DisplayChar))
+                    if (MapDiscoveryGlyphList.Contains(space.MapCharacter.DisplayChar))
                         space.Lighted = true;
                 }
             }
@@ -999,7 +1042,7 @@ namespace RogueGame{
                 // Ignore player's space.
                 if (!retValue) 
                     if (space.X != xPos || space.Y != yPos)
-                        retValue = (!GlideSpaces.Contains(PriorityChar(space, false).DisplayChar));
+                        retValue = (!PassableSpacesGlyphList.Contains(PriorityChar(space, false).DisplayChar));
             }
 
             return retValue;
@@ -1014,7 +1057,7 @@ namespace RogueGame{
             bool retValue = false;
 
             List<MapSpace> spaces = (from MapSpace space in levelMap
-                                        where MapDiscovery.Contains(space.MapCharacter.DisplayChar)
+                                        where MapDiscoveryGlyphList.Contains(space.MapCharacter.DisplayChar)
                                         select space).ToList();
 
             spaces.ForEach(space => { space.Discovered = true; space.Lighted = true;
@@ -1023,8 +1066,9 @@ namespace RogueGame{
             return retValue;
         }
         /// <summary>
-        /// Show all the food on the map.
+        /// Show all the inventory of a particular category.
         /// </summary>
+        /// <param name="Category">Member of InvCategory enumeration</param>
         /// <returns></returns>
         public bool DiscoverInventoryByCat(Inventory.InvCategory Category)
         {
@@ -1069,8 +1113,8 @@ namespace RogueGame{
         /// <summary>
         /// Get northwest and south east corners of region based on X,Y coordintes.
         /// </summary>
-        /// <param name="xPos"></param>
-        /// <param name="yPos"></param>
+        /// <param name="xPos">Map X coordinate within region</param>
+        /// <param name="yPos">Map Y coordinate within region</param>
         /// <returns></returns>
         private Tuple<MapSpace, MapSpace> GetRegionLimits(int xPos, int yPos)
         {
@@ -1087,7 +1131,7 @@ namespace RogueGame{
         /// <summary>
         /// Get northwest and south east corners of specific region.
         /// </summary>
-        /// <param name="RegionNumber"></param>
+        /// <param name="RegionNumber">Specific region number</param>
         /// <returns></returns>
         private Tuple<MapSpace, MapSpace> GetRegionLimits(int RegionNumber)
         {
@@ -1105,7 +1149,7 @@ namespace RogueGame{
             return new Tuple<MapSpace, MapSpace>(levelMap[xTopLeft, yTopLeft], levelMap[xBottomRight, yBottomRight]);
         }
         /// <summary>
-        /// For Dev mode. Output the array to text for display with no alternate characters and everything visible.
+        /// For Dev mode. Output the array with no alternate characters and everything visible.
         /// </summary>
         /// <returns></returns>
         public MapGlyph[,] MapCheck()
@@ -1123,21 +1167,20 @@ namespace RogueGame{
             return DisplayMap;
         }
         /// <summary>
-        /// Output the array to text for display.
+        /// Output the levelMap array DisplayMap for display to the user.
         /// </summary>
-        /// <param name="PlayerLocation"></param>
         /// <returns></returns>
         public MapGlyph[,] MapText()
         {
             StringBuilder sbReturn = new StringBuilder();
-            List<MapSpace> surroundingSpaces = GetSurrounding(CurrentPlayer.Location.X, CurrentPlayer.Location.Y, 1);
+            List<MapSpace> surroundingSpaces = GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 1);
             int playerRegion = GetRegionNumber(CurrentPlayer.Location.X, CurrentPlayer.Location.Y); 
             MapGlyph? priorityChar, appendChar;
             bool playerInRoom = false;
             int regionNo;
 
-            // Iterate through the two-dimensional array and use StringBuilder to 
-            // concatenate the proper characters into rows and columns for display.
+            // Iterate through the two-dimensional levelMap MapSpace array and use determine which MapGlyph objects 
+            // to output to the DisplayMap array for display to the user.
 
             for (int y = 0; y <= MAP_HT; y++)
             {
@@ -1150,7 +1193,7 @@ namespace RogueGame{
 
                     // Determine if player is actually in the current region's room.
                     playerInRoom = (regionNo == playerRegion &&
-                                (RoomInterior.Contains(CurrentPlayer.Location.MapCharacter.DisplayChar)));
+                                (RoomInteriorGlyphList.Contains(CurrentPlayer.Location.MapCharacter.DisplayChar)));
 
                     // If the space is within one space of the character, show standard 
                     // priority character no matter what.
@@ -1163,13 +1206,14 @@ namespace RogueGame{
                     {
                         if (levelMap[x, y].Lighted)
                         {
-                            if (playerInRoom && RoomInterior.Contains(levelMap[x,y].MapCharacter.DisplayChar) || levelMap[x, y].RemoteSight)
+                            if (playerInRoom && RoomInteriorGlyphList.Contains(levelMap[x,y].MapCharacter.DisplayChar) || levelMap[x, y].RemoteSight)
                                 appendChar = priorityChar;
                             else
                                 appendChar = (levelMap[x, y].SearchRequired) ?
                                     levelMap[x, y].AltMapCharacter : levelMap[x, y].MapCharacter;
                         }
 
+                        // If nothing has been selectd at this point, just pass an empty map space.
                         if (appendChar == null) { appendChar = EMPTY; }
                     }
 
@@ -1205,7 +1249,7 @@ namespace RogueGame{
             return retList;
         }
         /// <summary>
-        /// 
+        /// Accepts ASCII screen string and converts it to array of MapGlyphs
         /// </summary>
         /// <param name="TextOutput"></param>
         public void UpdateDisplayFromText(string TextOutput)

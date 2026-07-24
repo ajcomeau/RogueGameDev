@@ -13,13 +13,14 @@ namespace RogueGame
     internal class Monster
     {
         #region Constants and Properties
-
+        /// <summary>
+        /// Monster activity mode indicating current behavior
+        /// </summary>
         public enum Activity {
             Resting = 0,
             Wandering = 1,
             Angered = 2
-        }        
-        
+        }                
         /// <summary>
         /// Monster templates - program grabs these at random to spawn new monsters on map.
         /// </summary>
@@ -57,7 +58,6 @@ namespace RogueGame
         /// Read-only collection of monster templates.
         /// </summary>
         public static ReadOnlyCollection<Monster> Monsters => monsterIncubator.AsReadOnly();
-
         /// <summary>
         /// Aquator, Centaur, Griffin, etc..
         /// </summary>
@@ -135,19 +135,36 @@ namespace RogueGame
         /// </summary>
         public Activity CurrentState { get; set; } = Activity.Resting;
         /// <summary>
-        /// Can the monster regenerate hit points?
+        /// Trolls, vampires and griffins (oh my!) can regenerate hit points.
         /// </summary>
-        public bool CanRegenerate { get; set; } /// TODO: What is this used for?
+        public bool CanRegenerate { get; set; }
+        /// <summary>
+        /// Monster is confused, i.e. by scroll effects or other causes.
+        /// </summary>
         public int Confused { get; set; } = 0;
+        /// <summary>
+        /// Monster is paralyzed.
+        /// </summary>
         public int Immobile { get; set; } = 0;
+        /// <summary>
+        /// Monster is blind.
+        /// </summary>
         public int Blind { get; set; } = 0;
         /// <summary>
         /// Current gold
         /// </summary>        
         public int Gold { get; set; } = 0;
-        /// Inventory
+        /// <summary>
+        /// List of Inventory objects being held by monster.
+        /// </summary>
         public List<Inventory> MonsterInventory { get; set; }
+        /// <summary>
+        /// Current location of monster on the map.
+        /// </summary>
         public MapSpace? Location { get; set; }
+        /// <summary>
+        /// A persistent direction of movement for the monster. Maintained between turns.
+        /// </summary>
         public MapLevel.Direction? Direction { get; set; }
 
         #endregion
@@ -170,7 +187,7 @@ namespace RogueGame
         /// <param name="specialAttack">Special attack function</param>
         /// <param name="aggressive">Does the monster initiate attacks on sight?</param>
         /// <param name="inertia">How likely is the monster to continue moving?</param>
-        /// <param name="canRegenerate">Is the monster currently angry and persisting in an atack?</param>
+        /// <param name="canRegenerate">Can this monster regenerate hit points?</param>
         public Monster(string monsterName, int minStartingHP, int maxStartingHP,  
             int armorClass, int expReward, int minLevel, int maxLevel, int appearancePct, 
             int minAttackDmg, int maxAttackDmg, MapGlyph displayCharacter, int specialAttackPct, 
@@ -195,7 +212,6 @@ namespace RogueGame
             this.CanRegenerate = canRegenerate;
             this.MonsterInventory = new List<Inventory>();
         }
-
         /// <summary>
         /// Clone a monster from one of the incubator definitions.
         /// </summary>
@@ -222,8 +238,11 @@ namespace RogueGame
             this.CanRegenerate = original.CanRegenerate;
             this.MonsterInventory = new List<Inventory>();            
         }
-
-
+        /// <summary>
+        /// Get a Monster object appropriate to a specific map level.
+        /// </summary>
+        /// <param name="LevelNumber">Number of current map level</param>
+        /// <returns></returns>
         public static Monster? SpawnMonster(int LevelNumber)
         {
             int itemSelect = 0;

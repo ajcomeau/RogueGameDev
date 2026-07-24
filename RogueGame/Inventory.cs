@@ -1,14 +1,17 @@
-﻿using System;
+﻿using Microsoft.VisualBasic.ApplicationServices;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Linq;
+using System.Net.Http.Headers;
+using System.Reflection;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
-using System.Linq;
-using System.Collections.ObjectModel;
-using System.Reflection;
-using System.Diagnostics;
-using System.Net.Http.Headers;
 using System.Windows.Forms.Design;
+using System.Xml;
 
 namespace RogueGame
 {
@@ -40,14 +43,12 @@ namespace RogueGame
         /// Random number generator
         /// </summary>
         private static Random rand = new Random();
-
         /// <summary>
         /// Item templates - program grabs these at random to create new inventory on map.
         /// PriorityID values MUST BE UNIQUE. These will be used to identify the item elsewhere and to order the
         /// items in the inventory listing.
         /// </summary>
         private List<Inventory> invItems;
-
         /// <summary>
         /// Read-only collection of inventory templates.
         /// </summary>
@@ -175,8 +176,6 @@ namespace RogueGame
                 InitializeInventory();
             }
         }
-
-
         /// <summary>
         /// Clone a new object off of another. To be used with inventory object templates.
         /// </summary>
@@ -220,6 +219,7 @@ namespace RogueGame
         /// <param name="Groupable">Can the item be part of a collection in inventory?</param>
         /// <param name="Wieldable">Can this be used as a weapon?</param>
         /// <param name="Cursed">Is it cursed?</param>
+        /// <param name="Protected">Is the item protected from attack, theft, etc.?</param>
         /// <param name="ArmorClass">Class level for armor items</param>
         /// <param name="Increment">Item increment level</param>
         /// <param name="DamageInc">Damage increment</param>
@@ -293,14 +293,16 @@ namespace RogueGame
             // If the two names are the same or the type is greater than 6, it's identified.
             this.IsIdentified = (this.RealName == this.CodeName || (int)this.ItemCategory > 5);
         }
-
+        /// <summary>
+        /// For every inventory template that is marked as non-identified, select a random
+        /// code name from the same category and then remove it from the list.
+        /// </summary>
         public void InitializeInventory()
         {
             List<Tuple<InvCategory, string>> names = new List<Tuple<InvCategory, string>>();
             Tuple<InvCategory, string> code;
 
-            // For every inventory template that is marked as non-identified, select a random
-            // code name from the same category and then remove it from the list.
+            // Iterate through template collection and assign code names.
 
             foreach (Inventory item in invItems)
             {
@@ -316,10 +318,11 @@ namespace RogueGame
                 }
             }
         }
-
+        /// <summary>
+        /// Instantiate code names list
+        /// </summary>
         private void LoadCodeNames()
         {
-            // Instantiate code names list
             this.CodeNames =
             new List<Tuple<InvCategory, string>>()
             {
@@ -410,9 +413,12 @@ namespace RogueGame
             };
         }
 
+        /// <summary>
+        /// Load inventory items into this instance of the class. PriorityID and names values MUST BE UNIQUE.
+        /// These will be used to identify the item elsewhere and to order the items in the inventory listing.
+        /// </summary>
         private void LoadInventory()
         {
-            // Load inventory items into this instance of the class.
             this.invItems = new List<Inventory>()
             {
                 new Inventory(InvCategory.Food, 1, "some food", "some food", "rations of food", new MapGlyph('♣', Color.Red, Color.Black), 25, true),
@@ -456,7 +462,6 @@ namespace RogueGame
                 new Inventory(InvCategory.Gold, 39, "gold", "gold", "gold", true, true, false, false, false,  false,0, 0, 0, 0, 0, 0, 0, 25, new MapGlyph('*', Color.Gold, Color.Black), null)
             };
         }
-
 
         /// <summary>
         /// Generates grouped inventory listing for inventory display screen.

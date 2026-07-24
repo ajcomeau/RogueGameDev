@@ -154,7 +154,8 @@ namespace RogueGame
         /// <summary>
         /// Primary constructor for creating new player when game starts.
         /// </summary>
-        /// <param name="PlayerName"></param>
+        /// <param name="PlayerName">Player's name</param>
+        /// <param name="AssignedInventory">List of assigned Inventory objects</param>
         public Player(string PlayerName, List<Inventory>? AssignedInventory) {
 
             Inventory dInv = new Inventory(false);
@@ -206,11 +207,10 @@ namespace RogueGame
                     where item.RealName == ItemName
                     select item).FirstOrDefault();
         }
-
         /// <summary>
         /// Get first inventory item of a specific category.
         /// </summary>
-        /// <param name="Category"></param>
+        /// <param name="Category">Specific member of InvCategory enumeration</param>
         /// <returns></returns>
         public Inventory? SearchInventory(Inventory.InvCategory Category)
         {

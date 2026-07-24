@@ -684,7 +684,7 @@ namespace RogueGame
                 }
 
                 // The player can move if the visible character is within a room or a hallway and there's no monster there.
-                canMove = MapLevel.SpacesAllowed.Contains(visibleCharacter) ||
+                canMove = MapLevel.InhabitableSpacesGlyphList.Contains(visibleCharacter) ||
                     (invFound != null && monster == null);
 
                 if (canMove)
@@ -879,7 +879,7 @@ namespace RogueGame
                     // for one that's available and closest to the player.
                     foreach (KeyValuePair<MapLevel.Direction, MapSpace> adjSpace in adjacent)
                     {
-                        if (MapLevel.SpacesAllowed.Contains(CurrentMap.PriorityChar(adjSpace.Value, false).DisplayChar) ||
+                        if (MapLevel.InhabitableSpacesGlyphList.Contains(CurrentMap.PriorityChar(adjSpace.Value, false).DisplayChar) ||
                             CurrentMap.DetectInventory(adjSpace.Value) != null)
                         {
                             tentativeDistance = Math.Abs(adjSpace.Value.X - CurrentPlayer.Location.X)
@@ -929,7 +929,7 @@ namespace RogueGame
 
                 // The monster can move if the visible character is within a room or a hallway
                 // and there's nobody else there.
-                canMove = MapLevel.SpacesAllowed.Contains(visibleCharacter) || foundInventory != null;
+                canMove = MapLevel.InhabitableSpacesGlyphList.Contains(visibleCharacter) || foundInventory != null;
 
                 if (canMove)
                     monster.Location = adjacent[direct];
@@ -974,7 +974,7 @@ namespace RogueGame
                 & CurrentMap.DetectMonster(Target) == null // No monster
                 & CurrentMap.DetectInventory(Target) == null // No mnventory  
                 & Target.MapCharacter.DisplayChar == Origin.MapCharacter.DisplayChar
-                & MapLevel.SpacesAllowed.Contains(CurrentMap.PriorityChar(Target, false).DisplayChar)
+                & MapLevel.InhabitableSpacesGlyphList.Contains(CurrentMap.PriorityChar(Target, false).DisplayChar)
                 & CurrentMap.SearchAdjacent(MapLevel.HALLWAY.DisplayChar, Origin.X, Origin.Y).Count < 3;
         }
 
