@@ -454,7 +454,6 @@ namespace RogueGame{
             invItem.Location = new MapSpace(Location.MapCharacter, Location);
 
             MapInventory.Add(invItem);
-
         }
         /// <summary>
         /// Create room on map based on inputs
@@ -495,6 +494,7 @@ namespace RogueGame{
             // Add doorways and initial hallways on room. Room walls facing the edges of the map do not get exits
             // so the ROOM_EXIT_PCT constant needs to be high to ensure that every room gets at least one and we
             // still might need to repeat the process anyway.
+            // TODO: Review this.
             while (doorCount == 0) { 
                 if (regionNumber >= 4 && rand.Next(1, 101) <= ROOM_EXIT_PCT)  // North doorways
                 {
@@ -735,6 +735,7 @@ namespace RogueGame{
         /// <returns>Dictionary of directions and characters found.</returns>
         public Dictionary<Direction, MapSpace> SearchAdjacent(char character, int x, int y)
         {
+            // TODO: Could this be done better as a LINQ function?
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
 
             if (y - 1 >= 0 && levelMap[x, y - 1].MapCharacter.DisplayChar == character)  // North
@@ -760,6 +761,7 @@ namespace RogueGame{
         /// <returns>Dictionary of directions and characters found.</returns>
         public Dictionary<Direction, MapSpace> SearchAdjacent(int x, int y)
         {
+            // TODO: Could this be done better as a LINQ function?
             // For each direction, add the existing mapspace if available.
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
          
@@ -778,7 +780,7 @@ namespace RogueGame{
             return retValue;
         }
         /// <summary>
-        /// Look in all directions and return a Dictionary of the first non-space characters found.
+        /// Look in all four directions and return a Dictionary of the first non-space characters found.
         /// </summary>
         /// <param name="currentX">Starting X point</param>
         /// <param name="currentY">Starting Y point</param>
@@ -803,6 +805,7 @@ namespace RogueGame{
         /// <returns></returns>
         public MapSpace? SearchDirection(Direction direction, int startX, int startY)
         {
+            // TODO: Evaluate for simpler method.
             int currentX = startX, currentY = startY;
             MapSpace? retValue = null;
 
@@ -1034,6 +1037,7 @@ namespace RogueGame{
         /// <returns></returns>
         public bool DetectObstruction(int xPos, int yPos)
         {
+            // TODO: This might need to be adjusted to allow more gliding.
             bool retValue = false;
 
             foreach (MapSpace space in GetSurrounding(xPos, yPos, 1))

@@ -1712,18 +1712,26 @@ namespace RogueGame
         #endregion
 
         #region Scroll Methods
-
+        /// <summary>
+        /// Player has read a scroll of identify. Ask them to select another item to identify.
+        /// </summary>
+        /// <returns></returns>
         public bool ScrollOfIdentifyBegin()
         {
             bool retValue = false;
             UpdateStatus("This is a Scroll of Identify. Please select an item to identify.", false);
             DisplayInventory();
+            // Set return function to respond to next key command.
             ReturnFunction = ScrollOfIdentifyEnd;
             retValue = true;
 
             return retValue;
         }
-
+        /// <summary>
+        /// Process user choice for inventory item to identify.
+        /// </summary>
+        /// <param name="ListItem"></param>
+        /// <returns></returns>
         private bool ScrollOfIdentifyEnd(char? ListItem)
         {
             bool retValue = false;
@@ -1754,19 +1762,23 @@ namespace RogueGame
             return retValue;
 
         }
-
+        /// <summary>
+        /// Reveal entire map
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfMagicMapping()
-        {
-            // Reveal entire map
+        {          
             UpdateStatus("This scroll has a map on it!", false);
             CurrentMap.DiscoverMap();
             
             return true;
         }
-
+        /// <summary>
+        /// Raise the player's current armor by one level and remove any curse.
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfEnchantArmor()
         {
-            // Raise the player's current armor by one level and remove any curse.
             if(CurrentPlayer.Armor != null) {
                 UpdateStatus($"Your armor's rating has been upgraded to {CurrentPlayer.Armor.ArmorClass + ++CurrentPlayer.Armor.Increment}.", false);
                 CurrentPlayer.Armor.IsCursed = false;
@@ -1776,10 +1788,12 @@ namespace RogueGame
 
             return true;
         }
-
+        /// <summary>
+        /// Increase the damage for the player's current weapon.
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfEnchantWeapon()
         {
-            // Increase the damage for the player's current weapon.
             if (CurrentPlayer.Wielding != null)
             {
                 CurrentPlayer.Wielding.DmgIncrement++;
@@ -1791,11 +1805,13 @@ namespace RogueGame
             
             return true;
         }
-
+        /// <summary>
+        /// Reveal all the food on the map.
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfFoodDetection()
         {
             bool retValue = false;
-            // Reveal all the food on the map.
             retValue = CurrentMap.DiscoverInventoryByCat(InvCategory.Food);
             
             if (retValue) 
@@ -1805,11 +1821,13 @@ namespace RogueGame
 
             return retValue;
         }
-
+        /// <summary>
+        /// Reveal all the gold on the map.
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfGoldDetection()
         {
             bool retValue = false;
-            // Reveal all the gold on the map.
             retValue = CurrentMap.DiscoverInventoryByCat(InvCategory.Gold);
 
             if (retValue)
@@ -1819,33 +1837,39 @@ namespace RogueGame
 
             return retValue;
         }
-
+        /// <summary>
+        /// Reveal the player's current room.
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfLight()
         {
             if (CurrentPlayer.Location != null)
             {
-                // Reveal the current room.
                 CurrentMap.LightUpRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
                 UpdateStatus("The entire room is lit by an unearthly glow.", false);
             }
 
             return true;
         }
-
+        /// <summary>
+        /// Activate the player's ability to confuse the next monster hit.
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfConfuseMonsterBegin()
         {
             //TODO: Review these values for possible new constants depending on other inventory effect ranges.
-            // Activate the player's ability to confuse the next monster hit.
             int turns = rand.Next(100, 150);
-            CurrentPlayer.InventoryEffect = (CurrentTurn + turns, ScrollOfConfuseMonsterEnd);            
+            CurrentPlayer.InventoryEffect = (CurrentTurn + turns, ScrollOfConfuseMonsterEnd);
             UpdateStatus("Your hands begin to glow red.", false);
 
             return true;
         }
-
+        /// <summary>
+        /// Confuse the next monster the player hits for a random number of turns.
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfConfuseMonsterEnd()
         {
-            // Confuse the next monster the player hits for a random number of turns.
             if(CurrentPlayer.Opponent != null)
             { 
                 CurrentPlayer.Opponent.Confused = CurrentTurn + rand.Next(2, 7);
@@ -1857,11 +1881,12 @@ namespace RogueGame
 
             return true;
         }
-
+        /// <summary>
+        /// Remove any curses on weapons and armor in use.
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfRemoveCurse()
         {
-            // Remove any curses on weapons and armor in use.
-
             if(CurrentPlayer.Armor != null)
                 CurrentPlayer.Armor.IsCursed = false;
 
@@ -1872,20 +1897,24 @@ namespace RogueGame
 
             return true;
         }
-
+        /// <summary>
+        /// Put the player to sleep for a few turns.
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfSleep()
         {
-            // Put the player to sleep for a few turns.
             CurrentPlayer.Immobile = CurrentTurn + rand.Next(2, 5);
             UpdateStatus("You fall asleep.", false);
 
             return true;
         }
-
+        /// <summary>
+        /// Move the player to a random spot on the map and confuse them for a few moves.
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfTeleportation()
         {
-            // Move the player to a random spot on the map and confuse them
-            // for a few moves.
+
             CurrentPlayer.Location = CurrentMap.GetOpenSpace(true);
             UpdateStatus("This is a scroll of teleportation!", false);
 
@@ -1894,10 +1923,12 @@ namespace RogueGame
 
             return true;
         }
-
+        /// <summary>
+        /// Make every monster on the map aggressive.
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfAggravateMonsters()
         {
-            // Make every monster on the map aggressive.
 
             foreach (Monster monster in (from Monster in CurrentMap.ActiveMonsters 
                                          select Monster))
@@ -1908,22 +1939,27 @@ namespace RogueGame
 
             return true;
         }
-
+        /// <summary>
+        /// Create a new monster near the player.
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfCreateMonster()
         {
             List<MapSpace> spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 2);
-            // Create a new monster near the player.
+
             CurrentMap.AddMonsters(1, spaces);
             UpdateStatus("The room suddenly got a bit more crowded.", false);
 
             return true;
         }
-
+        /// <summary>
+        /// Make every monster within two paces immobile for up to 25 turns.
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollofHoldMonsters()
         {
             List<MapSpace> surrounding = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 2);
 
-            // Make every monster within two paces immobile for up to 25 turns.
             List<Monster> monsters = 
                 CurrentMap.ActiveMonsters.Where(monster => surrounding
                 .Any(space => space.X == monster.Location!.X && space.Y == monster.Location.Y))
@@ -1937,10 +1973,13 @@ namespace RogueGame
             return true;
 
         }
-
+        /// <summary>
+        /// Set the player's current armor as protected.
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfProtectArmor()
         {
-            // Set the player's current armor as protected.
+
             if (CurrentPlayer.Armor != null)
             {
                 CurrentPlayer.Armor.IsProtected = true;
@@ -1954,12 +1993,14 @@ namespace RogueGame
             return true;
 
         }
-
+        /// <summary>
+        /// Transfer monsters gold and inventory back to map.
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfClearMonsters()
         {
             Inventory invItem;
 
-            // Transfer monsters gold and inventory back to map.
             foreach (Monster monster in CurrentMap.ActiveMonsters)
             {
                 if (monster.Gold > 0)
@@ -1984,10 +2025,12 @@ namespace RogueGame
             return true;
 
         }
-
+        /// <summary>
+        /// Blank scroll
+        /// </summary>
+        /// <returns></returns>
         private bool ScrollOfPaper()
         {
-            // Blank scroll
             UpdateStatus($"The scroll's parchment has a rich and elegant feel to it but is otherwise blank.", false);
 
             return true;
