@@ -744,7 +744,7 @@ namespace RogueGame
             hitSuccess = HulkMode ? true : rand.Next(1, 101) <= hitChance;
 
             // Either way, if the monster wasn't angry before, it sure is now.
-            Defender.CurrentState = Monster.Activity.Angered;
+            Defender.Aggressive = true;
 
             // Get weapon damage rating, default to bare hands (1-4)
             if (weapon != null)
@@ -827,13 +827,10 @@ namespace RogueGame
         /// <param name="monster">Monster object</param>
         public void MoveMonster(Monster monster)
         {
-            char visibleCharacter;
-            int tentativeDistance, playerDistance;
-            bool timeToMove, canMove, wrongMove;
-            MapLevel.Direction direct, direct90, direct270;
-            MapLevel.Direction? playerDirection = null;
-            MapSpace destinationSpace = monster.Location!;
-            Inventory? foundInventory;
+            int playerDistance;
+            bool readyToMove;
+            bool playerAdjacent = false;
+            MapSpace? destinationSpace = null;
 
             // If the monster is confused, paralyzed, blind, decide if it's time to snap out of it.
             if (monster.Confused > 0 && monster.Confused <= CurrentTurn)
@@ -845,112 +842,76 @@ namespace RogueGame
             if (monster.Blind > 0 && monster.Blind <= CurrentTurn)
                 monster.Blind = 0;
 
-            // Move monster if possible.
-            timeToMove = (monster.CurrentState == Monster.Activity.Wandering && monster.Immobile == 0 &&
-                rand.Next(1, 101) >= monster.Inertia) || monster.CurrentState == Monster.Activity.Angered;
+            // Move monster if it's not paralyzed AND
+            // (feels like moving OR is aggressive).
+            readyToMove = monster.Immobile == 0 && 
+                (rand.Next(1, 101) >= monster.Inertia || monster.Aggressive);
 
-            if (timeToMove)
+            if (readyToMove)
             {
+                // EVALUATE THE MONSTER'S SURROUNDINGS
+
                 // Get adjacent spacees.
                 Dictionary<MapLevel.Direction, MapSpace> adjacent =
                     CurrentMap.SearchAdjacent(monster.Location!.X, monster.Location.Y);
+                // Filter for inhabitable spaces, inventory or the player.
+                adjacent = adjacent.Where(space =>
+                        MapLevel.InhabitableSpacesGlyphList
+                        .Contains(CurrentMap.PriorityChar(space.Value, false).DisplayChar) ||
+                        CurrentMap.DetectInventory(space.Value) != null ||
+                        CurrentPlayer.Location! == space.Value).ToDictionary();
 
-                // If the player is in an adjacent space, get the direction.
-                if (adjacent.ContainsValue(CurrentPlayer.Location!))
-                {
-                    playerDistance = 1;
-                    playerDirection = adjacent.Where(p => p.Value == CurrentPlayer.Location!).FirstOrDefault().Key;
-                }
-                else
-                {
-                    // Get the current distance of the player from the monster.
-                    playerDistance = Math.Abs(CurrentPlayer.Location!.X - monster.Location.X)
-                        + Math.Abs(CurrentPlayer.Location.Y - monster.Location.Y);
-                }
+                // Determine if player is in one of the adjacent spaces.
+                playerAdjacent = (adjacent.ContainsValue(CurrentPlayer.Location!));
 
-                // Move toward the player if they are close enough or if the monster is angry.
-                if (playerDirection != null && (monster.CurrentState == Monster.Activity.Angered || monster.Aggressive))
-                    monster.Direction = playerDirection;
-                else if (playerDistance <= MAX_PURSUIT && monster.Aggressive)
-                {
-                    // If the player is within pursuit distance, search the adjacent spaces
-                    // for one that's available and closest to the player.
-                    foreach (KeyValuePair<MapLevel.Direction, MapSpace> adjSpace in adjacent)
+                // Get the current distance of the player from the monster.
+                playerDistance = playerAdjacent ? 1 :
+                    CurrentMap.GetDistance(CurrentPlayer.Location!, monster.Location);
+
+                // DECIDE ON A MOVE
+                if(adjacent.Count > 0)  // If there are available spaces to move to.
+                { 
+                    // If the monster is confused, just pull a random element from the dictionary.
+                    if (monster.Confused > 0 && rand.Next(100) < DEGREE_CONFUSION)
+                        destinationSpace = adjacent.ElementAt(rand.Next(adjacent.Count - 1)).Value;
+
+                    // Move toward the player if they are close enough and the monster is angry.
+                    if (destinationSpace == null && monster.Aggressive)
                     {
-                        if (MapLevel.InhabitableSpacesGlyphList.Contains(CurrentMap.PriorityChar(adjSpace.Value, false).DisplayChar) ||
-                            CurrentMap.DetectInventory(adjSpace.Value) != null)
+                        if (playerAdjacent && monster.Aggressive)
+                            destinationSpace = CurrentPlayer.Location!;
+                        else if (playerDistance <= MAX_PURSUIT && monster.Aggressive)
                         {
-                            tentativeDistance = Math.Abs(adjSpace.Value.X - CurrentPlayer.Location.X)
-                                + Math.Abs(adjSpace.Value.Y - CurrentPlayer.Location.Y);
+                            // If the player is within pursuit distance, search the adjacent spaces
+                            // for one that's available and closest to the player.
+                            destinationSpace = adjacent
+                                .MinBy(space => CurrentMap.GetDistance(space.Value, CurrentPlayer.Location!)).Value;
+                        }
+                    }
 
-                            // If the next space is closer, set it as the new destination.
-                            if (tentativeDistance < Math.Abs(CurrentPlayer.Location.X - destinationSpace.X)
-                                + Math.Abs(CurrentPlayer.Location.Y - destinationSpace.Y))
-                            {
-                                destinationSpace = adjSpace.Value;
-                                monster.Direction = adjSpace.Key;
-                            }
+                    // If we still don't have a destination ...
+                    if (destinationSpace == null)
+                    {
+                        if (monster.Direction != null 
+                            && adjacent.ContainsKey((MapLevel.Direction)monster.Direction))
+                            destinationSpace = adjacent[(MapLevel.Direction)monster.Direction];
+                        else
+                        {
+                            monster.Direction = adjacent.ElementAt(rand.Next(adjacent.Count - 1)).Key;
+                            destinationSpace = adjacent[(MapLevel.Direction)monster.Direction];
                         }
                     }
                 }
-                else if (playerDistance > MAX_PURSUIT)
-                    // If the player is far off, just go to wandering.
-                    monster.CurrentState = Monster.Activity.Wandering;
 
-                // If the monster is still feeling aimless, just pick one except 'None'.
-                if (monster.Direction == null)
+                // MOVE OR ATTACK
+                if (destinationSpace != null)
                 {
-                    do
-                    {
-                        monster.Direction = (MapLevel.Direction)rand.Next(-2, 3);
-                    } while (monster.Direction == MapLevel.Direction.None);
-                }
-
-                // Get relative directions to monster's choice. Chance to reverse movement if the monster is confused.
-                wrongMove = (monster.Confused > 0 && rand.Next(100) > DEGREE_CONFUSION); 
-                direct = (MapLevel.Direction)monster.Direction!;
-                if(wrongMove) { direct = CurrentMap.GetDirection180(direct); }
-                direct90 = CurrentMap.GetDirection90(direct);
-                direct270 = CurrentMap.GetDirection270(direct);
-
-                if (adjacent.ContainsKey(direct))
-                {
-                    // Inspect target character
-                    visibleCharacter = CurrentMap.PriorityChar(adjacent[direct], false).DisplayChar;
-                    foundInventory = CurrentMap.DetectInventory(adjacent[direct]);
-                }
-                else
-                {
-                    visibleCharacter = MapLevel.EMPTY.DisplayChar;
-                    foundInventory = null;
-                }
-
-                // The monster can move if the visible character is within a room or a hallway
-                // and there's nobody else there.
-                canMove = MapLevel.InhabitableSpacesGlyphList.Contains(visibleCharacter) || foundInventory != null;
-
-                if (canMove)
-                    monster.Location = adjacent[direct];
-                else
-                {
-                    if (CurrentMap.DetectMonster(adjacent[direct]) != null && monster.Aggressive)
-                        // The monster just tried to run into another monster.  For now, just change direction.
-                        // TODO:  This might need to result in an attack.
-                        monster.Direction = rand.Next(1, 101) > 50 ? direct270 : direct90;
-                    else if (adjacent[direct] == CurrentPlayer.Location)
-                        // Attack the player
+                    if (destinationSpace == CurrentPlayer.Location)
                         Attack(monster, CurrentPlayer);
                     else
-                    {
-                        // Change direction and decide on a current state.
-                        monster.Direction = rand.Next(1, 101) > 50 ? direct270 : direct90;
-                        if (rand.Next(1, 101) < monster.Inertia) monster.CurrentState = Monster.Activity.Resting;
-                    }
+                        monster.Location = destinationSpace;
                 }
             }
-            else
-                // If the monster couldn't move, it might be resting. Decide if it should come out of nap time.
-                if (rand.Next(1, 101) > monster.Inertia) monster.CurrentState = Monster.Activity.Wandering;
         }
 
         /// <summary>

@@ -190,6 +190,10 @@ namespace RogueGame{
         /// </summary>
         private const int MAX_INVENTORY = 20;
         /// <summary>
+        /// Minimum number of initial monsters on a level.
+        /// </summary>
+        private const int MIN_INIT_MONSTERS = 5;
+        /// <summary>
         /// Maximum number of initial monsters on a level.
         /// </summary>
         private const int MAX_INIT_MONSTERS = 15;
@@ -337,7 +341,7 @@ namespace RogueGame{
             HallwayGeneration();
 
             // Add a random number of monsters to start.
-            AddMonsters(rand.Next(MAX_INIT_MONSTERS));
+            AddMonsters(rand.Next(MIN_INIT_MONSTERS, MAX_INIT_MONSTERS));
 
             // Add a random number of inventory items.
             AddInventory(rand.Next(MAX_INVENTORY));
@@ -761,20 +765,19 @@ namespace RogueGame{
         /// <returns>Dictionary of directions and characters found.</returns>
         public Dictionary<Direction, MapSpace> SearchAdjacent(int x, int y)
         {
-            // TODO: Could this be done better as a LINQ function?
             // For each direction, add the existing mapspace if available.
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
          
-            if (y - 1 >= 0)  // North
+            if (y > 0)  // North
                 retValue.Add(Direction.North, levelMap[x, y - 1]);
 
-            if (x + 1 <= MAP_WD) // East
+            if (x < MAP_WD) // East
                 retValue.Add(Direction.East, levelMap[x + 1, y]);
 
-            if (y + 1 <= MAP_HT)  // South
+            if (y < MAP_HT)  // South
                 retValue.Add(Direction.South, levelMap[x, y + 1]);
 
-            if ((x - 1) >= 0)  // West
+            if (x > 0)  // West
                 retValue.Add(Direction.West, levelMap[x - 1, y]);
 
             return retValue;
@@ -895,6 +898,16 @@ namespace RogueGame{
                 retValue = Space.MapCharacter;  // Otherwise just show normal char.
 
             return retValue;
+        }
+        /// <summary>
+        /// Get the traveling distance between two MapSpace objects.
+        /// </summary>
+        /// <param name="Begin">Beginning space</param>
+        /// <param name="End">Destination space</param>
+        /// <returns></returns>
+        public int GetDistance(MapSpace Begin, MapSpace End)
+        {
+            return Math.Abs(Begin.X - End.X) + Math.Abs(Begin.Y - End.Y);
         }
         /// <summary>
         /// Return a list of all spaces around given space in eight directions.
