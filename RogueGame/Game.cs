@@ -62,9 +62,9 @@ namespace RogueGame
         /// </summary>
         private const int ITEM_CURSE_PROB = 15;
         /// <summary>
-        /// Degree of confusion caused by various items.
+        /// General coin toss constant to be used when a little chaos is needed.
         /// </summary>
-        private const int DEGREE_CONFUSION = 50;        
+        private const int COIN_FLIP = 50;        
         /// <summary>
         /// Lists modes to be used for displaying different screens.
         /// </summary>
@@ -80,7 +80,7 @@ namespace RogueGame
         }
 
         #endregion
-
+        
         #region Properties
         /// <summary>
         /// Game level Inventory instance for accessing functions.
@@ -654,7 +654,7 @@ namespace RogueGame
                 CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
             // If player is confused, there's a chance of reversed movement.
-            if (player.Confused > 0 && rand.Next(100) > DEGREE_CONFUSION)
+            if (player.Confused > 0 && rand.Next(100) > COIN_FLIP)
                 direct = CurrentMap.GetDirection180(direct);
 
             // Move character if possible.
@@ -851,11 +851,11 @@ namespace RogueGame
             {
                 // EVALUATE THE MONSTER'S SURROUNDINGS
 
-                // Get adjacent spacees.
-                Dictionary<MapLevel.Direction, MapSpace> adjacent =
-                    CurrentMap.SearchAdjacent(monster.Location!.X, monster.Location.Y);
+                // Get adjacent spaces.
                 // Filter for inhabitable spaces, inventory or the player.
-                adjacent = adjacent.Where(space =>
+                Dictionary<MapLevel.Direction, MapSpace> adjacent =
+                    CurrentMap.SearchAdjacent(monster.Location!.X, monster.Location.Y)
+                        .Where(space =>
                         MapLevel.InhabitableSpacesGlyphList
                         .Contains(CurrentMap.PriorityChar(space.Value, false).DisplayChar) ||
                         CurrentMap.DetectInventory(space.Value) != null ||
@@ -872,7 +872,7 @@ namespace RogueGame
                 if(adjacent.Count > 0)  // If there are available spaces to move to.
                 { 
                     // If the monster is confused, just pull a random element from the dictionary.
-                    if (monster.Confused > 0 && rand.Next(100) < DEGREE_CONFUSION)
+                    if (monster.Confused > 0 && rand.Next(100) < COIN_FLIP)
                         destinationSpace = adjacent.ElementAt(rand.Next(adjacent.Count - 1)).Value;
 
                     // Move toward the player if they are close enough and the monster is angry.
@@ -888,6 +888,15 @@ namespace RogueGame
                                 .MinBy(space => CurrentMap.GetDistance(space.Value, CurrentPlayer.Location!)).Value;
                         }
                     }
+                    
+                    // If there's a room door, let the monster decide if it should go through.
+                    if (destinationSpace == null)
+                    {                        
+                        destinationSpace = adjacent
+                            .Where(space => MapLevel.ROOM_DOOR.DisplayChar == space.Value.MapCharacter.DisplayChar).FirstOrDefault().Value;
+
+                        if (destinationSpace != null && rand.Next(100) < COIN_FLIP) { destinationSpace = null; }
+                    }
 
                     // If we still don't have a destination ...
                     if (destinationSpace == null)
@@ -897,7 +906,7 @@ namespace RogueGame
                             destinationSpace = adjacent[(MapLevel.Direction)monster.Direction];
                         else
                         {
-                            monster.Direction = adjacent.ElementAt(rand.Next(adjacent.Count - 1)).Key;
+                            monster.Direction = adjacent.ElementAt(rand.Next(adjacent.Count)).Key;
                             destinationSpace = adjacent[(MapLevel.Direction)monster.Direction];
                         }
                     }
