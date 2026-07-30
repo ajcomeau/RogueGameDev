@@ -1,4 +1,8 @@
 # Rogue C#
+### 7/30/2026
+
+The latest chapter in the series, **Don't Confuse the Monsters (https://www.andrewcomeau.com/programming/rogue-monster-navigation/)** is online.
+In this chapter, I break down the MoveMonster() function in the Game class, going back to the algorithm for monster movement and remove overly-complex code, shrinking the function by around 30 lines and making smarter monsters.
 
 ### 6/6/2026
 
