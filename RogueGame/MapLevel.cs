@@ -200,7 +200,7 @@ namespace RogueGame{
         /// <summary>
         /// Probability of a trap being placed on the level.
         /// </summary>
-        private const int TRAP_PCT = 100;
+        private const int TRAP_PCT = 25;
         /// <summary>
         /// Maximum number of initial monsters on a level.
         /// </summary>
