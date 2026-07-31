@@ -54,6 +54,10 @@ namespace RogueGame{
         /// </summary>
         public static readonly MapGlyph STAIRWAY = new MapGlyph('≣', Color.Black, Color.Green);
         /// <summary>
+        /// Trap symbol
+        /// </summary>
+        public static readonly MapGlyph TRAP = new MapGlyph('⬥', Color.Brown, Color.Black);
+        /// <summary>
         /// Gold map symbol
         /// </summary>
         public static readonly MapGlyph GOLD = new MapGlyph('*', Color.LightYellow, Color.Black);
@@ -78,17 +82,17 @@ namespace RogueGame{
         /// </summary>
         private static List<char> MapDiscoveryGlyphList = new List<char>(){HORIZONTAL.DisplayChar, VERTICAL.DisplayChar,
             CORNER_NW.DisplayChar, CORNER_SE.DisplayChar, CORNER_NE.DisplayChar, CORNER_SW.DisplayChar,
-            ROOM_DOOR.DisplayChar, HALLWAY.DisplayChar, STAIRWAY.DisplayChar};
+            ROOM_DOOR.DisplayChar, HALLWAY.DisplayChar, STAIRWAY.DisplayChar, TRAP.DisplayChar};
         /// <summary>
         /// List of characters that occur inside a room.
         /// </summary>
         private static List<char> RoomInteriorGlyphList = new List<char>(){ROOM_DOOR.DisplayChar, ROOM_INT.DisplayChar,
-            STAIRWAY.DisplayChar };
+            STAIRWAY.DisplayChar, TRAP.DisplayChar };
         /// <summary>
         /// List of characters a player or monster can move onto.
         /// </summary>
         public static List<char> InhabitableSpacesGlyphList = new List<char>(){ROOM_INT.DisplayChar, STAIRWAY.DisplayChar,
-            ROOM_DOOR.DisplayChar, HALLWAY.DisplayChar };
+            ROOM_DOOR.DisplayChar, HALLWAY.DisplayChar, TRAP.DisplayChar };
         /// <summary>
         /// List of characters that can be moved past on Fast Play.
         /// </summary>
@@ -194,6 +198,10 @@ namespace RogueGame{
         /// </summary>
         private const int MIN_INIT_MONSTERS = 5;
         /// <summary>
+        /// Probability of a trap being placed on the level.
+        /// </summary>
+        private const int TRAP_PCT = 100;
+        /// <summary>
         /// Maximum number of initial monsters on a level.
         /// </summary>
         private const int MAX_INIT_MONSTERS = 15;
@@ -298,7 +306,7 @@ namespace RogueGame{
             // size of its cell region, minus one space, to allow for hallways between rooms.
             
             int roomWidth = 0, roomHeight = 0, roomAnchorX = 0, roomAnchorY = 0;
-            MapSpace? stairway, amulet;
+            MapSpace? stairway, amulet, trap;
 
             // Clear map by creating new array of map spaces.
             levelMap = new MapSpace[80, 25];
@@ -351,6 +359,16 @@ namespace RogueGame{
 
             if(stairway != null)
                 levelMap[stairway.X, stairway.Y] = new MapSpace(STAIRWAY, stairway.X, stairway.Y);
+
+            // Possibly add trap
+            if(rand.Next(1, 101) <= TRAP_PCT)
+            {
+                trap = GetOpenSpace(false);
+                if (trap != null) { 
+                    levelMap[trap.X, trap.Y] = new MapSpace(TRAP, true, true, trap.X, trap.Y);
+                    levelMap[trap.X, trap.Y].AltMapCharacter = ROOM_INT;
+                }
+            }
 
             // Add Amulet to final level.
             if (CurrentLevel == Game.MAX_LEVEL)
@@ -738,20 +756,19 @@ namespace RogueGame{
         /// <param name="y">Starting Y point</param>
         /// <returns>Dictionary of directions and characters found.</returns>
         public Dictionary<Direction, MapSpace> SearchAdjacent(char character, int x, int y)
-        {
-            // TODO: Could this be done better as a LINQ function?
+        {            
             Dictionary<Direction, MapSpace> retValue = new Dictionary<Direction, MapSpace>();
 
-            if (y - 1 >= 0 && levelMap[x, y - 1].MapCharacter.DisplayChar == character)  // North
+            if (y > 0 && levelMap[x, y - 1].MapCharacter.DisplayChar == character)  // North
                 retValue.Add(Direction.North, levelMap[x, y - 1]);
 
-            if (x + 1 <= MAP_WD && levelMap[x + 1, y].MapCharacter.DisplayChar == character) // East
+            if (x < MAP_WD && levelMap[x + 1, y].MapCharacter.DisplayChar == character) // East
                 retValue.Add(Direction.East, levelMap[x + 1, y]);
 
-            if (y + 1 <= MAP_HT && levelMap[x, y + 1].MapCharacter.DisplayChar == character)  // South
+            if (y < MAP_HT && levelMap[x, y + 1].MapCharacter.DisplayChar == character)  // South
                 retValue.Add(Direction.South, levelMap[x, y + 1]);
 
-            if ((x - 1) >= 0 && levelMap[x - 1, y].MapCharacter.DisplayChar == character)  // West
+            if (x > 0 && levelMap[x - 1, y].MapCharacter.DisplayChar == character)  // West
                 retValue.Add(Direction.West, levelMap[x - 1, y]);
 
             return retValue;
@@ -977,6 +994,7 @@ namespace RogueGame{
             // For all room spaces in region that have not been discovered,
             // set Discovered = True and Lighted according to probability.
             // Leave HALLWAY and already discovered spaces alone and just focus on rooms.
+            // TODO: Replace this with LINQ.
             for (int y = corners.Item1.Y; y <= corners.Item2.Y; y++)
             {
                 for (int x = corners.Item1.X; x <= corners.Item2.X; x++)
@@ -1006,6 +1024,7 @@ namespace RogueGame{
 
             // For all room spaces in region, set Discovered = True and 
             // Lighted. Leave HALLWAY spaces alone and just focus on the room.
+            // TODO:  Possibly replace with LINQ.
             for (int y = corners.Item1.Y; y <= corners.Item2.Y; y++)
             {
                 for (int x = corners.Item1.X; x <= corners.Item2.X; x++)
@@ -1369,11 +1388,11 @@ namespace RogueGame{
         /// <summary>
         /// Basic constructor to create mapspace.
         /// </summary>
-        /// <param name="mapChar"></param>
-        /// <param name="hidden"></param>
-        /// <param name="search"></param>
-        /// <param name="X"></param>
-        /// <param name="Y"></param>
+        /// <param name="mapChar">The MapGlyph object to be displayed.</param>
+        /// <param name="hidden">Is the space darkened?</param>
+        /// <param name="search">Does the space require searching?</param>
+        /// <param name="X">X coordinate of space</param>
+        /// <param name="Y">Y coordinate of space</param>
         public MapSpace(MapGlyph mapChar, Boolean hidden, Boolean search, int X, int Y)
         {
             this.MapCharacter = mapChar;

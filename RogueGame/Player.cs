@@ -12,7 +12,7 @@ namespace RogueGame
     /// <summary>
     /// Encapsulates all player properties and functions.
     /// </summary>
-    internal class Player
+    internal class Player : Character
     {
         #region Constants
         /// <summary>
@@ -50,22 +50,6 @@ namespace RogueGame
 
         #region Properties
         /// <summary>
-        /// Name provided by player
-        /// </summary>
-        public string PlayerName { get; set; }
-        /// <summary>
-        /// Maximum current hit points
-        /// </summary>
-        public int MaxHP { get; set; } = STARTING_HP;
-        /// <summary>
-        /// Current damage in hit points
-        /// </summary>
-        public int HPDamage { get; set; }
-        /// <summary>
-        /// Current HP
-        /// </summary>
-        public int CurrentHP { get { return MaxHP - HPDamage; } }
-        /// <summary>
         /// Current max strength
         /// </summary>
         public int MaxStrength { get; set; } = STARTING_STRENGTH;
@@ -76,11 +60,7 @@ namespace RogueGame
         /// <summary>
         /// Current Strength
         /// </summary>
-        public int CurrentStrength { get { return MaxStrength - StrengthMod; } }
-        /// <summary>
-        /// Current gold
-        /// </summary>        
-        public int Gold { get; set; }
+        public int CurrentStrength { get { return MaxStrength - StrengthMod; } }        
         /// <summary>
         /// Current experience
         /// </summary>
@@ -93,18 +73,7 @@ namespace RogueGame
         /// Next turn at which hunger state will change
         /// </summary>
         public int HungerTurn { get; set; }
-        /// <summary>
-        /// Confused - player moves erratically.
-        /// </summary>
-        public int Confused { get; set; }
-        /// <summary>
-        /// Paralysis, frozen by ice monster, etc..
-        /// </summary>
-        public int Immobile { get; set; }
-        /// <summary>
-        /// Blind from potion, etc..
-        /// </summary>
-        public int Blind { get; set; }
+
         /// <summary>
         /// Whether player has found the amulet
         /// </summary>
@@ -125,14 +94,6 @@ namespace RogueGame
         /// Weapon
         /// </summary>
         public Inventory? Wielding { get; set; }
-        /// <summary>
-        /// Main inventory list.
-        /// </summary>
-        public List<Inventory> PlayerInventory { get; set; }
-        /// <summary>
-        /// Current map space occupied
-        /// </summary>
-        public MapSpace? Location { get; set; }
         /// <summary>
         /// Player experience level based on experience points.
         /// </summary>
@@ -163,11 +124,12 @@ namespace RogueGame
 
             // Create a new player object
             var rand = new Random();
-            this.PlayerName = PlayerName;
-            this.PlayerInventory = new List<Inventory>();
+            this.CharacterName = PlayerName;
+            this.CharacterInventory = new List<Inventory>();
             this.Gold = 0;
             this.Experience = 1;
             this.HungerTurn = rand.Next(Inventory.MIN_FOODVALUE, Inventory.MAX_FOODVALUE + 1);
+            this.MaxHP = STARTING_HP;
 
             if (assigned != null)
             {
@@ -177,11 +139,11 @@ namespace RogueGame
                     if (item.ItemCategory == Inventory.InvCategory.Ammunition)
                     {
                         for (int i = 1; i <= rand.Next(1, Inventory.MAX_AMMO_BATCH + 1); i++)
-                            this.PlayerInventory.Add(item);
+                            this.CharacterInventory.Add(item);
                     }
                     else
                         // For everything else, just add the item.
-                        this.PlayerInventory.Add(item);
+                        this.CharacterInventory.Add(item);
 
                     // Set the first armor added to the worn armor.
                     if (item.ItemCategory == Inventory.InvCategory.Armor && this.Armor == null) 
@@ -195,29 +157,5 @@ namespace RogueGame
         }
         #endregion
 
-        #region Procedures
-        /// <summary>
-        /// Search the player's inventory for a specific item.
-        /// </summary>
-        /// <param name="ItemName">Real name of item.</param>
-        /// <returns></returns>
-        public Inventory? SearchInventory(string ItemName)
-        {
-            return (from Inventory item in PlayerInventory
-                    where item.RealName == ItemName
-                    select item).FirstOrDefault();
-        }
-        /// <summary>
-        /// Get first inventory item of a specific category.
-        /// </summary>
-        /// <param name="Category">Specific member of InvCategory enumeration</param>
-        /// <returns></returns>
-        public Inventory? SearchInventory(Inventory.InvCategory Category)
-        {
-            return (from Inventory item in PlayerInventory
-                    where item.ItemCategory == Category
-                    select item).FirstOrDefault();
-        }
-        #endregion
     }
 }

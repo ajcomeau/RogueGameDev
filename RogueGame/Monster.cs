@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace RogueGame
 {
-    internal class Monster
+    internal class Monster : Character
     {
         #region Constants and Properties            
         /// <summary>
@@ -51,10 +51,6 @@ namespace RogueGame
         /// </summary>
         public static ReadOnlyCollection<Monster> Monsters => monsterIncubator.AsReadOnly();
         /// <summary>
-        /// Aquator, Centaur, Griffin, etc..
-        /// </summary>
-        public string MonsterName { get; set; }
-        /// <summary>
         /// Min limit for starting HP to be determined randomly.
         /// </summary>
         public int MinStartingHP { get; }
@@ -62,18 +58,6 @@ namespace RogueGame
         /// Max limit for starting HP to be determined randomly.
         /// </summary>
         public int MaxStartingHP { get; }
-        /// <summary>
-        /// Actual starting HP
-        /// </summary>
-        public int MaxHP { get; }
-        /// <summary>
-        /// Subtracted damage
-        /// </summary>
-        public int HPDamage { get; set; } = 0;
-        /// <summary>
-        /// Current hit points
-        /// </summary>
-        public int CurrentHP { get { return MaxHP - HPDamage; } }
         /// <summary>
         /// Armor class
         /// </summary>
@@ -127,30 +111,6 @@ namespace RogueGame
         /// </summary>
         public bool CanRegenerate { get; set; }
         /// <summary>
-        /// Monster is confused, i.e. by scroll effects or other causes.
-        /// </summary>
-        public int Confused { get; set; } = 0;
-        /// <summary>
-        /// Monster is paralyzed.
-        /// </summary>
-        public int Immobile { get; set; } = 0;
-        /// <summary>
-        /// Monster is blind.
-        /// </summary>
-        public int Blind { get; set; } = 0;
-        /// <summary>
-        /// Current gold
-        /// </summary>        
-        public int Gold { get; set; } = 0;
-        /// <summary>
-        /// List of Inventory objects being held by monster.
-        /// </summary>
-        public List<Inventory> MonsterInventory { get; set; }
-        /// <summary>
-        /// Current location of monster on the map.
-        /// </summary>
-        public MapSpace? Location { get; set; }
-        /// <summary>
         /// A persistent direction of movement for the monster. Maintained between turns.
         /// </summary>
         public MapLevel.Direction? Direction { get; set; }
@@ -181,7 +141,7 @@ namespace RogueGame
             int minAttackDmg, int maxAttackDmg, MapGlyph displayCharacter, int specialAttackPct, 
             Func<Player>? specialAttack, bool aggressive, int inertia, bool canRegenerate)
         {
-            this.MonsterName = monsterName;
+            this.CharacterName = monsterName;
             this.MinStartingHP = minStartingHP;
             this.MaxStartingHP = maxStartingHP;
             this.MaxHP = Game.rand.Next(this.MinStartingHP, this.MaxStartingHP + 1);
@@ -198,7 +158,7 @@ namespace RogueGame
             this.Aggressive = aggressive;
             this.Inertia = inertia;
             this.CanRegenerate = canRegenerate;
-            this.MonsterInventory = new List<Inventory>();
+            this.CharacterInventory = new List<Inventory>();
         }
         /// <summary>
         /// Clone a monster from one of the incubator definitions.
@@ -206,7 +166,7 @@ namespace RogueGame
         /// <param name="original">Original monster object for cloning.</param>
         public Monster(Monster original)
         {
-            this.MonsterName = original.MonsterName;
+            this.CharacterName = original.CharacterName;
             this.MinStartingHP = original.MinStartingHP;
             this.MaxStartingHP = original.MaxStartingHP;
             this.MaxHP = Game.rand.Next(this.MinStartingHP, this.MaxStartingHP + 1);
@@ -224,7 +184,7 @@ namespace RogueGame
             this.Aggressive = original.Aggressive;
             this.Inertia = original.Inertia;
             this.CanRegenerate = original.CanRegenerate;
-            this.MonsterInventory = new List<Inventory>();            
+            this.CharacterInventory = new List<Inventory>();            
         }
         /// <summary>
         /// Get a Monster object appropriate to a specific map level.

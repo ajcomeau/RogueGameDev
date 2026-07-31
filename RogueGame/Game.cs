@@ -144,7 +144,11 @@ namespace RogueGame
         /// <summary>
         /// Searchable dictionary field to hold delegates for inventory items.
         /// </summary>
-        private Dictionary<(Inventory.InvCategory InvCat, string InvName), Func<bool>> InventoryActions; 
+        private Dictionary<(Inventory.InvCategory InvCat, string InvName), Func<bool>> InventoryActions;
+        /// <summary>
+        /// Searchable dictionary field to hold delegates for traps.
+        /// </summary>
+        private Dictionary<Action<Character>, int> Traps;
         /// <summary>
         /// Random number generator
         /// </summary>
@@ -201,7 +205,7 @@ namespace RogueGame
             "\n                        ║                             ║" +
             "\n                        ║        REST IN PEACE        ║" +
             "\n                        ║                             ║" +
-            $"\n                        ║{CenterString(CurrentPlayer.PlayerName, 29)}║" +
+            $"\n                        ║{CenterString(CurrentPlayer.CharacterName, 29)}║" +
             "\n                        ║          Killed by          ║" +
             $"\n                        ║{CenterString(CauseOfDeath, 29)}║" +
             "\n                        ║                             ║" +
@@ -318,7 +322,7 @@ namespace RogueGame
             // Switch the screen to the player's inventory.
             GameMode = DisplayMode.Inventory;
 
-            foreach (InventoryLine line in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory))
+            foreach (InventoryLine line in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory))
                 if (line.InvItem == CurrentPlayer.Armor)
                     screenText += line.Description + " (being worn)\n";  // current armor
                 else if (CurrentPlayer.Wielding != null && line.InvItem == CurrentPlayer.Wielding)
@@ -362,7 +366,7 @@ namespace RogueGame
             // Set starting turn and show welcome message.
             this.CurrentTurn = 1;
             this.GameMode = DisplayMode.Primary;
-            UpdateStatus($"Welcome to the Dungeon, {CurrentPlayer.PlayerName} ... (Press ? for list of commands.)", false);
+            UpdateStatus($"Welcome to the Dungeon, {CurrentPlayer.CharacterName} ... (Press ? for list of commands.)", false);
 
             // Set the current screen display.
             if (DevMode)
@@ -422,6 +426,77 @@ namespace RogueGame
                 {(InvCategory.Scroll, "Clear Monsters"), ScrollOfClearMonsters},
                 {(InvCategory.Scroll, "Blank Paper"), ScrollOfPaper}
             };
+
+            // Trap delegates and probability of occurrence.
+            Traps = new Dictionary<Action<Character>, int>
+            {
+                {TrapArrow, 100}
+            };
+        }
+
+        /// <summary>
+        /// Search Traps Dictionary to find a trap to spring
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="trap"></param>
+        private void SpringTrap(Character character, MapSpace trap)
+        {
+
+            KeyValuePair<Action<Character>, int> trapDelegate;
+
+            // If trap is found by player
+
+            if (character is Player)
+            {
+                trap.SearchRequired = false;
+                trap.AltMapCharacter = null;
+            }
+
+            // Randomly search trap delegates
+            for (int i = 0; i < Traps.Count * 2; i++)
+            {
+                trapDelegate = Traps.ElementAt(rand.Next(0, Traps.Count));
+
+                if (rand.Next(1, 101) < trapDelegate.Value)
+                {
+                    trapDelegate.Key.Invoke(character);
+                    break;
+                }
+            }
+
+        }
+
+        private void TrapArrow(Character character)
+        {
+            Inventory? arrow = GameInventory.GetInventoryItem("arrow");
+            MapSpace? landing;
+            bool arrowHit = rand.Next(100) > COIN_FLIP;
+
+            // If an arrow item was found in inventory and if it hit.
+            if (arrow != null && arrowHit)
+            {
+                // Tell the player they've been it.
+                if (character is Player)
+                    UpdateStatus("You were shot by an arrow!", false);
+
+                // Register damage and destroy the arrow.
+                character.HPDamage++;
+                arrow = null;
+            }
+            else
+            {
+                // Find a place for the arrow to land.
+                landing = CurrentMap.GetOpenSpace(false, CurrentMap
+                    .GetSurrounding(character.Location!.X, character.Location.Y, 2));
+                
+                // Add the arrow to the map.
+                if(arrow != null && landing  != null)
+                    CurrentMap.AddInventory(arrow, landing, false);
+                
+                // Let the player know they dodged one.
+                if (character is Player)
+                    UpdateStatus("An arrow goes whizzing by your head.", false);
+            }
         }
         #endregion
 
@@ -608,7 +683,7 @@ namespace RogueGame
             if (template != null) template.IsIdentified = true;
 
             // Set all instances in the player's inventory as identified.
-            foreach (Inventory item in CurrentPlayer.PlayerInventory)
+            foreach (Inventory item in CurrentPlayer.CharacterInventory)
             {
                 if (item.PriorityId == PriorityID)
                     item.IsIdentified = true;
@@ -652,6 +727,7 @@ namespace RogueGame
             Inventory? invFound = null; Monster? monster = null;
             Dictionary<MapLevel.Direction, MapSpace> adjacent =
                 CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
+            KeyValuePair<Action<Character>, int> trapDelegate;
 
             // If player is confused, there's a chance of reversed movement.
             if (player.Confused > 0 && rand.Next(100) > COIN_FLIP)
@@ -685,7 +761,7 @@ namespace RogueGame
 
                     // If this is a doorway, determine if the room is lighted.
                     if (player.Location.MapCharacter.DisplayChar == MapLevel.ROOM_DOOR.DisplayChar)
-                        CurrentMap.DiscoverRoom(player.Location.X, player.Location.Y);
+                        CurrentMap.DiscoverRoom(player.Location.X, player.Location.Y);                    
 
                     // Show the surrounding spaces if the player can see.
                     if (CurrentPlayer.Blind == 0)
@@ -693,6 +769,10 @@ namespace RogueGame
 
                     // Discover the spaces surrounding the player and note if something is found.
                     stopMoving = CurrentMap.DetectObstruction(player.Location.X, player.Location.Y);
+
+                    // If the player has just stepped on a trap ...
+                    if (adjacent[direct].MapCharacter.DisplayChar == MapLevel.TRAP.DisplayChar)
+                        SpringTrap(CurrentPlayer, adjacent[direct]);
 
                     // Respond to items on map.
                     if (invFound != null) UpdateStatus(AddInventory(), false);
@@ -756,13 +836,13 @@ namespace RogueGame
             // Random HP damage within weapon potential.
             if (hitSuccess)
             {
-                UpdateStatus($"You hit the {Defender.MonsterName.ToLower()}.", false);
+                UpdateStatus($"You hit the {Defender.CharacterName.ToLower()}.", false);
                 damage = HulkMode ? Defender.MaxHP : rand.Next(minDamage, maxDamage + 1);
 
                 if (CurrentPlayer.InventoryEffect != null)
                      CurrentPlayer.InventoryEffect?.TargetFunction.Invoke();
             }
-            else UpdateStatus($"You missed the {Defender.MonsterName.ToLower()}.", false);
+            else UpdateStatus($"You missed the {Defender.CharacterName.ToLower()}.", false);
 
             Defender.HPDamage += damage;
 
@@ -771,7 +851,7 @@ namespace RogueGame
             {
                 CurrentPlayer.Opponent = null;
                 CurrentMap.ActiveMonsters.Remove(Defender);
-                UpdateStatus($"You defeated the {Defender.MonsterName.ToLower()}.", false);
+                UpdateStatus($"You defeated the {Defender.CharacterName.ToLower()}.", false);
                 CurrentPlayer.Experience += Defender.ExpReward + (int)(Defender.MaxHP / 6);
                 CurrentMap.AddMonsters(1);
             }
@@ -806,10 +886,10 @@ namespace RogueGame
             // Random HP between monster's min and max attack damage.
             if (hitSuccess)
             {
-                UpdateStatus($"The {Attacker.MonsterName.ToLower()} hit you.", false);
+                UpdateStatus($"The {Attacker.CharacterName.ToLower()} hit you.", false);
                 damage = rand.Next(Attacker.MinAttackDmg, Attacker.MaxAttackDmg + 1);
             }
-            else UpdateStatus($"The {Attacker.MonsterName.ToLower()} missed you.", false);
+            else UpdateStatus($"The {Attacker.CharacterName.ToLower()} missed you.", false);
 
             Defender.HPDamage += damage;
 
@@ -817,8 +897,8 @@ namespace RogueGame
             if (Defender.CurrentHP < 1)
             {
                 GameMode = DisplayMode.GameOver;
-                UpdateStatus($"The {Attacker.MonsterName.ToLower()} killed you.", false);
-                CauseOfDeath = (AddEnglishArticle(Attacker.MonsterName.ToLower()));
+                UpdateStatus($"The {Attacker.CharacterName.ToLower()} killed you.", false);
+                CauseOfDeath = (AddEnglishArticle(Attacker.CharacterName.ToLower()));
             }
         }
         /// <summary>
@@ -918,7 +998,13 @@ namespace RogueGame
                     if (destinationSpace == CurrentPlayer.Location)
                         Attack(monster, CurrentPlayer);
                     else
+                    {
                         monster.Location = destinationSpace;
+
+                        if (destinationSpace.MapCharacter.DisplayChar == MapLevel.TRAP.DisplayChar)
+                            SpringTrap(monster, destinationSpace);
+                    }
+                        
                 }
             }
         }
@@ -1167,7 +1253,7 @@ namespace RogueGame
             if (GameMode != DisplayMode.Inventory)
             {
                 // Verify the player has something they can wield.
-                items = (from inv in CurrentPlayer.PlayerInventory
+                items = (from inv in CurrentPlayer.CharacterInventory
                          where inv.ItemCategory == InvCategory.Weapon ||
                          inv.ItemCategory == InvCategory.Ammunition
                          select inv).ToList();
@@ -1187,7 +1273,7 @@ namespace RogueGame
             else
             {
                 // Get the selected item.
-                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
+                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
                          where InventoryLine.ID == ListItem
                          select InventoryLine.InvItem).ToList();
 
@@ -1267,7 +1353,7 @@ namespace RogueGame
                 else
                 {
                     // Verify the player has armor in inventory.
-                    items = (from inv in CurrentPlayer.PlayerInventory
+                    items = (from inv in CurrentPlayer.CharacterInventory
                              where inv.ItemCategory == InvCategory.Armor
                              select inv).ToList();
 
@@ -1287,7 +1373,7 @@ namespace RogueGame
             else
             {
                 // Get the selected item.
-                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
+                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
                          where InventoryLine.ID == ListItem
                          select InventoryLine.InvItem).ToList();
 
@@ -1336,7 +1422,7 @@ namespace RogueGame
             if (GameMode != DisplayMode.Inventory)
             {
                 // Verify the player has something they can eat.
-                items = (from inv in CurrentPlayer.PlayerInventory
+                items = (from inv in CurrentPlayer.CharacterInventory
                          where inv.ItemCategory == InvCategory.Food
                          select inv).ToList();
 
@@ -1355,7 +1441,7 @@ namespace RogueGame
             else
             {
                 // Get the selected item.
-                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
+                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
                          where InventoryLine.ID == ListItem
                          select InventoryLine.InvItem).ToList();
 
@@ -1374,7 +1460,7 @@ namespace RogueGame
                         foodValue = rand.Next(MIN_FOODVALUE, MAX_FOODVALUE + 1);
                         CurrentPlayer.HungerTurn += foodValue;
                         CurrentPlayer.HungerState = Player.HungerLevel.Satisfied;
-                        CurrentPlayer.PlayerInventory.Remove(items[0]);
+                        CurrentPlayer.CharacterInventory.Remove(items[0]);
                         UpdateStatus("Mmmm, that hit the spot.", false);
                         // Reward a strength point if needed.
                         if (CurrentPlayer.StrengthMod > 0) CurrentPlayer.StrengthMod--;
@@ -1414,7 +1500,7 @@ namespace RogueGame
             }
             else
             {
-                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
+                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
                          where InventoryLine.ID == ListItem
                          select InventoryLine).ToList();
 
@@ -1428,15 +1514,15 @@ namespace RogueGame
                             // We're dropping the entire batch so update the amount.
                             items[0].InvItem.Amount = items[0].Count;
                             // For ammunition, remove all items from the slot.
-                            CurrentPlayer.PlayerInventory =
-                                CurrentPlayer.PlayerInventory.Where(x => x.RealName != items[0].InvItem.RealName).ToList();
+                            CurrentPlayer.CharacterInventory =
+                                CurrentPlayer.CharacterInventory.Where(x => x.RealName != items[0].InvItem.RealName).ToList();
 
                             UpdateStatus($"You dropped {GameInventory.ListingDescription(items[0].Count, items[0].InvItem)}.", false);
                         }
                         else
                         {
                             items[0].InvItem.Amount = 1;
-                            CurrentPlayer.PlayerInventory.Remove(items[0].InvItem);
+                            CurrentPlayer.CharacterInventory.Remove(items[0].InvItem);
                             UpdateStatus($"You dropped {GameInventory.ListingDescription(1, items[0].InvItem)}.", false);
                         }
 
@@ -1473,7 +1559,7 @@ namespace RogueGame
             // Inventory management.
             int itemAmount = 1;
             bool addToInventory = false;
-            List<Inventory> tempInventory = CurrentPlayer.PlayerInventory;
+            List<Inventory> tempInventory = CurrentPlayer.CharacterInventory;
             Inventory? foundItem = CurrentMap.DetectInventory(CurrentPlayer.Location!);
             string retValue = "";
 
@@ -1495,7 +1581,7 @@ namespace RogueGame
                     // Otherwise, if there's an extra slot available, add it.
                     addToInventory = (foundItem.IsGroupable && CurrentPlayer.SearchInventory(foundItem.RealName) != null);
                     if (!addToInventory) addToInventory =
-                            GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory).Count + 1 <= Player.INVENTORY_LIMIT;
+                            GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory).Count + 1 <= Player.INVENTORY_LIMIT;
 
                     // If the additional inventory fits within the limit, keep the item.
                     // Otherwise, remove it.                
@@ -1506,7 +1592,7 @@ namespace RogueGame
                         foundItem.Amount = 1;
                         // Move the item to the player's inventory.
                         for (int i = 1; i <= itemAmount; i++)
-                            CurrentPlayer.PlayerInventory.Add(GameInventory.GetInventoryItem(foundItem.RealName)!);
+                            CurrentPlayer.CharacterInventory.Add(GameInventory.GetInventoryItem(foundItem.RealName)!);
 
                         retValue = $"You picked up {GameInventory.ListingDescription(itemAmount, foundItem)}.";
                         CurrentMap.MapInventory.Remove(foundItem);
@@ -1519,7 +1605,7 @@ namespace RogueGame
                     }
                     else
                     {
-                        CurrentPlayer.PlayerInventory.Remove(foundItem);
+                        CurrentPlayer.CharacterInventory.Remove(foundItem);
                         retValue = "The item won't fit in your inventory.";
                     }
                 }
@@ -1540,7 +1626,7 @@ namespace RogueGame
             if (GameMode != DisplayMode.Inventory)
             {
                 // Verify the player has something they can read.
-                items = (from inv in CurrentPlayer.PlayerInventory
+                items = (from inv in CurrentPlayer.CharacterInventory
                          where inv.ItemCategory == InvCategory.Scroll
                          select inv).ToList();
 
@@ -1559,7 +1645,7 @@ namespace RogueGame
             else
             {
                 // Get the selected item.
-                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
+                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
                          where InventoryLine.ID == ListItem
                          select InventoryLine.InvItem).ToList();
 
@@ -1581,7 +1667,7 @@ namespace RogueGame
                         if (InventoryActions.TryGetValue((Inventory.InvCategory.Scroll, items[0].RealName), out var taskInfo))
                         {
                             // Remove the item from the player's inventory and invoke delegate.
-                            CurrentPlayer.PlayerInventory.Remove(items[0]);
+                            CurrentPlayer.CharacterInventory.Remove(items[0]);
                             ReturnFunction = null;
                             readScroll = taskInfo.Invoke();
                         }
@@ -1617,7 +1703,7 @@ namespace RogueGame
             if (GameMode != DisplayMode.Inventory)
             {
                 // Verify the player has something they can drink.
-                items = (from inv in CurrentPlayer.PlayerInventory
+                items = (from inv in CurrentPlayer.CharacterInventory
                          where inv.ItemCategory == InvCategory.Potion
                          select inv).ToList();
 
@@ -1636,7 +1722,7 @@ namespace RogueGame
             else
             {
                 // Get the selected item.
-                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
+                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
                          where InventoryLine.ID == ListItem
                          select InventoryLine.InvItem).ToList();
 
@@ -1658,7 +1744,7 @@ namespace RogueGame
                         if (InventoryActions.TryGetValue((Inventory.InvCategory.Potion, items[0].RealName), out var taskInfo))
                         {
                             // Remove the item from the player's inventory and invoke delegate.
-                            CurrentPlayer.PlayerInventory.Remove(items[0]);
+                            CurrentPlayer.CharacterInventory.Remove(items[0]);
                             quaffPotion = taskInfo.Invoke();
                         }
 
@@ -1707,7 +1793,7 @@ namespace RogueGame
             bool retValue = false;
             List<InventoryLine> lines;
             // Get the selected item.
-            lines = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.PlayerInventory)
+            lines = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
                      where InventoryLine.ID == ListItem
                      select InventoryLine).ToList();
 
@@ -1843,7 +1929,7 @@ namespace RogueGame
             if(CurrentPlayer.Opponent != null)
             { 
                 CurrentPlayer.Opponent.Confused = CurrentTurn + rand.Next(2, 7);
-                UpdateStatus($"The {CurrentPlayer.Opponent.MonsterName.ToLower()} appears confused.", false);
+                UpdateStatus($"The {CurrentPlayer.Opponent.CharacterName.ToLower()} appears confused.", false);
             }
 
             CurrentPlayer.InventoryEffect = null;
@@ -1958,7 +2044,7 @@ namespace RogueGame
                 UpdateStatus($"At Dungeon Insurance, your safety is our first concern!", false);
             }
             else
-                UpdateStatus($"Hello, {CurrentPlayer.PlayerName}. We've been trying to reach you about your extended armor insurance.", false);
+                UpdateStatus($"Hello, {CurrentPlayer.CharacterName}. We've been trying to reach you about your extended armor insurance.", false);
 
             return true;
 
@@ -1979,7 +2065,7 @@ namespace RogueGame
                     CurrentMap.AddInventory(invItem, invItem.Location, false);
                 }
 
-                foreach(Inventory item in monster.MonsterInventory)
+                foreach(Inventory item in monster.CharacterInventory)
                 {
                     invItem = GameInventory.GetInventoryItem(item.RealName)!;
                     CurrentMap.AddInventory(item, CurrentMap.GetOpenSpace(true)!, true);

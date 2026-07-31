@@ -62,7 +62,7 @@ namespace RogueGame
                     lblStats.Text = "";
 
                     pnlName.Visible = true;
-                    txtName.Text = currentGame.CurrentPlayer.PlayerName;
+                    txtName.Text = currentGame.CurrentPlayer.CharacterName;
                 }
             }
         }
