@@ -290,9 +290,9 @@ namespace RogueGame{
             // On the game's final level, verify the amulet is there.
 
             if (retValue && CurrentLevel == Game.MAX_LEVEL)
-                retValue = (from MapSpace space in levelMap
-                            where space.MapCharacter.DisplayChar == AMULET.DisplayChar
-                            select space).ToList().Count > 0;
+                retValue = (from Inventory item in MapInventory
+                            where item.DisplayCharacter.DisplayChar == AMULET.DisplayChar
+                            select item).ToList().Count > 0;
 
             return retValue;
         }

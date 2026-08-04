@@ -635,7 +635,7 @@ namespace RogueGame
                 CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer, GameInventory);
                 CurrentMap.ShroudMap();
                 CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
-                CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
+                CurrentMap.DiscoverRoom(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y);
             }
             else
                 UpdateStatus(failMessage, false);
