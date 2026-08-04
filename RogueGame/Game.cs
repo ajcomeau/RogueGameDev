@@ -361,7 +361,7 @@ namespace RogueGame
             this.CurrentMap.ShroudMap();
 
             // Activate the player's current room.
-            this.CurrentMap.DiscoverRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
+            this.CurrentMap.DiscoverRoom(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y);
 
             // Set starting turn and show welcome message.
             this.CurrentTurn = 1;
@@ -727,7 +727,7 @@ namespace RogueGame
             Inventory? invFound = null; Monster? monster = null;
             Dictionary<MapLevel.Direction, MapSpace> adjacent =
                 CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
-            KeyValuePair<Action<Character>, int> trapDelegate;
+            //KeyValuePair<Action<Character>, int> trapDelegate;
 
             // If player is confused, there's a chance of reversed movement.
             if (player.Confused > 0 && rand.Next(100) > COIN_FLIP)
@@ -1526,7 +1526,7 @@ namespace RogueGame
                             UpdateStatus($"You dropped {GameInventory.ListingDescription(1, items[0].InvItem)}.", false);
                         }
 
-                        items[0].InvItem.Location = CurrentPlayer.Location;
+                        items[0].InvItem.Location = CurrentPlayer.Location!;
                         CurrentMap.MapInventory.Add(items[0].InvItem);
                         retValue = true;
                     }
