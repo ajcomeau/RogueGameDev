@@ -89,6 +89,7 @@
             txtName.BackColor = SystemColors.ControlText;
             txtName.ForeColor = Color.FromArgb(255, 128, 0);
             txtName.Location = new Point(330, 32);
+            txtName.MaxLength = 30;
             txtName.Name = "txtName";
             txtName.Size = new Size(277, 23);
             txtName.TabIndex = 1;

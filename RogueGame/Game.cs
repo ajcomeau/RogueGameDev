@@ -190,12 +190,13 @@ namespace RogueGame
         /// </summary>
         private void GameOver(bool Won)
         {
-            if (!Won)
-            {
-                TurnInProgress = false;
-                GameMode = DisplayMode.GameOver;
+            TurnInProgress = false;
+            GameMode = DisplayMode.GameOver;
+
+            if (Won)
+                VictoryScreen();
+            else
                 RIPScreen();
-            }
         }
         /// <summary>
         /// Creates and returns R.I.P. screen.
@@ -224,6 +225,36 @@ namespace RogueGame
             "\n                        ║                             ║" +
             "\n                        ║                             ║" +
             "\n                      __\\/ (\\//(\\/ \\(//)\\)\\/(//)\\)//(\\__" +
+            "\n";
+
+            this.CurrentMap.UpdateDisplayFromText(screen);
+
+        }
+
+        private void VictoryScreen()
+        {
+            string screen;
+            // Assemble the ASCII graphic and return it.
+            screen = "\n\n\n\n" +
+            "   ╔════════════════════════════════════════════════════════════════════════╗\n" +
+            "   ║~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*║\n" +
+            "   ║                                                                        ║\n" +
+            $"   ║{CenterString("CONGRATULATIONS!", 72)}║\n" +
+            $"   ║{CenterString("You escape the dungeon with", 72)}║\n" +
+            $"   ║{CenterString("the Amulet of Yendor and claim", 72)}║\n" +
+            $"   ║{CenterString("a place of high honor in the", 72)}║\n" +
+            $"   ║{CenterString("Hall of Rogues!", 72)}║\n" +
+            "   ║                                                                        ║\n" +
+            "   ║                                                                        ║\n" +
+            "   ║                                                                        ║\n" +
+            $"   ║{CenterString(CurrentPlayer.CharacterName, 72)}║\n" +
+            $"   ║{CenterString(CurrentPlayer.Gold.ToString() + " Au", 72)}║\n" +
+            "   ║                                                                        ║\n" +
+            "   ║                                                                        ║\n" +
+            "   ║                                                                        ║\n" +
+            "   ║                                                                        ║\n" +
+            "   ║~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*║\n" +
+            "   ╚════════════════════════════════════════════════════════════════════════╝\n" +
             "\n";
 
             this.CurrentMap.UpdateDisplayFromText(screen);
@@ -630,7 +661,7 @@ namespace RogueGame
             // They can only go up if they have the Amulet.
             if (Change < 0)
             {
-                allowPass = CurrentPlayer.HasAmulet && CurrentLevel > 1;
+                allowPass = CurrentPlayer.HasAmulet;
                 failMessage = "You can't go that way.";
             }
             else if (Change > 0)
@@ -642,11 +673,16 @@ namespace RogueGame
             // Change the level or show the fail message.
             if (allowPass)
             {
-                CurrentLevel += Change;
-                CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer, GameInventory);
-                CurrentMap.ShroudMap();
-                CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
-                CurrentMap.DiscoverRoom(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y);
+                if(Change < 0 && CurrentLevel == 1)  // Player exits the dungeon
+                    GameOver(true);
+                else
+                {
+                    CurrentLevel += Change;
+                    CurrentMap = new MapLevel(CurrentLevel, CurrentPlayer, GameInventory);
+                    CurrentMap.ShroudMap();
+                    CurrentPlayer.Location = CurrentMap.GetOpenSpace(false);
+                    CurrentMap.DiscoverRoom(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y);
+                }
             }
             else
                 UpdateStatus(failMessage, false);
@@ -1073,9 +1109,6 @@ namespace RogueGame
                             ReturnFunction(lowerCase);
                     }
                     keyHandled = true;
-                    break;
-                case DisplayMode.GameOver:
-                    RIPScreen();
                     break;
                 default:
                     break;
