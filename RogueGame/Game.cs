@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using static RogueGame.Inventory;
 
 namespace RogueGame

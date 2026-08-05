@@ -1,17 +1,4 @@
-﻿using Microsoft.VisualBasic.ApplicationServices;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Reflection;
-using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms.Design;
-using System.Xml;
+﻿using System.Collections.ObjectModel;
 
 namespace RogueGame
 {
