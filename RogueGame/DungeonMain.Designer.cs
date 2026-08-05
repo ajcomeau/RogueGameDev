@@ -130,7 +130,7 @@
             Margin = new Padding(4);
             MinimumSize = new Size(1160, 837);
             Name = "DungeonMain";
-            Text = "Dungeon Map";
+            Text = "Rogue C#";
             KeyDown += DungeonMain_KeyDown;
             pnlName.ResumeLayout(false);
             pnlName.PerformLayout();
