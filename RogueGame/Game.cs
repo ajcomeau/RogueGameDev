@@ -186,6 +186,18 @@ namespace RogueGame
             this.CurrentMap.UpdateDisplayFromText(screenText);
         }
         /// <summary>
+        /// End the game and show the appropriate screen.
+        /// </summary>
+        private void GameOver(bool Won)
+        {
+            if (!Won)
+            {
+                TurnInProgress = false;
+                GameMode = DisplayMode.GameOver;
+                RIPScreen();
+            }
+        }
+        /// <summary>
         /// Creates and returns R.I.P. screen.
         /// </summary>
         /// <returns></returns>
@@ -561,8 +573,9 @@ namespace RogueGame
                 // If the player is now dead, signal the game over.
                 else if (CurrentPlayer.HungerState == Player.HungerLevel.Dead)
                 {
-                    GameMode = DisplayMode.GameOver;
+                    
                     CauseOfDeath = "starvation";
+                    GameOver(false);
                 }
 
                 // Regenerate hit points.
@@ -894,9 +907,8 @@ namespace RogueGame
             // If the player has been defeated, end the game.
             if (Defender.CurrentHP < 1)
             {
-                GameMode = DisplayMode.GameOver;
-                UpdateStatus($"The {Attacker.CharacterName.ToLower()} killed you.", false);
                 CauseOfDeath = (AddEnglishArticle(Attacker.CharacterName.ToLower()));
+                GameOver(false);                
             }
         }
         /// <summary>
