@@ -56,12 +56,11 @@ namespace RogueGame
                 }
 
                 // If the game has ended, offer the choice of starting a new game.
-                if (currentGame.GameMode == Game.DisplayMode.GameOver)
+                if (currentGame.GameMode == DisplayMode.GameOver || 
+                    currentGame.GameMode == DisplayMode.Victory)
                 {
                     lblStats.Text = "";
-
-                    pnlName.Visible = true;
-                    txtName.Text = currentGame.CurrentPlayer.CharacterName;
+                    pnlName.Visible = true;                    
                 }
             }
         }

@@ -168,7 +168,7 @@ namespace RogueGame
         /// Returns help screen text.
         /// </summary>
         /// <returns></returns>
-        private void HelpScreen()
+        private string HelpScreen()
         {
             string screenText = "Command list - Press ESC to return.\n\n";
             bool firstColumn = true;
@@ -183,33 +183,20 @@ namespace RogueGame
                 firstColumn = !firstColumn;
             }
 
-            this.CurrentMap.UpdateDisplayFromText(screenText);
-        }
-        /// <summary>
-        /// End the game and show the appropriate screen.
-        /// </summary>
-        private void GameOver(bool Won)
-        {
-            TurnInProgress = false;
-            GameMode = DisplayMode.GameOver;
-
-            if (Won)
-                VictoryScreen();
-            else
-                RIPScreen();
+            return screenText;
         }
         /// <summary>
         /// Creates and returns R.I.P. screen.
         /// </summary>
         /// <returns></returns>
-        private void RIPScreen()
+        private string RIPScreen()
         {
-            string screen;
+            string screenText;
 
             if (CauseOfDeath == null) CauseOfDeath = "mysterious forces.";
 
             // Assemble the ASCII graphic and return it.
-            screen = "\n\n\n\n\n\n" +
+            screenText = "\n\n\n\n\n\n" +
             "\n                        ╔═════════════════════════════╗" +
             "\n                        ║                             ║" +
             "\n                        ║                             ║" +
@@ -227,15 +214,15 @@ namespace RogueGame
             "\n                      __\\/ (\\//(\\/ \\(//)\\)\\/(//)\\)//(\\__" +
             "\n";
 
-            this.CurrentMap.UpdateDisplayFromText(screen);
+            return screenText;
 
         }
 
-        private void VictoryScreen()
+        private string VictoryScreen()
         {
-            string screen;
+            string screenText;
             // Assemble the ASCII graphic and return it.
-            screen = "\n\n\n\n" +
+            screenText = "\n\n\n\n" +
             "   ╔════════════════════════════════════════════════════════════════════════╗\n" +
             "   ║~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*║\n" +
             "   ║                                                                        ║\n" +
@@ -257,7 +244,7 @@ namespace RogueGame
             "   ╚════════════════════════════════════════════════════════════════════════╝\n" +
             "\n";
 
-            this.CurrentMap.UpdateDisplayFromText(screen);
+            return screenText;
 
         }
         /// <summary>
@@ -336,14 +323,10 @@ namespace RogueGame
         private void RestoreMap()
         {
             // Restore the map display.
-            if (GameMode == DisplayMode.Inventory || GameMode == DisplayMode.Help)
-            {
-                GameMode = DisplayMode.Primary;
-                if (DevMode)
-                    CurrentMap.MapCheck();
-                else
-                    CurrentMap.MapText();
-            }
+            if (DevMode)
+                CurrentMap.MapCheck();
+            else
+                CurrentMap.MapText();
         }
         /// <summary>
         /// Dev mode: Change out current map for a new one.
@@ -357,12 +340,11 @@ namespace RogueGame
         /// <summary>
         /// Bring up inventory screen for viewing.
         /// </summary>
-        public void DisplayInventory()
+        public string DisplayInventory()
         {
             string screenText = "Inventory List\n\n";
-            // Switch the screen to the player's inventory.
-            GameMode = DisplayMode.Inventory;
-
+            
+            // Build list of player's inventory and display.
             foreach (InventoryLine line in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory))
                 if (line.InvItem == CurrentPlayer.Armor)
                     screenText += line.Description + " (being worn)\n";  // current armor
@@ -375,7 +357,7 @@ namespace RogueGame
                 else
                     screenText += line.Description + "\n";
 
-            this.CurrentMap.UpdateDisplayFromText(screenText);
+            return screenText;
         }
         #endregion
 
@@ -410,69 +392,7 @@ namespace RogueGame
             UpdateStatus($"Welcome to the Dungeon, {CurrentPlayer.CharacterName} ... (Press ? for list of commands.)", false);
 
             // Set the current screen display.
-            if (DevMode)
-                this.CurrentMap.MapCheck();
-            else
-                this.CurrentMap.MapText();
-        }
-
-        /// <summary>
-        /// Initialize all key commands with Action delegates and descriptions.
-        /// </summary>
-        private void InitializeCommands()
-        {
-            // Create searchable dictionary of key commands and delegates to methods.
-            KeyActions = new Dictionary<recKeyChord, (Action, string)>
-            {
-                {new recKeyChord(KEY_DOWNLEVEL, false, true), (DownStairsProc, "> - Go downstairs")},
-                {new recKeyChord(KEY_UPLEVEL, false, true), (UpstairsProc, "< - Go upstairs (requires amulet)")},
-                {new recKeyChord(KEY_F, false, true), (FastPlayProc, "F - Fast Play ON / OFF")},
-                {new recKeyChord(KEY_HELP, false, true), (HelpProc, "? - Show help screen")},
-                {new recKeyChord(KEY_T, false, true), (RemoveArmorProc, "R - Remove armor")},
-                {new recKeyChord(KEY_W, false, true), (WearArmorProc, "W - Wear armor")},
-                {new recKeyChord(KEY_SOUTH, false, false), (SouthProc, "Down arrow - Move south")},
-                {new recKeyChord(KEY_WEST, false, false), (WestProc, "Left arrow - Move west")},
-                {new recKeyChord(KEY_NORTH, false, false), (NorthProc, "Up arrow - Move north")},
-                {new recKeyChord(KEY_EAST, false, false), (EastProc, "Right arrow - Move east")},
-                {new recKeyChord(KEY_Q, false, false), (QuaffProc, "q - Quaff potion")},
-                {new recKeyChord(KEY_R, false, false), (ReadProc, "r - Read scroll")},
-                {new recKeyChord(KEY_S, false, false), (SearchProc, "s - Search for item")},
-                {new recKeyChord(KEY_E, false, false), (EatProc, "e - Eat food")},
-                {new recKeyChord(KEY_I, false, false), (DisplayInventory, "i - Show inventory")},
-                {new recKeyChord(KEY_D, false, false), (DropProc, "d - Drop item")},
-                {new recKeyChord(KEY_W, false, false), (WieldProc, "w - Wield a weapon")},
-                {new recKeyChord(KEY_D, true, false), (DevModeProc, "CTRL-D - Dev Mode ON / OFF")},
-                {new recKeyChord(KEY_N, true, false), (NewMapProc, "CTRL-N - Draw new map (Dev mode)")},
-                {new recKeyChord(KEY_H, true, false), (HulkModeProc, "CTRL-H - Hulk mode (cheat)")},
-            };
-
-            //Searchable dictionary field to hold delegates for inventory items.
-            InventoryActions = new Dictionary<(InvCategory InvCat, string InvName), Func<bool>>
-            {
-                {(InvCategory.Scroll, "Identify"), ScrollOfIdentifyBegin},
-                {(InvCategory.Scroll, "Magic Mapping"), ScrollOfMagicMapping},
-                {(InvCategory.Scroll, "Enchant Armor"), ScrollOfEnchantArmor},
-                {(InvCategory.Scroll, "Enchant Weapon"), ScrollOfEnchantWeapon},
-                {(InvCategory.Scroll, "Food Detection"), ScrollOfFoodDetection},
-                {(InvCategory.Scroll, "Light"), ScrollOfLight},
-                {(InvCategory.Scroll, "Confuse Monster"), ScrollOfConfuseMonsterBegin},
-                {(InvCategory.Scroll, "Remove Curse"), ScrollOfRemoveCurse},
-                {(InvCategory.Scroll, "Sleep"), ScrollOfSleep},
-                {(InvCategory.Scroll, "Teleportation"), ScrollOfTeleportation},
-                {(InvCategory.Scroll, "Aggravate Monsters"), ScrollOfAggravateMonsters},
-                {(InvCategory.Scroll, "Create Monster"), ScrollOfCreateMonster},
-                {(InvCategory.Scroll, "Gold Detection"), ScrollOfGoldDetection},
-                {(InvCategory.Scroll, "Hold Monsters"), ScrollofHoldMonsters},
-                {(InvCategory.Scroll, "Protect Armor"), ScrollOfProtectArmor},
-                {(InvCategory.Scroll, "Clear Monsters"), ScrollOfClearMonsters},
-                {(InvCategory.Scroll, "Blank Paper"), ScrollOfPaper}
-            };
-
-            // Trap delegates and probability of occurrence.
-            Traps = new Dictionary<Action<Character>, int>
-            {
-                {TrapArrow, 100}
-            };
+            RestoreMap();
         }
 
         /// <summary>
@@ -606,7 +526,7 @@ namespace RogueGame
                 {
                     
                     CauseOfDeath = "starvation";
-                    GameOver(false);
+                    GameMode = DisplayMode.GameOver;
                 }
 
                 // Regenerate hit points.
@@ -673,8 +593,8 @@ namespace RogueGame
             // Change the level or show the fail message.
             if (allowPass)
             {
-                if(Change < 0 && CurrentLevel == 1)  // Player exits the dungeon
-                    GameOver(true);
+                if (Change < 0 && CurrentLevel == 1)  // Player exits the dungeon
+                    GameMode = DisplayMode.Victory;
                 else
                 {
                     CurrentLevel += Change;
@@ -944,7 +864,7 @@ namespace RogueGame
             if (Defender.CurrentHP < 1)
             {
                 CauseOfDeath = (AddEnglishArticle(Attacker.CharacterName.ToLower()));
-                GameOver(false);                
+                GameMode = DisplayMode.GameOver;                
             }
         }
         /// <summary>
@@ -1096,23 +1016,28 @@ namespace RogueGame
             if (KeyVal == KEY_ESC)
             {
                 ReturnFunction = null;
-                RestoreMap();
+                GameMode = DisplayMode.Primary;
+                keyHandled = true;
             }
 
-            switch (GameMode)
+            if (!keyHandled)
             {
-                case DisplayMode.Inventory:
-                    // For letters, call the current return function.
-                    if (lowerCase >= 'a' && lowerCase <= 'z')
-                    {
-                        if (ReturnFunction != null) 
-                            ReturnFunction(lowerCase);
-                    }
-                    keyHandled = true;
-                    break;
-                default:
-                    break;
+                switch (GameMode)
+                {
+                    case DisplayMode.Inventory:
+                        // For letters, call the current return function.
+                        if (lowerCase >= 'a' && lowerCase <= 'z')
+                        {
+                            if (ReturnFunction != null)
+                                ReturnFunction(lowerCase);
+                        }
+                        keyHandled = true;
+                        break;
+                    default:
+                        break;
+                }
             }
+
 
             if (!keyHandled)
             {
@@ -1128,14 +1053,87 @@ namespace RogueGame
 
             // Complete turn if one was started.
             if (TurnInProgress) CompleteTurn();
-            
-            // Display the appropriate map mode.
-            if (GameMode == DisplayMode.Primary)
-                if (DevMode) 
-                    { this.CurrentMap.MapCheck(); } 
-                else 
-                    { this.CurrentMap.MapText(); }            
 
+            // Display the appropriate map mode
+            switch (GameMode)
+            {
+                case DisplayMode.Primary:
+                    RestoreMap();
+                    break;
+                case DisplayMode.Inventory:
+                    CurrentMap.UpdateDisplayFromText(DisplayInventory());
+                    break;
+                case DisplayMode.Help:
+                    CurrentMap.UpdateDisplayFromText(HelpScreen());
+                    break;
+                case DisplayMode.GameOver:
+                    CurrentMap.UpdateDisplayFromText(RIPScreen());
+                    break;
+                case DisplayMode.Victory:
+                    CurrentMap.UpdateDisplayFromText(VictoryScreen());
+                    break;
+                default:
+                    break;
+            } 
+        }
+
+        /// <summary>
+        /// Initialize all key commands with Action delegates and descriptions.
+        /// </summary>
+        private void InitializeCommands()
+        {
+            // Create searchable dictionary of key commands and delegates to methods.
+            KeyActions = new Dictionary<recKeyChord, (Action, string)>
+            {
+                {new recKeyChord(KEY_DOWNLEVEL, false, true), (DownStairsProc, "> - Go downstairs")},
+                {new recKeyChord(KEY_UPLEVEL, false, true), (UpstairsProc, "< - Go upstairs (requires amulet)")},
+                {new recKeyChord(KEY_F, false, true), (FastPlayProc, "F - Fast Play ON / OFF")},
+                {new recKeyChord(KEY_HELP, false, true), (HelpProc, "? - Show help screen")},
+                {new recKeyChord(KEY_T, false, true), (RemoveArmorProc, "R - Remove armor")},
+                {new recKeyChord(KEY_W, false, true), (WearArmorProc, "W - Wear armor")},
+                {new recKeyChord(KEY_SOUTH, false, false), (SouthProc, "Down arrow - Move south")},
+                {new recKeyChord(KEY_WEST, false, false), (WestProc, "Left arrow - Move west")},
+                {new recKeyChord(KEY_NORTH, false, false), (NorthProc, "Up arrow - Move north")},
+                {new recKeyChord(KEY_EAST, false, false), (EastProc, "Right arrow - Move east")},
+                {new recKeyChord(KEY_Q, false, false), (QuaffProc, "q - Quaff potion")},
+                {new recKeyChord(KEY_R, false, false), (ReadProc, "r - Read scroll")},
+                {new recKeyChord(KEY_S, false, false), (SearchProc, "s - Search for item")},
+                {new recKeyChord(KEY_E, false, false), (EatProc, "e - Eat food")},
+                {new recKeyChord(KEY_I, false, false), (InventoryProc, "i - Show inventory")},
+                {new recKeyChord(KEY_D, false, false), (DropProc, "d - Drop item")},
+                {new recKeyChord(KEY_W, false, false), (WieldProc, "w - Wield a weapon")},
+                {new recKeyChord(KEY_D, true, false), (DevModeProc, "CTRL-D - Dev Mode ON / OFF")},
+                {new recKeyChord(KEY_N, true, false), (NewMapProc, "CTRL-N - Draw new map (Dev mode)")},
+                {new recKeyChord(KEY_H, true, false), (HulkModeProc, "CTRL-H - Hulk mode (cheat)")},
+            };
+
+            //Searchable dictionary field to hold delegates for inventory items.
+            InventoryActions = new Dictionary<(InvCategory InvCat, string InvName), Func<bool>>
+            {
+                {(InvCategory.Scroll, "Identify"), ScrollOfIdentifyBegin},
+                {(InvCategory.Scroll, "Magic Mapping"), ScrollOfMagicMapping},
+                {(InvCategory.Scroll, "Enchant Armor"), ScrollOfEnchantArmor},
+                {(InvCategory.Scroll, "Enchant Weapon"), ScrollOfEnchantWeapon},
+                {(InvCategory.Scroll, "Food Detection"), ScrollOfFoodDetection},
+                {(InvCategory.Scroll, "Light"), ScrollOfLight},
+                {(InvCategory.Scroll, "Confuse Monster"), ScrollOfConfuseMonsterBegin},
+                {(InvCategory.Scroll, "Remove Curse"), ScrollOfRemoveCurse},
+                {(InvCategory.Scroll, "Sleep"), ScrollOfSleep},
+                {(InvCategory.Scroll, "Teleportation"), ScrollOfTeleportation},
+                {(InvCategory.Scroll, "Aggravate Monsters"), ScrollOfAggravateMonsters},
+                {(InvCategory.Scroll, "Create Monster"), ScrollOfCreateMonster},
+                {(InvCategory.Scroll, "Gold Detection"), ScrollOfGoldDetection},
+                {(InvCategory.Scroll, "Hold Monsters"), ScrollofHoldMonsters},
+                {(InvCategory.Scroll, "Protect Armor"), ScrollOfProtectArmor},
+                {(InvCategory.Scroll, "Clear Monsters"), ScrollOfClearMonsters},
+                {(InvCategory.Scroll, "Blank Paper"), ScrollOfPaper}
+            };
+
+            // Trap delegates and probability of occurrence.
+            Traps = new Dictionary<Action<Character>, int>
+            {
+                {TrapArrow, 100}
+            };
         }
 
         #region KeyProcs
@@ -1157,6 +1155,12 @@ namespace RogueGame
             // Eat something
             TurnInProgress = true;
             Eat(null);
+        }
+
+        private void InventoryProc()
+        {
+            //Show the inventory.
+            GameMode = DisplayMode.Inventory;
         }
 
         private void SearchProc()
@@ -1249,7 +1253,6 @@ namespace RogueGame
         {
             // Display help screen.
             GameMode = DisplayMode.Help;
-            HelpScreen();
         }
         /// <summary>
         /// Go up staircase if possible.
@@ -1305,7 +1308,7 @@ namespace RogueGame
                 {
                     // If there's a weapon, show the inventory
                     // and let the player select it.  Set to return and exit.
-                    DisplayInventory();
+                    GameMode = DisplayMode.Inventory;
                     UpdateStatus("Please select an item to wield.", false);
                     ReturnFunction = Wield;
                 }
@@ -1331,10 +1334,8 @@ namespace RogueGame
                         retValue = false;
                     }
                     else
-                    {
+                    {                       
                         CurrentPlayer.Wielding = items[0];
-                        RestoreMap();
-
                         if (items[0].IsGroupable)
                             UpdateStatus($"You are now wielding some {items[0].PluralName}.", false);
                         else
@@ -1347,11 +1348,11 @@ namespace RogueGame
                 {
                     // Process non-existent option.
                     UpdateStatus("Please select something to wield.", false);
-                    RestoreMap();
                     retValue = false;
                 }
 
                 ReturnFunction = null;
+                GameMode = DisplayMode.Primary;
 
             }
 
@@ -1404,7 +1405,7 @@ namespace RogueGame
                     {
                         // If there's armor, show the inventory
                         // and let the player select it.  Set to return and exit.
-                        DisplayInventory();
+                        GameMode = DisplayMode.Inventory;
                         UpdateStatus("Please select an armor to wear.", false);
                         ReturnFunction = WearArmor;
                     }
@@ -1425,6 +1426,7 @@ namespace RogueGame
                     if (items[0].ItemCategory != InvCategory.Armor)
                     {
                         UpdateStatus("You can't wear that.", false);
+                        GameMode = DisplayMode.Primary;
                         retValue = false;
                     }
                     else
@@ -1446,7 +1448,7 @@ namespace RogueGame
                 ReturnFunction = null;
             }
 
-            if (ReturnFunction == null) RestoreMap();
+            if (ReturnFunction == null) GameMode = DisplayMode.Primary;
 
             return retValue;
         }
@@ -1473,7 +1475,7 @@ namespace RogueGame
                 {
                     // If there's something edible, show the inventory
                     // and let the player select it.  Set to return and exit.
-                    DisplayInventory();
+                    GameMode = DisplayMode.Inventory;
                     UpdateStatus("Please select something to eat.", false);
                     ReturnFunction = Eat;
                 }
@@ -1520,7 +1522,7 @@ namespace RogueGame
                 ReturnFunction = null;
             }
 
-            if (ReturnFunction == null) RestoreMap();
+            if (ReturnFunction == null) GameMode = DisplayMode.Primary;
             return retValue;
         }
 
@@ -1537,7 +1539,7 @@ namespace RogueGame
 
             if (GameMode != DisplayMode.Inventory)
             {
-                DisplayInventory();
+                GameMode = DisplayMode.Inventory;
                 UpdateStatus("Please select an item to drop.", false);
                 ReturnFunction = DropInventory;
             }
@@ -1576,6 +1578,7 @@ namespace RogueGame
                     else
                     {
                         UpdateStatus("There is already an item there.", false);
+                        GameMode = DisplayMode.Primary;
                         retValue = false;
                     }
                 }
@@ -1588,7 +1591,7 @@ namespace RogueGame
                 ReturnFunction = null;
             }
 
-            if (ReturnFunction == null) RestoreMap();
+            if (ReturnFunction == null) GameMode = DisplayMode.Primary;
 
             return retValue;
         }
@@ -1677,7 +1680,7 @@ namespace RogueGame
                 {
                     // If there are any scrolls, show the inventory
                     // and let the player select it.  Set to return and exit.
-                    DisplayInventory();
+                    GameMode = DisplayMode.Inventory;
                     UpdateStatus("Please select an item to read.", false);
                     ReturnFunction = ReadScroll;
                 }
@@ -1699,6 +1702,7 @@ namespace RogueGame
                     if (items[0].ItemCategory != InvCategory.Scroll)
                     {
                         UpdateStatus("There's nothing on it to read.", false);
+                        GameMode = DisplayMode.Primary;
                         retValue = false;
                     }
                     else
@@ -1728,7 +1732,7 @@ namespace RogueGame
                     retValue = false;
                 }
 
-                if(ReturnFunction == null) RestoreMap();
+                if(ReturnFunction == null) GameMode = DisplayMode.Primary;
             }
 
             return retValue;
@@ -1754,7 +1758,7 @@ namespace RogueGame
                 {
                     // If there are any potions, show the inventory
                     // and let the player select it.  Set to return and exit.
-                    DisplayInventory();
+                    GameMode = DisplayMode.Inventory;
                     UpdateStatus("Please select a potion to drink.", false);
                     ReturnFunction = QuaffPotion;
                 }
@@ -1776,6 +1780,7 @@ namespace RogueGame
                     if (items[0].ItemCategory != InvCategory.Potion)
                     {
                         UpdateStatus("You can't drink that.", false);
+                        GameMode = DisplayMode.Primary;
                         retValue = false;
                     }
                     else
@@ -1802,7 +1807,7 @@ namespace RogueGame
                     retValue = false;
                 }
 
-                if (ReturnFunction == null) RestoreMap();
+                if (ReturnFunction == null) GameMode = DisplayMode.Primary;
             }
 
             return retValue;
@@ -1819,7 +1824,7 @@ namespace RogueGame
         {
             bool retValue = false;
             UpdateStatus("This is a Scroll of Identify. Please select an item to identify.", false);
-            DisplayInventory();
+            GameMode = DisplayMode.Inventory;
             // Set return function to respond to next key command.
             ReturnFunction = ScrollOfIdentifyEnd;
             retValue = true;
@@ -1856,7 +1861,7 @@ namespace RogueGame
 
             retValue = true;
 
-            RestoreMap();
+            GameMode = DisplayMode.Primary;
 
             return retValue;
 
