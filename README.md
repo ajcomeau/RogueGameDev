@@ -1,6 +1,6 @@
 # Rogue C#
 ### 7/31/2026
-In **Setting Traps (https://www.andrewcomeau.com/programming/rogue-inheritance-traps/), I add traps and some extra class inheritance to the game.
+In **Setting Traps (https://www.andrewcomeau.com/programming/rogue-inheritance-traps/)**, I add traps and some extra class inheritance to the game. Check it out on AndrewComeau.com!
 
 ### 7/30/2026
 
