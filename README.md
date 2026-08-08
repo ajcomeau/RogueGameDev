@@ -1,4 +1,7 @@
 # Rogue C#
+### 7/31/2026
+In **Setting Traps (https://www.andrewcomeau.com/programming/rogue-inheritance-traps/), I add traps and some extra class inheritance to the game.
+
 ### 7/30/2026
 
 The latest chapter in the series, **Don't Confuse the Monsters (https://www.andrewcomeau.com/programming/rogue-monster-navigation/)** is online.
