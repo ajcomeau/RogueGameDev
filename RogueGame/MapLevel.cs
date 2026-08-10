@@ -1311,7 +1311,8 @@ namespace RogueGame{
                 nx = 0;
                 ny += 1;
             }
-        }    }
+        }    
+    }
 
     /// <summary>
     /// Class to hold information for a specific space on the map.

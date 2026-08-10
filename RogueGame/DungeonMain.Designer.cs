@@ -59,7 +59,7 @@
             pnlName.Controls.Add(btnStart);
             pnlName.Controls.Add(txtName);
             pnlName.Controls.Add(lblQuestion);
-            pnlName.Location = new Point(200, 717);
+            pnlName.Location = new Point(200, 704);
             pnlName.Name = "pnlName";
             pnlName.Size = new Size(727, 69);
             pnlName.TabIndex = 11;
@@ -67,11 +67,11 @@
             // lblPrompt
             // 
             lblPrompt.AutoSize = true;
-            lblPrompt.Location = new Point(213, 5);
+            lblPrompt.Location = new Point(168, 6);
             lblPrompt.Name = "lblPrompt";
-            lblPrompt.Size = new Size(264, 17);
+            lblPrompt.Size = new Size(400, 17);
             lblPrompt.TabIndex = 3;
-            lblPrompt.Text = "Click Start to begin a new game.";
+            lblPrompt.Text = "Enter a name and click Start to begin a new game.";
             // 
             // btnStart
             // 
@@ -88,19 +88,20 @@
             // 
             txtName.BackColor = SystemColors.ControlText;
             txtName.ForeColor = Color.FromArgb(255, 128, 0);
-            txtName.Location = new Point(330, 32);
+            txtName.Location = new Point(309, 32);
             txtName.MaxLength = 30;
             txtName.Name = "txtName";
-            txtName.Size = new Size(277, 23);
+            txtName.Size = new Size(298, 23);
             txtName.TabIndex = 1;
             // 
             // lblQuestion
             // 
-            lblQuestion.Location = new Point(30, 35);
+            lblQuestion.Location = new Point(39, 33);
             lblQuestion.Name = "lblQuestion";
             lblQuestion.Size = new Size(271, 21);
             lblQuestion.TabIndex = 0;
             lblQuestion.Text = "What is your rogue's name?";
+            lblQuestion.TextAlign = ContentAlignment.MiddleRight;
             // 
             // listStatus
             // 

@@ -102,7 +102,7 @@
         /// Tuple property to record ending turn for an inventory effect and
         /// next delegate to be called when activated.
         /// </summary>
-        public (int EndingTurn, Func<bool> TargetFunction)? InventoryEffect { get; set; } = null;
+        public (int EndingTurn, Action TargetFunction)? InventoryEffect { get; set; } = null;
         /// <summary>
         /// Primary constructor for creating new player when game starts.
         /// </summary>

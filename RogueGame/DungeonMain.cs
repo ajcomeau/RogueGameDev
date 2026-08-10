@@ -26,6 +26,7 @@ namespace RogueGame
                 currentGame = new Game(txtName.Text);
                 listStatus.DataSource = currentGame.StatusList;
                 pnlName.Visible = false;
+                pnlName.Enabled = false;
                 this.Invalidate(true);  // Invalidate to draw map.
                 lblStats.Text = currentGame.StatsDisplay();
             }
@@ -55,12 +56,14 @@ namespace RogueGame
                     listStatus.SelectedIndex = -1;
                 }
 
+                e.Handled = true;
+
                 // If the game has ended, offer the choice of starting a new game.
-                if (currentGame.GameMode == DisplayMode.GameOver || 
-                    currentGame.GameMode == DisplayMode.Victory)
+                if (currentGame.GameMode >= DisplayMode.GameOver)
                 {
+                    pnlName.Enabled = true;
                     lblStats.Text = "";
-                    pnlName.Visible = true;                    
+                    pnlName.Visible = true;
                 }
             }
         }
@@ -72,9 +75,27 @@ namespace RogueGame
             int cellWidth = 12;
             int cellHeight = 24;
             int px, py;
+            string[] lines;
 
-            if (currentGame != null)
+            if (currentGame == null)
             {
+                listStatus.Visible = false;
+                lines = TitleScreen().Split('\n');
+
+                for (int y = 0; y < lines.Length; y++)
+                {
+                    TextRenderer.DrawText(
+                        e.Graphics,
+                        lines[y],
+                        mapFont,
+                        new Point(75, (y * cellHeight) + 25),
+                        Color.SandyBrown, Color.Black,
+                        TextFormatFlags.NoPadding);
+                }
+            }
+            else
+            {
+                listStatus.Visible = true;
                 // Iterate through array cells and draw glyphs on screen.
                 for (int y = 0; y < currentGame.CurrentMap.DisplayMap.GetLength(1); y++)
                 {
@@ -82,19 +103,50 @@ namespace RogueGame
                     {
                         MapGlyph g = currentGame.CurrentMap.DisplayMap[x, y];
                         px = x * cellWidth + 25;   // Add pixels on top and left as margin.
-                        py = y * cellHeight + 125;  
+                        py = y * cellHeight + 125;
 
                         TextRenderer.DrawText(
                             e.Graphics,
                             g.DisplayChar.ToString(),
                             mapFont,
-                            new Point(px, py-2),
+                            new Point(px, py - 2),
                             g.Foreground,
                             g.Background,
                             TextFormatFlags.NoPadding);
                     }
                 }
             }
+        }
+
+        private string TitleScreen()
+        {
+            string screenText;
+            // Assemble the ASCII graphic and return it.
+            screenText = "\n\n" +
+            "   ╔════════════════════════════════════════════════════════════════════════╗\n" +
+            "   ║                                                                        ║\n" +
+            "   ║                                                                        ║\n" +
+            "   ║                                                                        ║\n" +
+            "   ║                               ROGUE C#                                 ║\n" +
+            "   ║                                                                        ║\n" +
+            "   ║                    An homage to the original Rogue                     ║\n" +
+            "   ║                            written in C#.                              ║\n" +
+            "   ║                                                                        ║\n" +
+            "   ║                                                                        ║\n" +
+            "   ║                                                                        ║\n" +
+            "   ║                      Designed by Andrew Comeau                         ║\n" +
+            "   ║               as a demo program for the Rogue C# series.               ║\n" +
+            "   ║                                                                        ║\n" +
+            "   ║                     https://www.AndrewComeau.com                       ║\n" +
+            "   ║               https://github.com/ajcomeau/RogueGameDev                 ║\n" +
+            "   ║                                                                        ║\n" +
+            "   ║                                                                        ║\n" +
+            "   ╚════════════════════════════════════════════════════════════════════════╝\n" +
+           
+            "\n";
+
+            return screenText;
+
         }
     }
 }
