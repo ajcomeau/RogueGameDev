@@ -1817,8 +1817,8 @@ namespace RogueGame
                             {
                                 // Remove the item from the player's inventory and invoke delegate.                            
                                 ReturnFunction = null;
-                                taskInfo.Invoke();
                                 CurrentPlayer.CharacterInventory.Remove(items[0]);
+                                taskInfo.Invoke();                                
                                 readScroll = true;
                             }
 
@@ -1903,8 +1903,8 @@ namespace RogueGame
                             {
                                 // Remove the item from the player's inventory and invoke delegate.
                                 ReturnFunction = null;
-                                taskInfo.Invoke();
-                                CurrentPlayer.CharacterInventory.Remove(items[0]);                                
+                                CurrentPlayer.CharacterInventory.Remove(items[0]);
+                                taskInfo.Invoke();                                                                
                                 quaffPotion = true;
                             }                                                        
                         }
