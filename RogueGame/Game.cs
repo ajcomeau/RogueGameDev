@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Reflection;
 using static RogueGame.Inventory;
 
 namespace RogueGame
@@ -121,6 +122,7 @@ namespace RogueGame
         public string? CauseOfDeath { get; set; }
         /// <summary>
         /// Delgate used to return to function that enables an inventory item to be used.
+        /// TODO:  Evaluate this for change to Action
         /// </summary>
         public Func<char?, bool>? ReturnFunction { get; set; }         
         /// <summary>
@@ -1084,7 +1086,7 @@ namespace RogueGame
         /// </summary>
         private void InitializeCommands()
         {
-            // Create searchable dictionary of key commands and delegates to methods.
+            // Create searchable dictionary of key commands and delegates to methods.            
             KeyActions = new Dictionary<recKeyChord, (Action, string)>
             {
                 {new recKeyChord(KEY_DOWNLEVEL, false, true), (DownStairsProc, "> - Go downstairs")},
@@ -1110,7 +1112,7 @@ namespace RogueGame
             };
 
             //Searchable dictionary field to hold delegates for inventory items.
-            
+            // Matches inventory templates from the Inventory class to delegate methods in Game.
             InventoryActions = new Dictionary<InvTemplateID, Action>
             {
                 {InvTemplateID.ScrollOfIdentify, ScrollOfIdentifyBegin},
@@ -1129,7 +1131,23 @@ namespace RogueGame
                 {InvTemplateID.ScrollOfHoldMonsters, ScrollofHoldMonsters},
                 {InvTemplateID.ScrollOfProtectArmor, ScrollOfProtectArmor},
                 {InvTemplateID.ScrollOfClearMonsters, ScrollOfClearMonsters},
-                {InvTemplateID.ScrollOfBlankPaper, ScrollOfPaper}
+                {InvTemplateID.ScrollOfBlankPaper, ScrollOfPaper},
+                {InvTemplateID.PotionOfGainStrength, PotionOfGainStrength},
+                {InvTemplateID.PotionOfHealing, PotionOfHealing},
+                {InvTemplateID.PotionOfLevitation, PotionOfLevitation},
+                {InvTemplateID.PotionOfMagicDetection, PotionOfMagicDetection},
+                {InvTemplateID.PotionOfMonsterDetection, PotionOfMonsterDetection},
+                {InvTemplateID.PotionOfSeeInvisible, PotionOfSeeInvisible},
+                {InvTemplateID.PotionOfExtraHealing, PotionOfExtraHealing},
+                {InvTemplateID.PotionOfHasteSelf, PotionOfHasteSelf},
+                {InvTemplateID.PotionOfRaiseLevel, PotionOfRaiseLevel},
+                {InvTemplateID.PotionOfRestoreStrength, PotionOfRestoreStrength},
+                {InvTemplateID.PotionOfBlindness, PotionOfBlindness},
+                {InvTemplateID.PotionOfConfusion, PotionOfConfusion},
+                {InvTemplateID.PotionOfHallucination, PotionOfHallucination},
+                {InvTemplateID.PotionOfParalysis, PotionOfParalysis},
+                {InvTemplateID.PotionOfPoison, PotionOfPoison},
+                {InvTemplateID.PotionOfThirstQuenching, PotionOfThirstQuenching}
             };
 
             // Trap delegates and probability of occurrence.
@@ -1137,6 +1155,86 @@ namespace RogueGame
             {
                 {TrapArrow, 100}
             };
+        }
+
+        private void PotionOfThirstQuenching()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PotionOfPoison()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PotionOfParalysis()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PotionOfHallucination()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PotionOfConfusion()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PotionOfBlindness()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PotionOfRestoreStrength()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PotionOfRaiseLevel()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PotionOfHasteSelf()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PotionOfExtraHealing()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PotionOfSeeInvisible()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PotionOfMonsterDetection()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PotionOfMagicDetection()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PotionOfLevitation()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PotionOfHealing()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PotionOfGainStrength()
+        {
+            throw new NotImplementedException();
         }
 
         #region KeyProcs
@@ -1669,76 +1767,84 @@ namespace RogueGame
         /// <returns></returns>
         private bool ReadScroll(char? ListItem)
         {
-            bool retValue = false, readScroll = false;
+            bool readScroll = false;
             List<Inventory> items;
 
-            if (GameMode != DisplayMode.Inventory)
+            try
             {
-                // Verify the player has something they can read.
-                items = (from inv in CurrentPlayer.CharacterInventory
-                         where inv.ItemCategory == InvCategory.Scroll
-                         select inv).ToList();
-
-                if (items.Count > 0)
+                if (GameMode != DisplayMode.Inventory)
                 {
-                    // If there are any scrolls, show the inventory
-                    // and let the player select it.  Set to return and exit.
-                    GameMode = DisplayMode.Inventory;
-                    UpdateStatus("Please select an item to read.", false);
-                    ReturnFunction = ReadScroll;
+                    // Verify the player has something they can read.
+                    items = (from inv in CurrentPlayer.CharacterInventory
+                             where inv.ItemCategory == InvCategory.Scroll
+                             select inv).ToList();
+
+                    if (items.Count > 0)
+                    {
+                        // If there are any scrolls, show the inventory
+                        // and let the player select it.  Set to return and exit.
+                        GameMode = DisplayMode.Inventory;
+                        UpdateStatus("Please select an item to read.", false);
+                        ReturnFunction = ReadScroll;
+                    }
+                    else
+                        // Otherwise, notify the player.
+                        UpdateStatus("You don't have any scrolls.", false);
                 }
                 else
-                    // Otherwise, notify the player.
-                    UpdateStatus("You don't have any scrolls.", false);
-            }
-            else
-            {
-                // Get the selected item.
-                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
-                         where InventoryLine.ID == ListItem
-                         select InventoryLine.InvItem).ToList();
-
-                if (items.Count > 0)
                 {
-                    // Call the appropriate delegate and remove the item
-                    // from inventory.
-                    if (items[0].ItemCategory != InvCategory.Scroll)
+                    // Get the selected item.
+                    items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
+                             where InventoryLine.ID == ListItem
+                             select InventoryLine.InvItem).ToList();
+
+                    if (items.Count > 0)
                     {
-                        UpdateStatus("There's nothing on it to read.", false);
-                        GameMode = DisplayMode.Primary;
-                        retValue = false;
+                        // Call the appropriate delegate and remove the item
+                        // from inventory.
+                        if (items[0].ItemCategory != InvCategory.Scroll)
+                        {
+                            UpdateStatus("There's nothing on it to read.", false);
+                            readScroll = false;
+                        }
+                        else
+                        {
+                            // Set the inventory item as identified if necessary.
+                            if (!items[0].IsIdentified) SetInventoryAsIdentified(items[0].PriorityId);
+
+                            // Find and invoke the delegate
+                            if (InventoryActions.TryGetValue(items[0].PriorityId, out var taskInfo))
+                            {
+                                // Remove the item from the player's inventory and invoke delegate.                            
+                                ReturnFunction = null;
+                                taskInfo.Invoke();
+                                CurrentPlayer.CharacterInventory.Remove(items[0]);
+                                readScroll = true;
+                            }
+
+                            GameMode = DisplayMode.Primary;                            
+                        }
                     }
                     else
                     {
-                        // Set the inventory item as identified if necessary.
-                        if (!items[0].IsIdentified) SetInventoryAsIdentified(items[0].PriorityId);
+                        // Process non-existent option.
+                        UpdateStatus("Please select something to read.", false);
 
-                        // Find and invoke the delegate
-                        if (InventoryActions.TryGetValue(items[0].PriorityId, out var taskInfo))
-                        {
-                            // Remove the item from the player's inventory and invoke delegate.
-                            CurrentPlayer.CharacterInventory.Remove(items[0]);
-                            ReturnFunction = null;
-                            taskInfo.Invoke();
-                        }
-
-                        retValue = readScroll;
+                        ReturnFunction = null;
+                        readScroll = false;
                     }
-
                 }
-                else
-                {
-                    // Process non-existent option.
-                    UpdateStatus("Please select something to read.", false);
-                    
-                    ReturnFunction = null;
-                    retValue = false;
-                }
-
-                if(ReturnFunction == null) GameMode = DisplayMode.Primary;
+            }
+            catch (NotImplementedException)
+            {
+                readScroll = false;
+                UpdateStatus("This scroll doesn't seem to do anything at all ... yet.", false);
+                UpdateStatus("Watch for side effects like headache, itchiness, sudden metamorphosis, etc.", false);
             }
 
-            return retValue;
+            if (ReturnFunction == null) GameMode = DisplayMode.Primary;
+            return readScroll;
+
         }
         /// <summary>
         /// Quaff the selected potion.
@@ -1747,73 +1853,82 @@ namespace RogueGame
         /// <returns></returns>
         private bool QuaffPotion(char? ListItem)
         {
-            bool retValue = false, quaffPotion = false;
+            bool quaffPotion = false;
             List<Inventory> items;
 
-            if (GameMode != DisplayMode.Inventory)
+            try
             {
-                // Verify the player has something they can drink.
-                items = (from inv in CurrentPlayer.CharacterInventory
-                         where inv.ItemCategory == InvCategory.Potion
-                         select inv).ToList();
-
-                if (items.Count > 0)
+                if (GameMode != DisplayMode.Inventory)
                 {
-                    // If there are any potions, show the inventory
-                    // and let the player select it.  Set to return and exit.
-                    GameMode = DisplayMode.Inventory;
-                    UpdateStatus("Please select a potion to drink.", false);
-                    ReturnFunction = QuaffPotion;
+                    // Verify the player has something they can drink.
+                    items = (from inv in CurrentPlayer.CharacterInventory
+                             where inv.ItemCategory == InvCategory.Potion
+                             select inv).ToList();
+
+                    if (items.Count > 0)
+                    {
+                        // If there are any potions, show the inventory
+                        // and let the player select it.  Set to return and exit.
+                        GameMode = DisplayMode.Inventory;
+                        UpdateStatus("Please select a potion to drink.", false);
+                        ReturnFunction = QuaffPotion;
+                    }
+                    else
+                        // Otherwise, notify the player.
+                        UpdateStatus("You don't have anything to drink.", false);
                 }
                 else
-                    // Otherwise, notify the player.
-                    UpdateStatus("You don't have anything to drink.", false);
-            }
-            else
-            {
-                // Get the selected item.
-                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
-                         where InventoryLine.ID == ListItem
-                         select InventoryLine.InvItem).ToList();
-
-                if (items.Count > 0)
                 {
-                    // Call the appropriate delegate and remove the item
-                    // from inventory.
-                    if (items[0].ItemCategory != InvCategory.Potion)
+                    // Get the selected item.
+                    items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
+                             where InventoryLine.ID == ListItem
+                             select InventoryLine.InvItem).ToList();
+
+                    if (items.Count > 0)
                     {
-                        UpdateStatus("You can't drink that.", false);
+                        // Call the appropriate delegate and remove the item
+                        // from inventory.
+                        if (items[0].ItemCategory != InvCategory.Potion)
+                        {
+                            UpdateStatus("You can't drink that.", false);
+                            quaffPotion = false;
+                        }
+                        else
+                        {
+                            // Set the inventory item as identified if necessary.
+                            if (!items[0].IsIdentified) SetInventoryAsIdentified(items[0].PriorityId);
+
+                            // Find and invoke the delegate
+                            if (InventoryActions.TryGetValue(items[0].PriorityId, out var taskInfo))
+                            {
+                                // Remove the item from the player's inventory and invoke delegate.
+                                ReturnFunction = null;
+                                taskInfo.Invoke();
+                                CurrentPlayer.CharacterInventory.Remove(items[0]);                                
+                                quaffPotion = true;
+                            }                                                        
+                        }
+
                         GameMode = DisplayMode.Primary;
-                        retValue = false;
                     }
                     else
                     {
-                        // Set the inventory item as identified if necessary.
-                        if (!items[0].IsIdentified) SetInventoryAsIdentified(items[0].PriorityId);
-
-                        // Find and invoke the delegate
-                        if (InventoryActions.TryGetValue(items[0].PriorityId, out var taskInfo))
-                        {
-                            // Remove the item from the player's inventory and invoke delegate.
-                            CurrentPlayer.CharacterInventory.Remove(items[0]);
-                            taskInfo.Invoke();
-                        }
-
-                        retValue = quaffPotion;
-                    }
+                        // Process non-existent option.
+                        UpdateStatus("Please select something to drink.", false);
+                        ReturnFunction = null;
+                        quaffPotion = false;
+                    }                    
                 }
-                else
-                {
-                    // Process non-existent option.
-                    UpdateStatus("Please select something to drink.", false);
-                    ReturnFunction = null;
-                    retValue = false;
-                }
-
-                if (ReturnFunction == null) GameMode = DisplayMode.Primary;
+            }
+            catch (NotImplementedException)
+            {
+                quaffPotion = false;
+                UpdateStatus("This potion doesn't seem to do anything at all ... yet.", false);
+                UpdateStatus("Watch for side effects like headache, itchiness, sudden metamorphosis, etc.", false);
             }
 
-            return retValue;
+            if (ReturnFunction == null) GameMode = DisplayMode.Primary;
+            return quaffPotion;
         }
 
         #endregion

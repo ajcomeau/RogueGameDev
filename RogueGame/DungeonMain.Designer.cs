@@ -116,6 +116,7 @@
             listStatus.Name = "listStatus";
             listStatus.Size = new Size(1120, 132);
             listStatus.TabIndex = 12;
+            listStatus.Visible = false;
             // 
             // DungeonMain
             // 

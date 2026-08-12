@@ -37,35 +37,39 @@ namespace RogueGame
 
         private void DungeonMain_KeyDown(object sender, KeyEventArgs e)
         {
-
             if (currentGame != null)
             {
-                // Don't send keys until the game has been instantiated
-                // and then don't send CTRL / SHIFT / ALT.
-                if (e.KeyValue > 18)
+                if (currentGame.GameMode < DisplayMode.GameOver)
                 {
-                    Debug.WriteLine(e.KeyValue);
-                    currentGame.KeyHandler(e.KeyValue, e.Shift, e.Control);
-
                     // Invalidate to redraw map.
                     this.Invalidate(true);
-
                     listStatus.Visible = (currentGame.GameMode is DisplayMode.Primary or DisplayMode.Inventory);
-                    lblStats.Text = currentGame.StatsDisplay();
-                    listStatus.SelectedIndex = 0;
-                    listStatus.SelectedIndex = -1;
+
+                    // Don't send keys until the game has been instantiated
+                    // and then don't send CTRL / SHIFT / ALT.
+                    if (e.KeyValue > 18)
+                    {
+                        e.SuppressKeyPress = true;
+                        currentGame.KeyHandler(e.KeyValue, e.Shift, e.Control);
+                        lblStats.Text = currentGame.StatsDisplay();
+                        listStatus.SelectedIndex = 0;
+                        listStatus.SelectedIndex = -1;
+                    }
+                }
+
+                // Evaluate GameMode again. If the game has ended, clear and let player start new game.                
+                if (currentGame.GameMode >= DisplayMode.GameOver)
+                {
+                    listStatus.Visible = false;
+                    pnlName.Visible = true;
+                    pnlName.Enabled = true;
+                    txtName.Text = currentGame.CurrentPlayer.CharacterName;
+                    lblStats.Text = "";
                 }
 
                 e.Handled = true;
+            }           
 
-                // If the game has ended, offer the choice of starting a new game.
-                if (currentGame.GameMode >= DisplayMode.GameOver)
-                {
-                    pnlName.Enabled = true;
-                    lblStats.Text = "";
-                    pnlName.Visible = true;
-                }
-            }
         }
 
 
@@ -78,8 +82,7 @@ namespace RogueGame
             string[] lines;
 
             if (currentGame == null)
-            {
-                listStatus.Visible = false;
+            {                
                 lines = TitleScreen().Split('\n');
 
                 for (int y = 0; y < lines.Length; y++)
@@ -95,7 +98,6 @@ namespace RogueGame
             }
             else
             {
-                listStatus.Visible = true;
                 // Iterate through array cells and draw glyphs on screen.
                 for (int y = 0; y < currentGame.CurrentMap.DisplayMap.GetLength(1); y++)
                 {
