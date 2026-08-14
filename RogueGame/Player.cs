@@ -57,6 +57,10 @@
         /// </summary>
         public int Experience { get; set; }
         /// <summary>
+        /// Hallucinating - player see things that aren't there.
+        /// </summary>
+        public int Hallucinating { get; set; } = 0;
+        /// <summary>
         /// Current hunger level
         /// </summary>
         public HungerLevel HungerState { get; set; } = HungerLevel.Satisfied;
@@ -146,6 +150,32 @@
                 }
             }
         }
+        /// <summary>
+        /// Heal the player by the specified number of hit points.
+        /// </summary>
+        /// <param name="healingPoints">The number of hitpoints of healing to give the player.</param>
+        /// <param name="expTurn">The new expiration turn for blindness, confusion and hallucination.</param>
+        public void Healing(int healingPoints, int expTurn)
+        {
+            if (this.HPDamage == 0)
+                this.MaxHP += 1;
+
+            this.HPDamage = (healingPoints > this.HPDamage) ? 0 :
+                this.HPDamage - healingPoints;
+
+            // For blindness, confusion and hallucination, set any remaining time to one
+            // less than the current turn to let EvaluatePlayer() display
+            // the appropriate messages.
+            if (this.Blind > 0)
+                this.Blind = expTurn;
+
+            if (this.Confused > 0)
+                this.Confused = expTurn;
+
+            if (this.Hallucinating > 0)
+                this.Hallucinating = expTurn;
+        }
+
         #endregion
 
     }

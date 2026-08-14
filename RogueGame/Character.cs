@@ -31,6 +31,15 @@
         /// </summary>
         public int Blind { get; set; } = 0;
         /// <summary>
+        /// 
+        /// </summary>
+        public int Floating { get; set; } = 0;
+        /// <summary>
+        /// Character's relative speed to other characters. Anything above 1.0
+        /// gives character a chance for an extra move. ExpTurn of 0 is permanent.
+        /// </summary>
+        public (int Speed, int ExpTurn) RelativeSpeed { get; set; } = (1, 0);
+        /// <summary>
         /// Main inventory list.
         /// </summary>
         public List<Inventory> CharacterInventory { get; set; }

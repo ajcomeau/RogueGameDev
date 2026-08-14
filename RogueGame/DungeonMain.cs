@@ -132,15 +132,15 @@ namespace RogueGame
             "   ║                               ROGUE C#                                 ║\n" +
             "   ║                                                                        ║\n" +
             "   ║                    An homage to the original Rogue                     ║\n" +
-            "   ║                            written in C#.                              ║\n" +
+            "   ║                             written in C#.                             ║\n" +
             "   ║                                                                        ║\n" +
             "   ║                                                                        ║\n" +
             "   ║                                                                        ║\n" +
-            "   ║                      Designed by Andrew Comeau                         ║\n" +
-            "   ║               as a demo program for the Rogue C# series.               ║\n" +
+            "   ║                       Designed by Andrew Comeau                        ║\n" +
+            "   ║                as a demo program for the Rogue C# series.              ║\n" +
             "   ║                                                                        ║\n" +
-            "   ║                     https://www.AndrewComeau.com                       ║\n" +
-            "   ║               https://github.com/ajcomeau/RogueGameDev                 ║\n" +
+            "   ║                      https://www.AndrewComeau.com                      ║\n" +
+            "   ║                 https://github.com/ajcomeau/RogueGameDev               ║\n" +
             "   ║                                                                        ║\n" +
             "   ║                                                                        ║\n" +
             "   ╚════════════════════════════════════════════════════════════════════════╝\n" +

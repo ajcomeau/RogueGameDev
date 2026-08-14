@@ -884,6 +884,29 @@ namespace RogueGame{
             return foundMonster;
         }
         /// <summary>
+        /// Show all monsters on the map.
+        /// </summary>
+        public void ShowAllMonsters()
+        {
+            List<Monster> monsters = (from Monster monster in ActiveMonsters 
+                                      select monster).ToList();
+
+            monsters.ForEach(monster => monster.Location!.RemoteSight = true);
+        }
+
+        /// <summary>
+        /// Show all cursed or protected items on the map.
+        /// </summary>
+        public void ShowMagicItems()
+        {
+            List<Inventory> items = (from Inventory item in MapInventory
+                                     where item.IsProtected || item.IsCursed
+                                      select item).ToList();
+
+            items.ForEach(item => item.Location!.RemoteSight = true);
+        }
+
+        /// <summary>
         /// Get the highest priority character for display to the user.
         /// </summary>
         /// <param name="Space">MapSpace object to search</param>
@@ -1097,6 +1120,18 @@ namespace RogueGame{
             return retValue;
         }
         /// <summary>
+        /// Turn off remote sight for any spaces that no longer contain anything relevant.
+        /// </summary>
+        public void ClearRemoteSpaces()
+        {
+            List<MapSpace> remotes = (from MapSpace space in levelMap 
+                                      where space.RemoteSight = true 
+                                      && (InhabitableSpacesGlyphList.Contains(PriorityChar(space, false).DisplayChar)) 
+                                      select space).ToList();
+
+            remotes.ForEach(remote => { remote.RemoteSight = false; });
+        }
+        /// <summary>
         /// Show all the inventory of a particular category.
         /// </summary>
         /// <param name="Category">Member of InvCategory enumeration</param>
@@ -1183,7 +1218,7 @@ namespace RogueGame{
         /// For Dev mode. Output the array with no alternate characters and everything visible.
         /// </summary>
         /// <returns></returns>
-        public MapGlyph[,] MapCheck()
+        public void MapCheck()
         { 
 
             // Iterate through the two-dimensional array and transfer the appropriate characters
@@ -1194,14 +1229,12 @@ namespace RogueGame{
                 for (int x = 0; x <= MAP_WD; x++)
                     DisplayMap[x, y] = PriorityChar(levelMap[x, y], true);
             }
-
-            return DisplayMap;
         }
         /// <summary>
         /// Output the levelMap array DisplayMap for display to the user.
         /// </summary>
         /// <returns></returns>
-        public MapGlyph[,] MapText()
+        public void MapText()
         {
             StringBuilder sbReturn = new StringBuilder();
             List<MapSpace> surroundingSpaces = GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 1);
@@ -1212,6 +1245,9 @@ namespace RogueGame{
 
             // Iterate through the two-dimensional levelMap MapSpace array and use determine which MapGlyph objects 
             // to output to the DisplayMap array for display to the user.
+
+            // Clear any remote sight spaces that are now empty.
+            ClearRemoteSpaces();
 
             for (int y = 0; y <= MAP_HT; y++)
             {
@@ -1244,7 +1280,7 @@ namespace RogueGame{
                                     levelMap[x, y].AltMapCharacter : levelMap[x, y].MapCharacter;
                         }
 
-                        // If nothing has been selectd at this point, just pass an empty map space.
+                        // If nothing has been selected at this point, just pass an empty map space.
                         if (appendChar == null) { appendChar = EMPTY; }
                     }
 
@@ -1253,7 +1289,6 @@ namespace RogueGame{
                 }
             }
 
-            return DisplayMap;
         }
 
         /// <summary>

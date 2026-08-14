@@ -143,7 +143,7 @@ namespace RogueGame
         /// <summary>
         /// Searchable dictionary field to hold delegates for inventory items.
         /// </summary>
-        private Dictionary<InvTemplateID, Action> InventoryActions;
+        private Dictionary<InvTemplateID, Action<Character>> InventoryActions;
         /// <summary>
         /// Searchable dictionary field to hold delegates for traps.
         /// </summary>
@@ -156,6 +156,10 @@ namespace RogueGame
         /// Class boolean to indicate if there's a turn in progress.
         /// </summary>
         private bool TurnInProgress = false;
+        /// <summary>
+        /// Property to allow player to take extra turns when sped up.
+        /// </summary>    
+        private int MonstersNextTurn = 0;
         /// <summary>
         /// Class boolean to indicate if a key command has been processed.
         /// </summary>
@@ -466,13 +470,26 @@ namespace RogueGame
         /// Carries out necessary actions to finish the turn.
         /// </summary>
         private void CompleteTurn()
-        {
+        {   
             do
             {
+                // If the player is sped up, set the next turn for the monsters.
+                if (MonstersNextTurn == 0 && CurrentPlayer.RelativeSpeed.Speed > 1)
+                    MonstersNextTurn = CurrentTurn + CurrentPlayer.RelativeSpeed.Speed;
+
                 // Perform whatever actions needed to complete turn
                 // (i.e. monster moves)
-                foreach (Monster monster in CurrentMap.ActiveMonsters)
-                    MoveMonster(monster);
+                if (MonstersNextTurn <= CurrentTurn)
+                {
+                    foreach (Monster monster in CurrentMap.ActiveMonsters)
+                    {
+                        for(int i = 1; i <= monster.RelativeSpeed.Speed; i++)
+                            MoveMonster(monster);
+                    }
+
+                    if (MonstersNextTurn > 0) MonstersNextTurn = 0;
+                }
+
 
                 // Then, evaluate the player's current condition.
                 EvaluatePlayer();
@@ -490,6 +507,20 @@ namespace RogueGame
             // End turn
             TurnInProgress = false;
         }
+
+        private int MovesAllowed(decimal CharacterSpeed)
+        {
+            int movesAllowed = (int)CharacterSpeed;
+            CharacterSpeed -= movesAllowed;
+
+            // Calculate number of movesCollect based on character speed and probability.
+
+            movesAllowed = (rand.Next(1, 101) <= 100 * (CharacterSpeed)) ? movesAllowed + 1 : movesAllowed;
+
+            return movesAllowed;
+        }
+
+
         /// <summary>
         /// Evaluate and adjust all player stats at end of turn.
         /// </summary>
@@ -517,11 +548,14 @@ namespace RogueGame
                     UpdateStatus($"Welcome to Level {CurrentPlayer.ExpLevel}.", false);
                 }
 
-                // End any inventory effects if they haven't been used.
+                // Apply any inventory effects that haven't ended and end those that have.
                 if (CurrentPlayer.InventoryEffect != null)
+                {
                     if (CurrentPlayer.InventoryEffect?.EndingTurn <= CurrentTurn)
                         CurrentPlayer.InventoryEffect?.TargetFunction.Invoke();
-
+                    else
+                        CurrentPlayer.InventoryEffect = null;
+                }
 
                 // Clear confusion, blindness
                 if (CurrentPlayer.Confused > 0 && CurrentPlayer.Confused >= CurrentTurn)
@@ -1113,7 +1147,7 @@ namespace RogueGame
 
             //Searchable dictionary field to hold delegates for inventory items.
             // Matches inventory templates from the Inventory class to delegate methods in Game.
-            InventoryActions = new Dictionary<InvTemplateID, Action>
+            InventoryActions = new Dictionary<InvTemplateID, Action<Character>>
             {
                 {InvTemplateID.ScrollOfIdentify, ScrollOfIdentifyBegin},
                 {InvTemplateID.ScrollOfMagicMapping, ScrollOfMagicMapping},
@@ -1156,85 +1190,202 @@ namespace RogueGame
                 {TrapArrow, 100}
             };
         }
-
-        private void PotionOfThirstQuenching()
+        /// <summary>
+        /// A potion that just displays a message - thirst quencher.
+        /// </summary>
+        private void PotionOfThirstQuenching(Character character)
         {
-            throw new NotImplementedException();
+            if (character is Player)
+                UpdateStatus("An excellent thirst quencher with a hint of mango and a slight fizz.", false);
         }
 
-        private void PotionOfPoison()
+        /// <summary>
+        /// A potion that takes from 1 to 3 hit points away from the player, or monster if thrown.
+        /// </summary>
+        private void PotionOfPoison(Character character)
         {
-            throw new NotImplementedException();
+            character.HPDamage += rand.Next(4);
+
+            if (character is Player)
+                UpdateStatus("You feel rather sick now.", false);
         }
 
-        private void PotionOfParalysis()
+        /// <summary>
+        /// Paralyzes the player for three turns.
+        /// </summary>
+        private void PotionOfParalysis(Character character)
         {
-            throw new NotImplementedException();
+            character.Immobile = CurrentTurn + 3;
+
+            if (character is Player)
+                UpdateStatus("This is a potion of paralysis. You can't move.", false);
+        }
+        /// <summary>
+        /// Make the player hallucinate for the next 250 turns.
+        /// </summary>
+        private void PotionOfHallucination(Character character)
+        {
+            if (character is Player)
+                CurrentPlayer.Hallucinating = CurrentTurn + 250;
+            else
+                character.Confused = CurrentTurn + 250;
         }
 
-        private void PotionOfHallucination()
+        /// <summary>
+        /// Confuses the player for 25 turns.
+        /// </summary>
+        private void PotionOfConfusion(Character character)
         {
-            throw new NotImplementedException();
+            character.Confused = CurrentTurn + 25;
+
+            if (character is Player)
+                UpdateStatus("You feel very confused.", false);
+            else
+                UpdateStatus($"The {character.CharacterName} appears confused.", false);
         }
 
-        private void PotionOfConfusion()
+        /// <summary>
+        /// Blinds the player for 250 turns.
+        /// </summary>
+        private void PotionOfBlindness(Character character)
         {
-            throw new NotImplementedException();
+            if (character is Player)
+            {
+                character.Blind = CurrentTurn + 250;
+                UpdateStatus("You can't see.", false);
+            }
+            else
+                character.Confused = CurrentTurn + 250;
         }
 
-        private void PotionOfBlindness()
+        /// <summary>
+        /// Restores the user to full strength.
+        /// </summary>
+        private void PotionOfRestoreStrength(Character character)
         {
-            throw new NotImplementedException();
+            if(character is Player)
+            {
+                if (CurrentPlayer.StrengthMod < 0)
+                    CurrentPlayer.StrengthMod = 0;
+
+                UpdateStatus("You feel a warm surge of energy flow through you.", false);
+            }
+        }
+        /// <summary>
+        /// Raise the player to the next experience level by increasing
+        /// their hit points.
+        /// </summary>
+        private void PotionOfRaiseLevel(Character character)
+        {
+            if (character is Player)
+                CurrentPlayer.ExpLevel = CurrentPlayer.NextExpLevelUp + 1;
+        }
+        /// <summary>
+        /// Make the character (player or monster) twice as fast for 50 turns.
+        /// </summary>
+        /// <param name="character"></param>
+        private void PotionOfHasteSelf(Character character)
+        {
+            character.RelativeSpeed = (character.RelativeSpeed.Speed + 1, CurrentTurn + 50);
+        }
+        /// <summary>
+        /// Like a potion of healing but double-strength.
+        /// </summary>
+        private void PotionOfExtraHealing(Character character)
+        {
+            if (character is Player)
+            {
+                int healing = CurrentPlayer.ExpLevel * rand.Next(1, 9);
+                CurrentPlayer.Healing(healing, CurrentTurn - 1);
+            }
+            else
+            {
+                character.HPDamage = 0;
+                character.Blind = 0;
+                character.Confused = 0;
+            }
+        }
+        /// <summary>
+        /// See invisible creatures. Since we don't have any yet, let's just cure blindness.
+        /// </summary>
+        /// <param name="character"></param>
+        private void PotionOfSeeInvisible(Character character)
+        {
+            if (character.Blind > 0)
+            {
+                character.Blind = 0;
+
+                if (character is Player)
+                    UpdateStatus("You can see again.", false);
+            }
+        }
+        /// <summary>
+        /// Turn on monster detection for 50 turns.
+        /// </summary>
+        private void PotionOfMonsterDetection(Character character)
+        {
+            if (character is Player)
+            {
+                CurrentPlayer.InventoryEffect = (CurrentTurn + 50, PotionOfMonsterDetectionTrack);
+                CurrentMap.ShowAllMonsters();
+            }
+        }
+        /// <summary>
+        /// Renew monster visiblity
+        /// </summary>
+        private void PotionOfMonsterDetectionTrack()
+        {
+            CurrentMap.ShowAllMonsters();
+        }
+        /// <summary>
+        /// Show all protected or cursed items on map.
+        /// </summary>
+        private void PotionOfMagicDetection(Character character)
+        {
+            if (character is Player)
+                CurrentMap.ShowMagicItems();
         }
 
-        private void PotionOfRestoreStrength()
+        private void PotionOfLevitation(Character character)
         {
-            throw new NotImplementedException();
+            character.Floating = CurrentTurn + 250;
+        }
+        /// <summary>
+        /// From Sicherman.net/rvm.html - Increase player's hit points, though not above maximum, by throwing 
+        /// a number of four-sided dice equal to experience level. If hit points are at maximum, raise 
+        /// the maximum +1. Also cures blindness, confusion, and hallucination.
+        /// </summary>
+        private void PotionOfHealing(Character character)
+        {
+            int healing = CurrentPlayer.ExpLevel * rand.Next(1, 5);
+
+            if (character is Player)
+            {
+                CurrentPlayer.Healing(healing, CurrentTurn - 1);
+            }
+            else
+            {
+                character.HPDamage -= healing;
+                character.Blind = 0;
+                character.Confused = 0;
+            }
         }
 
-        private void PotionOfRaiseLevel()
+        /// <summary>
+        /// Raise the player's strength by 1.
+        /// </summary>
+        private void PotionOfGainStrength(Character character)
         {
-            throw new NotImplementedException();
-        }
+            if (character is Player)
+            {
+                if (CurrentPlayer.StrengthMod < 0)
+                    CurrentPlayer.StrengthMod++;
+                else
+                    CurrentPlayer.MaxStrength++;
 
-        private void PotionOfHasteSelf()
-        {
-            throw new NotImplementedException();
-        }
+                UpdateStatus("You suddenly feel much stronger.", false);
+            }
 
-        private void PotionOfExtraHealing()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void PotionOfSeeInvisible()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void PotionOfMonsterDetection()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void PotionOfMagicDetection()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void PotionOfLevitation()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void PotionOfHealing()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void PotionOfGainStrength()
-        {
-            throw new NotImplementedException();
         }
 
         #region KeyProcs
@@ -1818,7 +1969,7 @@ namespace RogueGame
                                 // Remove the item from the player's inventory and invoke delegate.                            
                                 ReturnFunction = null;
                                 CurrentPlayer.CharacterInventory.Remove(items[0]);
-                                taskInfo.Invoke();                                
+                                taskInfo.Invoke(CurrentPlayer);                                
                                 readScroll = true;
                             }
 
@@ -1904,7 +2055,7 @@ namespace RogueGame
                                 // Remove the item from the player's inventory and invoke delegate.
                                 ReturnFunction = null;
                                 CurrentPlayer.CharacterInventory.Remove(items[0]);
-                                taskInfo.Invoke();                                                                
+                                taskInfo.Invoke(CurrentPlayer);                                                                
                                 quaffPotion = true;
                             }                                                        
                         }
@@ -1938,7 +2089,7 @@ namespace RogueGame
         /// Player has read a scroll of identify. Ask them to select another item to identify.
         /// </summary>
         /// <returns></returns>
-        public void ScrollOfIdentifyBegin()
+        public void ScrollOfIdentifyBegin(Character character)
         {
             UpdateStatus("This is a Scroll of Identify. Please select an item to identify.", false);
             GameMode = DisplayMode.Inventory;
@@ -1984,7 +2135,7 @@ namespace RogueGame
         /// Reveal entire map
         /// </summary>
         /// <returns></returns>
-        private void ScrollOfMagicMapping()
+        private void ScrollOfMagicMapping(Character character)
         {          
             UpdateStatus("This scroll has a map on it!", false);
             CurrentMap.DiscoverMap();
@@ -1994,7 +2145,7 @@ namespace RogueGame
         /// Raise the player's current armor by one level and remove any curse.
         /// </summary>
         /// <returns></returns>
-        private void ScrollOfEnchantArmor()
+        private void ScrollOfEnchantArmor(Character character)
         {
             if(CurrentPlayer.Armor != null) {
                 UpdateStatus($"Your armor's rating has been upgraded to {CurrentPlayer.Armor.ArmorClass + ++CurrentPlayer.Armor.Increment}.", false);
@@ -2008,7 +2159,7 @@ namespace RogueGame
         /// Increase the damage for the player's current weapon.
         /// </summary>
         /// <returns></returns>
-        private void ScrollOfEnchantWeapon()
+        private void ScrollOfEnchantWeapon(Character character)
         {
             if (CurrentPlayer.Wielding != null)
             {
@@ -2024,7 +2175,7 @@ namespace RogueGame
         /// Reveal all the food on the map.
         /// </summary>
         /// <returns></returns>
-        private void ScrollOfFoodDetection()
+        private void ScrollOfFoodDetection(Character character)
         {
             bool foodCheck = CurrentMap.DiscoverInventoryByCat(InvCategory.Food);
             
@@ -2038,7 +2189,7 @@ namespace RogueGame
         /// Reveal all the gold on the map.
         /// </summary>
         /// <returns></returns>
-        private void ScrollOfGoldDetection()
+        private void ScrollOfGoldDetection(Character character)
         {
             bool goldCheck = CurrentMap.DiscoverInventoryByCat(InvCategory.Gold);
 
@@ -2052,7 +2203,7 @@ namespace RogueGame
         /// Reveal the player's current room.
         /// </summary>
         /// <returns></returns>
-        private void ScrollOfLight()
+        private void ScrollOfLight(Character character)
         {
             if (CurrentPlayer.Location != null)
             {
@@ -2065,34 +2216,33 @@ namespace RogueGame
         /// Activate the player's ability to confuse the next monster hit.
         /// </summary>
         /// <returns></returns>
-        private void ScrollOfConfuseMonsterBegin()
+        private void ScrollOfConfuseMonsterBegin(Character character)
         {
             //TODO: Review these values for possible new constants depending on other inventory effect ranges.
             int turns = rand.Next(100, 150);
             CurrentPlayer.InventoryEffect = (CurrentTurn + turns, ScrollOfConfuseMonsterEnd);
             UpdateStatus("Your hands begin to glow red.", false);
-
         }
         /// <summary>
         /// Confuse the next monster the player hits for a random number of turns.
         /// </summary>
         /// <returns></returns>
         private void ScrollOfConfuseMonsterEnd()
-        {
+        {            
             if(CurrentPlayer.Opponent != null)
             { 
                 CurrentPlayer.Opponent.Confused = CurrentTurn + rand.Next(2, 7);
                 UpdateStatus($"The {CurrentPlayer.Opponent.CharacterName.ToLower()} appears confused.", false);
+                CurrentPlayer.InventoryEffect = null;
+                UpdateStatus("Your hands stop glowing red.", false);
             }
-
-            CurrentPlayer.InventoryEffect = null;
-            UpdateStatus("Your hands stop glowing red.", false);
+            
         }
         /// <summary>
         /// Remove any curses on weapons and armor in use.
         /// </summary>
         /// <returns></returns>
-        private void ScrollOfRemoveCurse()
+        private void ScrollOfRemoveCurse(Character character)
         {
             if(CurrentPlayer.Armor != null)
                 CurrentPlayer.Armor.IsCursed = false;
@@ -2106,16 +2256,16 @@ namespace RogueGame
         /// Put the player to sleep for a few turns.
         /// </summary>
         /// <returns></returns>
-        private void ScrollOfSleep()
+        private void ScrollOfSleep(Character character)
         {
             CurrentPlayer.Immobile = CurrentTurn + rand.Next(2, 5);
             UpdateStatus("You fall asleep.", false);
         }
         /// <summary>
-        /// Move the player to a random spot on the map and confuse them for a few moves.
+        /// Move the player to a random spot on the map and confuse them for a few movesCollect.
         /// </summary>
         /// <returns></returns>
-        private void ScrollOfTeleportation()
+        private void ScrollOfTeleportation(Character character)
         {
             CurrentPlayer.Location = CurrentMap.GetOpenSpace(true);
             UpdateStatus("This is a scroll of teleportation!", false);
@@ -2128,7 +2278,7 @@ namespace RogueGame
         /// Make every monster on the map aggressive.
         /// </summary>
         /// <returns></returns>
-        private void ScrollOfAggravateMonsters()
+        private void ScrollOfAggravateMonsters(Character character)
         {
             foreach (Monster monster in (from Monster in CurrentMap.ActiveMonsters 
                                          select Monster))
@@ -2142,7 +2292,7 @@ namespace RogueGame
         /// Create a new monster near the player.
         /// </summary>
         /// <returns></returns>
-        private void ScrollOfCreateMonster()
+        private void ScrollOfCreateMonster(Character character)
         {
             List<MapSpace> spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 2);
 
@@ -2153,7 +2303,7 @@ namespace RogueGame
         /// Make every monster within two paces immobile for up to 25 turns.
         /// </summary>
         /// <returns></returns>
-        private void ScrollofHoldMonsters()
+        private void ScrollofHoldMonsters(Character character)
         {
             List<MapSpace> surrounding = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 2);
 
@@ -2172,7 +2322,7 @@ namespace RogueGame
         /// Set the player's current armor as protected.
         /// </summary>
         /// <returns></returns>
-        private void ScrollOfProtectArmor()
+        private void ScrollOfProtectArmor(Character character)
         {
             if (CurrentPlayer.Armor != null)
             {
@@ -2189,7 +2339,7 @@ namespace RogueGame
         /// Transfer monsters gold and inventory back to map.
         /// </summary>
         /// <returns></returns>
-        private void ScrollOfClearMonsters()
+        private void ScrollOfClearMonsters(Character character)
         {
             Inventory invItem;
 
@@ -2219,7 +2369,7 @@ namespace RogueGame
         /// Blank scroll
         /// </summary>
         /// <returns></returns>
-        private void ScrollOfPaper()
+        private void ScrollOfPaper(Character character)
         {
             UpdateStatus($"The scroll's parchment has a rich and elegant feel to it but is otherwise blank.", false);
 
