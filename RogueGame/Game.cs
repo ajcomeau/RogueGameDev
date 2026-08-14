@@ -259,12 +259,18 @@ namespace RogueGame
         /// <param name="Confirm">True to display a message box requiring user confirmation.</param>
         private void UpdateStatus(string Status, bool Confirm)
         {
+            // If the last message started with a space, it was temporary so remove it.
+            if(StatusList.Count > 0 && StatusList[0].ToString().StartsWith(' '))
+                StatusList.RemoveAt(0);
+            
+            // Add new message.
             if (Confirm)
             {
                 StatusList.Insert(0, Status);
                 MessageBox.Show(Status);
             }
             else StatusList.Insert(0, Status);
+
         }
 
         /// <summary>
@@ -711,7 +717,7 @@ namespace RogueGame
             // Search if we roll within probability constant.
             if (rand.Next(1, 101) <= SEARCH_PCT)
             {
-                UpdateStatus("Searching ...", false);
+                UpdateStatus(" Searching ...", false);
                 spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 1);
 
                 foreach (MapSpace space in spaces)
@@ -1222,7 +1228,7 @@ namespace RogueGame
             if (character is Player)
                 UpdateStatus("This is a potion of paralysis. You can't move.", false);
             else
-                UpdateStatus("The monster freezed in place.", false);
+                UpdateStatus("The monster is frozen in place.", false);
         }
         /// <summary>
         /// Make the player hallucinate for the next 250 turns.
@@ -1288,9 +1294,9 @@ namespace RogueGame
         private void PotionOfRaiseLevel(Character character)
         {
             if (character is Player)
-                CurrentPlayer.ExpLevel = CurrentPlayer.NextExpLevelUp + 1;
+                CurrentPlayer.Experience = CurrentPlayer.NextExpLevelUp + 1;
 
-            UpdateStatus($"Welcome to Level {CurrentPlayer.ExpLevel}.", false);
+            UpdateStatus($"Welcome to Level {CurrentPlayer.ExpLevel + 1}.", false);
         }
         /// <summary>
         /// Make the character (player or monster) twice as fast for 50 turns.
@@ -1310,7 +1316,7 @@ namespace RogueGame
             {
                 int healing = CurrentPlayer.ExpLevel * rand.Next(1, 9);
                 CurrentPlayer.Healing(healing, CurrentTurn - 1);
-                UpdateStatus("Oh, that feel MUCH better ...", false);
+                UpdateStatus("Oh, that feels MUCH better ...", false);
             }
             else
             {
@@ -1562,7 +1568,7 @@ namespace RogueGame
             if (CurrentPlayer.Location!.MapCharacter.DisplayChar == MapLevel.STAIRWAY.DisplayChar)
                 ChangeLevel(1);
             else
-                UpdateStatus("There's no stairway here.", false);
+                UpdateStatus(" There's no stairway here.", false);
         }
         /// <summary>
         /// Turn Fast Play ON / OFF, enables player to continuously move until an obstruction.
@@ -1597,12 +1603,12 @@ namespace RogueGame
                     // If there's a weapon, show the inventory
                     // and let the player select it.  Set to return and exit.
                     GameMode = DisplayMode.Inventory;
-                    UpdateStatus("Please select an item to wield.", false);
+                    UpdateStatus(" Please select an item to wield.", false);
                     ReturnFunction = Wield;
                 }
                 else
                     // Otherwise, their hand-to-hand skills better be good.
-                    UpdateStatus("You don't have anything that can be used as a weapon.", false);
+                    UpdateStatus(" You don't have anything that can be used as a weapon.", false);
             }
             else
             {
@@ -1618,7 +1624,7 @@ namespace RogueGame
                     if (items[0].ItemCategory != InvCategory.Weapon &&
                         items[0].ItemCategory != InvCategory.Ammunition)
                     {
-                        UpdateStatus($"You should reconsider. {CapitalFirstLetter(items[0].RealName)} is not an effective weapon.", false);
+                        UpdateStatus($" You should reconsider. {CapitalFirstLetter(items[0].RealName)} is not an effective weapon.", false);
                         retValue = false;
                     }
                     else
@@ -1635,7 +1641,7 @@ namespace RogueGame
                 else
                 {
                     // Process non-existent option.
-                    UpdateStatus("Please select something to wield.", false);
+                    UpdateStatus(" Please select something to wield.", false);
                     retValue = false;
                 }
 
@@ -1681,7 +1687,7 @@ namespace RogueGame
             if (GameMode != DisplayMode.Inventory)
             {
                 if (CurrentPlayer.Armor != null)
-                    UpdateStatus("You are already wearing armor. You must take it off first.", false);
+                    UpdateStatus(" You are already wearing armor. You must take it off first.", false);
                 else
                 {
                     // Verify the player has armor in inventory.
@@ -1694,12 +1700,12 @@ namespace RogueGame
                         // If there's armor, show the inventory
                         // and let the player select it.  Set to return and exit.
                         GameMode = DisplayMode.Inventory;
-                        UpdateStatus("Please select an armor to wear.", false);
+                        UpdateStatus(" Please select an armor to wear.", false);
                         ReturnFunction = WearArmor;
                     }
                     else
                         // Otherwise, they're stuck with whatever they have.
-                        UpdateStatus("You don't have any armor in inventory.", false);
+                        UpdateStatus(" You don't have any armor in inventory.", false);
                 }
             }
             else
@@ -1713,7 +1719,7 @@ namespace RogueGame
                 {
                     if (items[0].ItemCategory != InvCategory.Armor)
                     {
-                        UpdateStatus("You can't wear that.", false);
+                        UpdateStatus(" You can't wear that.", false);
                         GameMode = DisplayMode.Primary;
                         retValue = false;
                     }
@@ -1729,7 +1735,7 @@ namespace RogueGame
                 else
                 {
                     // Process non-existent option.
-                    UpdateStatus("Please select some armor to wear.", false);
+                    UpdateStatus(" Please select some armor to wear.", false);
                     retValue = false;
                 }
 
@@ -1764,7 +1770,7 @@ namespace RogueGame
                     // If there's something edible, show the inventory
                     // and let the player select it.  Set to return and exit.
                     GameMode = DisplayMode.Inventory;
-                    UpdateStatus("Please select something to eat.", false);
+                    UpdateStatus(" Please select something to eat.", false);
                     ReturnFunction = Eat;
                 }
                 else
@@ -1785,7 +1791,7 @@ namespace RogueGame
                     // TODO: In this case, it makes more sense to complete this here than in a delegate function. Continue to evaluate as other inventory is implemented.
                     if (items[0].ItemCategory != InvCategory.Food)
                     {
-                        UpdateStatus("You can't eat THAT!", false);
+                        UpdateStatus(" You can't eat THAT!", false);
                         retValue = false;
                     }
                     else
@@ -1803,7 +1809,7 @@ namespace RogueGame
                 else
                 {
                     // Process non-existent option.
-                    UpdateStatus("Please select something to eat.", false);
+                    UpdateStatus(" Please select something to eat.", false);
                     retValue = false;
                 }
 
@@ -1828,7 +1834,7 @@ namespace RogueGame
             if (GameMode != DisplayMode.Inventory)
             {
                 GameMode = DisplayMode.Inventory;
-                UpdateStatus("Please select an item to drop.", false);
+                UpdateStatus(" Please select an item to drop.", false);
                 ReturnFunction = DropInventory;
             }
             else
@@ -1865,14 +1871,14 @@ namespace RogueGame
                     }
                     else
                     {
-                        UpdateStatus("There is already an item there.", false);
+                        UpdateStatus(" There is already an item there.", false);
                         GameMode = DisplayMode.Primary;
                         retValue = false;
                     }
                 }
                 else
                 {
-                    UpdateStatus("Please select an inventory item to drop.", false);
+                    UpdateStatus(" Please select an inventory item to drop.", false);
                     retValue = false;
                 }
 
@@ -1971,7 +1977,7 @@ namespace RogueGame
                         // If there are any scrolls, show the inventory
                         // and let the player select it.  Set to return and exit.
                         GameMode = DisplayMode.Inventory;
-                        UpdateStatus("Please select an item to read.", false);
+                        UpdateStatus(" Please select an item to read.", false);
                         ReturnFunction = ReadScroll;
                     }
                     else
@@ -1991,7 +1997,7 @@ namespace RogueGame
                         // from inventory.
                         if (items[0].ItemCategory != InvCategory.Scroll)
                         {
-                            UpdateStatus("There's nothing on it to read.", false);
+                            UpdateStatus(" There's nothing on it to read.", false);
                             readScroll = false;
                         }
                         else
@@ -2015,7 +2021,7 @@ namespace RogueGame
                     else
                     {
                         // Process non-existent option.
-                        UpdateStatus("Please select something to read.", false);
+                        UpdateStatus(" Please select something to read.", false);
 
                         ReturnFunction = null;
                         readScroll = false;
@@ -2057,7 +2063,7 @@ namespace RogueGame
                         // If there are any potions, show the inventory
                         // and let the player select it.  Set to return and exit.
                         GameMode = DisplayMode.Inventory;
-                        UpdateStatus("Please select a potion to drink.", false);
+                        UpdateStatus(" Please select a potion to drink.", false);
                         ReturnFunction = QuaffPotion;
                     }
                     else
@@ -2077,7 +2083,7 @@ namespace RogueGame
                         // from inventory.
                         if (items[0].ItemCategory != InvCategory.Potion)
                         {
-                            UpdateStatus("You can't drink that.", false);
+                            UpdateStatus(" You can't drink that.", false);
                             quaffPotion = false;
                         }
                         else
@@ -2101,7 +2107,7 @@ namespace RogueGame
                     else
                     {
                         // Process non-existent option.
-                        UpdateStatus("Please select something to drink.", false);
+                        UpdateStatus(" Please select something to drink.", false);
                         ReturnFunction = null;
                         quaffPotion = false;
                     }                    
@@ -2127,7 +2133,7 @@ namespace RogueGame
         /// <returns></returns>
         public void ScrollOfIdentifyBegin(Character character)
         {
-            UpdateStatus("This is a Scroll of Identify. Please select an item to identify.", false);
+            UpdateStatus(" This is a Scroll of Identify. Please select an item to identify.", false);
             GameMode = DisplayMode.Inventory;
             // Set return function to respond to next key command.
             ReturnFunction = ScrollOfIdentifyEnd;
@@ -2155,7 +2161,7 @@ namespace RogueGame
             else
             {
                 // Process non-existent option.
-                UpdateStatus("That item doesn't exist.", false);
+                UpdateStatus(" That item doesn't exist.", false);
             }
 
             ReturnFunction = null;            
