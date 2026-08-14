@@ -1208,6 +1208,8 @@ namespace RogueGame
 
             if (character is Player)
                 UpdateStatus("You feel rather sick now.", false);
+            else
+                UpdateStatus("The monster looks a little greener than usual ... 'Uuurp ...'", false);
         }
 
         /// <summary>
@@ -1219,6 +1221,8 @@ namespace RogueGame
 
             if (character is Player)
                 UpdateStatus("This is a potion of paralysis. You can't move.", false);
+            else
+                UpdateStatus("The monster freezed in place.", false);
         }
         /// <summary>
         /// Make the player hallucinate for the next 250 turns.
@@ -1226,9 +1230,15 @@ namespace RogueGame
         private void PotionOfHallucination(Character character)
         {
             if (character is Player)
+            {
                 CurrentPlayer.Hallucinating = CurrentTurn + 250;
+                UpdateStatus("Ooooh ... trippy colors ...", false);
+            }
             else
+            {
                 character.Confused = CurrentTurn + 250;
+                UpdateStatus("The creature looks very confused and starts pawing at the air.", false);
+            }
         }
 
         /// <summary>
@@ -1279,6 +1289,8 @@ namespace RogueGame
         {
             if (character is Player)
                 CurrentPlayer.ExpLevel = CurrentPlayer.NextExpLevelUp + 1;
+
+            UpdateStatus($"Welcome to Level {CurrentPlayer.ExpLevel}.", false);
         }
         /// <summary>
         /// Make the character (player or monster) twice as fast for 50 turns.
@@ -1287,6 +1299,7 @@ namespace RogueGame
         private void PotionOfHasteSelf(Character character)
         {
             character.RelativeSpeed = (character.RelativeSpeed.Speed + 1, CurrentTurn + 50);
+            UpdateStatus("You feel yourself moving much faster.", false);
         }
         /// <summary>
         /// Like a potion of healing but double-strength.
@@ -1297,13 +1310,16 @@ namespace RogueGame
             {
                 int healing = CurrentPlayer.ExpLevel * rand.Next(1, 9);
                 CurrentPlayer.Healing(healing, CurrentTurn - 1);
+                UpdateStatus("Oh, that feel MUCH better ...", false);
             }
             else
             {
                 character.HPDamage = 0;
                 character.Blind = 0;
                 character.Confused = 0;
+                UpdateStatus("That might have been a mistake. The monster is looking much healthier.", false);
             }
+
         }
         /// <summary>
         /// See invisible creatures. Since we don't have any yet, let's just cure blindness.
@@ -1317,6 +1333,8 @@ namespace RogueGame
 
                 if (character is Player)
                     UpdateStatus("You can see again.", false);
+                else
+                    UpdateStatus("The creature's eyes clear, it looks at you and grins ...", false);
             }
         }
         /// <summary>
@@ -1329,6 +1347,8 @@ namespace RogueGame
                 CurrentPlayer.InventoryEffect = (CurrentTurn + 50, PotionOfMonsterDetectionTrack);
                 CurrentMap.ShowAllMonsters();
             }
+            else
+                UpdateStatus("The monster growls at you 'If I fall, my friends will avenge me.'", false);
         }
         /// <summary>
         /// Renew monster visiblity
@@ -1343,12 +1363,25 @@ namespace RogueGame
         private void PotionOfMagicDetection(Character character)
         {
             if (character is Player)
-                CurrentMap.ShowMagicItems();
+            {
+                if (CurrentMap.ShowMagicItems())
+                    UpdateStatus("You sense the presence of magic on this level.", false);
+                else
+                    UpdateStatus("The magic seems to be gone from this place.", false);
+            }
         }
-
+        /// <summary>
+        /// Turn on the Floating property for the character.
+        /// </summary>
+        /// <param name="character"></param>
         private void PotionOfLevitation(Character character)
         {
             character.Floating = CurrentTurn + 250;
+
+            if (character is Player)
+                UpdateStatus("You find yourself floating a few feet above the floor.", false);
+            else
+                UpdateStatus("The monster is now airborne and looking very annoyed ... '*sigh*, really??'", false);
         }
         /// <summary>
         /// From Sicherman.net/rvm.html - Increase player's hit points, though not above maximum, by throwing 
@@ -1362,12 +1395,14 @@ namespace RogueGame
             if (character is Player)
             {
                 CurrentPlayer.Healing(healing, CurrentTurn - 1);
+                UpdateStatus("You feel better now.", false);
             }
             else
             {
                 character.HPDamage -= healing;
                 character.Blind = 0;
                 character.Confused = 0;
+                UpdateStatus("The monster looks healthier now. - 'Gee, thanks! I'll try to make this quick.'", false);
             }
         }
 
@@ -1385,7 +1420,8 @@ namespace RogueGame
 
                 UpdateStatus("You suddenly feel much stronger.", false);
             }
-
+            else
+                UpdateStatus("The monster looks at you ... 'What was that?'", false);
         }
 
         #region KeyProcs

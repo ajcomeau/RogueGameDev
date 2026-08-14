@@ -897,13 +897,15 @@ namespace RogueGame{
         /// <summary>
         /// Show all cursed or protected items on the map.
         /// </summary>
-        public void ShowMagicItems()
+        public bool ShowMagicItems()
         {
             List<Inventory> items = (from Inventory item in MapInventory
                                      where item.IsProtected || item.IsCursed
                                       select item).ToList();
 
             items.ForEach(item => item.Location!.RemoteSight = true);
+
+            return items.Count > 0;
         }
 
         /// <summary>
