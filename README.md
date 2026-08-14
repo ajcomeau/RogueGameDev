@@ -1,4 +1,7 @@
 # Rogue C#
+### 8/14/2026
+All potions have been added to the game but there's a lot of testing to be done. Some might not work at this point. I'm also working on the next writeup.
+
 ### 7/31/2026
 In **Setting Traps (https://www.andrewcomeau.com/programming/rogue-inheritance-traps/)**, I add traps and some extra class inheritance to the game. Check it out on AndrewComeau.com!
 
