@@ -270,7 +270,6 @@ namespace RogueGame
                 MessageBox.Show(Status);
             }
             else StatusList.Insert(0, Status);
-
         }
 
         /// <summary>
@@ -481,7 +480,7 @@ namespace RogueGame
             {
                 // If the player is sped up, set the next turn for the monsters.
                 if (MonstersNextTurn == 0 && CurrentPlayer.RelativeSpeed.Speed > 1)
-                    MonstersNextTurn = CurrentTurn + CurrentPlayer.RelativeSpeed.Speed;
+                    MonstersNextTurn = CurrentTurn + CurrentPlayer.RelativeSpeed.Speed - 1;
 
                 // Perform whatever actions needed to complete turn
                 // (i.e. monster moves)
@@ -495,7 +494,6 @@ namespace RogueGame
 
                     if (MonstersNextTurn > 0) MonstersNextTurn = 0;
                 }
-
 
                 // Then, evaluate the player's current condition.
                 EvaluatePlayer();
@@ -564,13 +562,13 @@ namespace RogueGame
                 }
 
                 // Clear confusion, blindness
-                if (CurrentPlayer.Confused > 0 && CurrentPlayer.Confused >= CurrentTurn)
+                if (CurrentPlayer.Confused > 0 && CurrentPlayer.Confused <= CurrentTurn)
                 {
                     UpdateStatus("You feel less confused now.", false);
                     CurrentPlayer.Confused = 0;
                 }
 
-                if (CurrentPlayer.Blind > 0 && CurrentPlayer.Blind >= CurrentTurn)
+                if (CurrentPlayer.Blind > 0 && CurrentPlayer.Blind <= CurrentTurn)
                 {
                     UpdateStatus("You can see again.", false);
                     CurrentPlayer.Blind = 0;
@@ -1299,7 +1297,7 @@ namespace RogueGame
             UpdateStatus($"Welcome to Level {CurrentPlayer.ExpLevel + 1}.", false);
         }
         /// <summary>
-        /// Make the character (player or monster) twice as fast for 50 turns.
+        /// Make the character (player or monster) faster for 50 turns.
         /// </summary>
         /// <param name="character"></param>
         private void PotionOfHasteSelf(Character character)
@@ -1323,7 +1321,7 @@ namespace RogueGame
                 character.HPDamage = 0;
                 character.Blind = 0;
                 character.Confused = 0;
-                UpdateStatus("That might have been a mistake. The monster is looking much healthier.", false);
+                UpdateStatus("That might have been a mistake. The monster suddenly looks much healthier.", false);
             }
 
         }

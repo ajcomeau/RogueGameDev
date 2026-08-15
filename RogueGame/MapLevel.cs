@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.CodeDom;
+using System.Diagnostics;
 using System.Text;
 
 namespace RogueGame{
@@ -420,6 +421,7 @@ namespace RogueGame{
         }
         /// <summary>
         /// Add specified number of inventory items to map.
+        /// 8/15/2026 - Simplified call to GetInventoryItem.
         /// </summary>
         /// <param name="Number">Number of Inventory items to add.</param>
         public void AddInventory(int Number)
@@ -437,9 +439,8 @@ namespace RogueGame{
                 while (itemSpace == null);
 
                 do
-                    invItem = GameInventory.GetInventoryItem(itemSpace);
-                while (invItem != null
-                        && rand.Next(1, 101) >= invItem.AppearancePct);
+                    invItem = GameInventory.GetInventoryItem(itemSpace, rand.Next(1,101));
+                while (invItem == null);
 
                 if (itemSpace != null && invItem != null)
                 {
