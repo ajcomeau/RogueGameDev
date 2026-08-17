@@ -1268,7 +1268,10 @@ namespace RogueGame{
 
                     // If the space is within one space of the character, show standard 
                     // priority character unless character is currently blind.
-                    appendChar = (surroundingSpaces.Contains(levelMap[x, y]) && CurrentPlayer.Blind == 0) ? priorityChar : null;
+                    if (CurrentPlayer.Blind == 0)
+                        appendChar = (surroundingSpaces.Contains(levelMap[x, y])) ? priorityChar : null;
+                    else
+                        appendChar = (Player.CHARACTER.Equals(priorityChar)) ? priorityChar : null;
 
                     // Otherwise, if the space is lighted, check if the player is in the same region and within
                     // the room's walls or if the space is marked for RemoteSight. If so, show the priority character.
@@ -1281,12 +1284,13 @@ namespace RogueGame{
                         }
                         else if (levelMap[x, y].Lighted)
                         {
-                            if (playerInRoom && RoomInteriorGlyphList.Contains(levelMap[x,y].MapCharacter.DisplayChar))
+                            if (playerInRoom && RoomInteriorGlyphList.Contains(levelMap[x, y].MapCharacter.DisplayChar))
                                 appendChar = priorityChar;
                             else
                                 appendChar = (levelMap[x, y].SearchRequired) ?
                                     levelMap[x, y].AltMapCharacter : levelMap[x, y].MapCharacter;
                         }
+
 
                         // If nothing has been selected at this point, just pass an empty map space.
                         if (appendChar == null) { appendChar = EMPTY; }

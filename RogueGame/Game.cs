@@ -786,7 +786,7 @@ namespace RogueGame
                     player.Location = adjacent[direct];
 
                     // If this is a doorway, determine if the room is lighted.
-                    if (player.Location.MapCharacter.DisplayChar == MapLevel.ROOM_DOOR.DisplayChar)
+                    if (player.Location.MapCharacter.DisplayChar == MapLevel.ROOM_DOOR.DisplayChar && player.Blind == 0)
                         CurrentMap.DiscoverRoom(player.Location.X, player.Location.Y);                    
 
                     // Show the surrounding spaces if the player can see.
@@ -1294,7 +1294,11 @@ namespace RogueGame
                 UpdateStatus("You can't see.", false);
             }
             else
+            {
                 character.Confused = CurrentTurn + 250;
+                UpdateStatus("The monster looks very disoriented.", false);
+            }
+                
         }
 
         /// <summary>
@@ -1309,6 +1313,8 @@ namespace RogueGame
 
                 UpdateStatus("You feel a warm surge of energy flow through you.", false);
             }
+            else
+                UpdateStatus("That must be a real buzz for you but it doesn't do anything for me.", false);
         }
         /// <summary>
         /// Raise the player to the next experience level by increasing
