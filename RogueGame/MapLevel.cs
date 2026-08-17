@@ -892,8 +892,7 @@ namespace RogueGame{
             List<Monster> monsters = (from Monster monster in ActiveMonsters 
                                       select monster).ToList();
 
-            monsters.ForEach(monster => { monster.Location!.RemoteSight = true; 
-                monster.Location.Discovered = true; monster.Location.Lighted = true; });
+            monsters.ForEach(monster => { monster.Location!.RemoteSight = true; });
         }
 
         /// <summary>
@@ -905,8 +904,7 @@ namespace RogueGame{
                                      where item.IsProtected || item.IsCursed
                                       select item).ToList();
 
-            items.ForEach(item => { item.Location!.RemoteSight = true; 
-                item.Location!.Discovered = true; item.Location!.Lighted = true; });
+            items.ForEach(item => { item.Location!.RemoteSight = true; });
 
             return items.Count > 0;
         }
@@ -1136,7 +1134,9 @@ namespace RogueGame{
                                       select space).ToList();
 
             // Limit to map spaces that don't contain anything anymore.
-            remotes = remotes.Where(space => InhabitableSpacesGlyphList.Contains(PriorityChar(space, false).DisplayChar)).ToList();
+            // 8/17/2026 - This didn't work because if monsters were remotely detected, they might be sitting on
+            // inventory and remote sight would stay on.
+            // remotes = remotes.Where(space => InhabitableSpacesGlyphList.Contains(PriorityChar(space, false).DisplayChar)).ToList();
 
             // Turn off RemoteSight.
             remotes.ForEach(remote => { remote.RemoteSight = false; });
@@ -1253,9 +1253,6 @@ namespace RogueGame{
             // Iterate through the two-dimensional levelMap MapSpace array and use determine which MapGlyph objects 
             // to output to the DisplayMap array for display to the user.
 
-            // Clear any remote sight spaces that are now empty.
-            ClearRemoteSpaces();
-
             for (int y = 0; y <= MAP_HT; y++)
             {
                 for (int x = 0; x <= MAP_WD; x++)
@@ -1299,6 +1296,9 @@ namespace RogueGame{
                     DisplayMap[x, y] = (MapGlyph)appendChar;
                 }
             }
+
+            // Clear any remote sight spaces to prepare for next map redraw.
+            ClearRemoteSpaces();
 
         }
 

@@ -555,7 +555,7 @@ namespace RogueGame
                 // Apply any inventory effects that haven't ended and end those that have.
                 if (CurrentPlayer.InventoryEffect != null)
                 {
-                    if (CurrentPlayer.InventoryEffect?.EndingTurn <= CurrentTurn)
+                    if (CurrentPlayer.InventoryEffect?.EndingTurn >= CurrentTurn)
                         CurrentPlayer.InventoryEffect?.TargetFunction.Invoke();
                     else
                         CurrentPlayer.InventoryEffect = null;
@@ -1350,12 +1350,13 @@ namespace RogueGame
             if (character.Blind > 0)
             {
                 character.Blind = 0;
-
-                if (character is Player)
-                    UpdateStatus("You can see again.", false);
-                else
-                    UpdateStatus("The creature's eyes clear, it looks at you and grins ...", false);
             }
+
+            if (character is Player)
+                UpdateStatus("You can see again.", false);
+            else
+                UpdateStatus("The creature's eyes clear, it looks at you and grins ...", false);
+
         }
         /// <summary>
         /// Turn on monster detection for 50 turns.
@@ -1366,6 +1367,7 @@ namespace RogueGame
             {
                 CurrentPlayer.InventoryEffect = (CurrentTurn + 50, PotionOfMonsterDetectionTrack);
                 CurrentMap.ShowAllMonsters();
+                UpdateStatus("This place is getting really popular lately.", false);
             }
             else
                 UpdateStatus("The monster growls at you 'If I fall, my friends will avenge me.'", false);
@@ -1379,16 +1381,28 @@ namespace RogueGame
         }
         /// <summary>
         /// Show all protected or cursed items on map.
+        /// 8/17/2026 - InventoryEffect needs to be used since RemoteSight spaces
+        /// need to be cleared on each turn.
         /// </summary>
         private void PotionOfMagicDetection(Character character)
         {
             if (character is Player)
             {
-                if (CurrentMap.ShowMagicItems())
+                if (CurrentMap.ShowMagicItems()) {
+                    CurrentPlayer.InventoryEffect = (CurrentTurn + 50, PotionOfMagicDetectionTrack);
                     UpdateStatus("You sense the presence of magic on this level.", false);
+                }
                 else
                     UpdateStatus("The magic seems to be gone from this place.", false);
             }
+        }
+        /// <summary>
+        /// Renew magic item visibility
+        /// </summary>
+        /// <param name="character"></param>
+        private void PotionOfMagicDetectionTrack()
+        {
+            CurrentMap.ShowMagicItems();
         }
         /// <summary>
         /// Turn on the Floating property for the character.
@@ -1949,7 +1963,10 @@ namespace RogueGame
                             CurrentPlayer.CharacterInventory.Add(GameInventory.GetInventoryItem(foundItem.RealName)!);
 
                         retValue = $"You picked up {GameInventory.ListingDescription(itemAmount, foundItem)}.";
+                        
+                        // Remove inventory from map and turn off RemoteSight if it's activated.
                         CurrentMap.MapInventory.Remove(foundItem);
+                        foundItem.Location.RemoteSight = false;
 
                         if (foundItem.ItemCategory == InvCategory.Amulet)
                         {
