@@ -561,8 +561,8 @@ namespace RogueGame
                         CurrentPlayer.InventoryEffect = null;
                 }
 
-                // Clear confusion, blindness, levitation
-                // 8/16/2026 - Added levitation
+                // Clear confusion, blindness, levitation, enhanced speed
+                // 8/16/2026 - Added levitation and enhanced speed
                 if (CurrentPlayer.Confused > 0 && CurrentPlayer.Confused <= CurrentTurn)
                 {
                     UpdateStatus("You feel less confused now.", false);
@@ -579,6 +579,12 @@ namespace RogueGame
                 {
                     UpdateStatus("You slowly settle down the floor again.", false);
                     CurrentPlayer.Floating = 0;
+                }
+
+                if (CurrentPlayer.RelativeSpeed.Speed > 0 && CurrentPlayer.RelativeSpeed.Speed <= CurrentTurn)
+                {
+                    UpdateStatus("You feel yourself slowing down again.", false);
+                    CurrentPlayer.RelativeSpeed = (1, 0);
                 }
 
                 // If the player's scheduled to get hungry on the current turn, update the properties.
@@ -608,7 +614,6 @@ namespace RogueGame
                 // If the player is now dead, signal the game over.
                 else if (CurrentPlayer.HungerState == Player.HungerLevel.Dead)
                 {
-
                     CauseOfDeath = "starvation";
                     GameMode = DisplayMode.GameOver;
                 }
@@ -950,6 +955,10 @@ namespace RogueGame
 
             if (monster.Floating > 0 && monster.Floating <= CurrentTurn)
                 monster.Floating = 0;
+
+            // If the monster is sped up, check if it's time to slow down.
+            if (monster.RelativeSpeed.ExpTurn > 0 && monster.RelativeSpeed.ExpTurn <= CurrentTurn)
+                monster.RelativeSpeed = (1, 0);
 
             // Move monster if it's not paralyzed AND
             // (feels like moving OR is aggressive).
