@@ -1319,7 +1319,7 @@ namespace RogueGame
             if (character is Player)
                 CurrentPlayer.Experience = CurrentPlayer.NextExpLevelUp + 1;
 
-            UpdateStatus($"Welcome to Level {CurrentPlayer.ExpLevel + 1}.", false);
+            UpdateStatus("You suddenly feel much more skillful.", false);
         }
         /// <summary>
         /// Make the character (player or monster) faster for 50 turns.
