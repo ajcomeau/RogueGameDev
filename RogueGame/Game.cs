@@ -1224,8 +1224,11 @@ namespace RogueGame
         /// </summary>
         private void PotionOfThirstQuenching(Character character)
         {
+            List<string> fruits = ["lemon", "blueberry", "mango", "banana", "kiwi", "orange", "nectarine",
+                "blackberry", "cranberry", "watermelon", "grape", "cherry", "peach", "apple", "dates", "papaya"];
+            
             if (character is Player)
-                UpdateStatus("An excellent thirst quencher with a hint of mango and a slight fizz.", false);
+                UpdateStatus($"An excellent thirst quencher with a hint of {fruits[rand.Next(fruits.Count-1)]} and a slight fizz.", false);
         }
 
         /// <summary>
