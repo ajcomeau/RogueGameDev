@@ -213,7 +213,7 @@ namespace RogueGame
         /// <param name="MinDamage">For weapons - minimum damage inflicted</param>
         /// <param name="MaxDamage">For weapons - maximum damage inflicted</param>
         /// <param name="ThrowingBonus">Positive or negative bonus for weapon when thrown rather than wielded.</param>
-        /// <param name="AppearancePct">Probability percentage of item being on map</param>
+        /// <param name="Probability">Probability percentage of item being on map</param>
         /// <param name="SaleValue">Value of item when sold at end of game</param>
         /// <param name="DisplayChar">Symbol used for display</param>
         /// <param name="mainFunction">Delegate function for primary use</param>
@@ -221,7 +221,7 @@ namespace RogueGame
         /// <param name="Zap">Delegate function for staffs and wands</param>
         public Inventory(InvCategory InvType, InvTemplateID PriorityID, string CodeName, string RealName, string PluralName, bool Identified,
             bool Groupable, bool Assigned, bool Wieldable, bool Cursed, bool Protected, int ArmorClass, int Increment, int DamageInc, int AccuracyInc,
-            int MinDamage, int MaxDamage, int ThrowingBonus, int AppearancePct, int SaleValue, MapGlyph DisplayChar)
+            int MinDamage, int MaxDamage, int ThrowingBonus, int Probability, int SaleValue, MapGlyph DisplayChar)
         {
             // Apply parameters
             this.ItemCategory = InvType; 
@@ -242,7 +242,7 @@ namespace RogueGame
             this.MinDamage = MinDamage;
             this.MaxDamage = MaxDamage;
             this.ThrowingBonus = ThrowingBonus;
-            this.Probability = AppearancePct;
+            this.Probability = Probability;
             this.SaleValue = SaleValue;
             this.DisplayCharacter = DisplayChar;            
         }
@@ -255,13 +255,13 @@ namespace RogueGame
         /// <param name="CodeName">Name for unidentified item</param>
         /// <param name="RealName">Actual item name</param>
         /// <param name="PluralName">Plural form of name for display</param>
-        /// <param name="AppearancePct">Probability percentage of item being on map</param>
+        /// <param name="Probability">Probability percentage of item being on map</param>
         /// <param name="DisplayChar">Symbol used for display</param>
         /// <param name="mainFunction">Delegate function for primary use</param>
         /// <param name="Throw">Delegate function when thrown</param>
         /// <param name="Zap">Delegate function for staffs and wands</param>
         public Inventory(InvCategory InvType, InvTemplateID PriorityID, string CodeName, string RealName, string PluralName, MapGlyph DisplayChar, 
-            int AppearancePct, bool Assigned)
+            int Probability, bool Assigned)
         {
             // Apply parameters and most common settings
             this.ItemCategory = InvType;
@@ -272,7 +272,7 @@ namespace RogueGame
             this.DisplayCharacter = DisplayChar;
             this.IsGroupable = true;
             this.IsAssigned = Assigned;
-            this.Probability = AppearancePct;
+            this.Probability = Probability;
 
             // If it's a weapon, it's wieldable.
             this.IsWieldable = (InvType == InvCategory.Weapon);
@@ -495,58 +495,58 @@ namespace RogueGame
                 new Inventory(InvCategory.Amulet, InvTemplateID.TheAmulet, "The Amulet", "The Amulet", "The Amulets", true, false, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, new MapGlyph(MapLevel.AMULET.DisplayChar, Color.Yellow, Color.Black)),
                 new Inventory(InvCategory.Food, InvTemplateID.SomeFood, "some food", "some food", "rations of food", new MapGlyph('♣', Color.Red, Color.Black), 50, true),
                 new Inventory(InvCategory.Food, InvTemplateID.Mango, "a mango", "a mango", "mangoes", new MapGlyph('♣', Color.Red, Color.Black), 50, false),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfIdentify, "", "Identify", "Identify", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfMagicMapping, "", "Magic Mapping", "Magic Mapping", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfEnchantArmor, "", "Enchant Armor", "Enchant Armor", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfEnchantWeapon, "", "Enchant Weapon", "Enchant Weapon", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfFoodDetection, "", "Food Detection", "Food Detection", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfLight, "", "Light", "Light", false, true, false, false, false,  false,0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfConfuseMonster, "", "Confuse Monster", "Confuse Monster", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfRemoveCurse, "", "Remove Curse", "Remove Curse", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfSleep, "", "Sleep", "Sleep", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfTeleportation, "", "Teleportation", "Teleportation", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfAggravateMonsters, "", "Aggravate Monsters", "Aggravate Monsters", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfCreateMonster, "", "Create Monster", "Create Monster", false, true, false, false, false,  false,0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfGoldDetection, "", "Gold Detection", "Gold Detection", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfHoldMonsters, "", "Hold Monsters", "Hold Monsters", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfProtectArmor, "", "Protect Armor", "Protect Armor", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfClearMonsters, "", "Clear Monsters", "Clear Monsters", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfBlankPaper, "", "Blank Paper", "Blank Paper", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfGainStrength, "", "Gain Strength", "Gain Strength", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 75, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfHealing, "", "Healing", "Healing", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 100, 0, new MapGlyph('¡', Color.HotPink, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfLevitation, "", "Levitation", "Levitation", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 75, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfMagicDetection, "", "Magic Detection", "Magic Detection", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 75, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfMonsterDetection, "", "Monster Detection", "Monster Detection", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 75, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfSeeInvisible, "", "See Invisible", "See Invisible", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 75, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfExtraHealing, "", "Extra Healing", "Extra Healing", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 75, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfHasteSelf, "", "Haste Self", "Haste Self", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 75, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfRaiseLevel, "", "Raise Level", "Raise Level", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 75, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfRestoreStrength, "", "Restore Strength", "Restore Strength", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 75, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfBlindness, "", "Blindness", "Blindness", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 75, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfConfusion, "", "Confusion", "Confusion", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 75, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfHallucination, "", "Hallucination", "Hallucination", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 75, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfParalysis, "", "Paralysis", "Paralysis", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 75, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfPoison, "", "Poison", "Poison", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 75, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfThirstQuenching, "", "Thirst Quenching", "Thirst Quenching", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 75, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Armor, InvTemplateID.StuddedLeatherArmor, "studded leather armor", "studded leather armor", "studded leather armor", false, false, true, false, false, false,3, 1, 0, 0, 0, 0, 0, 50, 0, new MapGlyph('◘', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Armor, InvTemplateID.LeatherArmor, "leather armor", "leather armor", "leather armor", false, false, false, false, false,  false, 2, 1, 0, 0, 0, 0, 0, 50, 0, new MapGlyph('◘', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Armor, InvTemplateID.RingMail, "ring mail", "ring mail", "ring mail", false, false, false, false, false, false,3, 0, 0, 0, 0, 0, 0, 50, 0, new MapGlyph('◘', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Armor, InvTemplateID.ScaleMail, "scale mail", "scale mail", "scale mail", false, false, false, false, false, false,4, 0, 0, 0, 0, 0, 0, 50, 0, new MapGlyph('◘', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Armor, InvTemplateID.ChainMail, "chain mail", "chain mail", "chain mail", false, false, false, false, false, false,5, 0, 0, 0, 0, 0, 0, 50, 0, new MapGlyph('◘', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Armor, InvTemplateID.SplintMail, "splint mail", "splint mail", "splint mail", false, false, false, false, false, false,6, 0, 0, 0, 0, 0, 0, 50, 0,new MapGlyph('◘', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Armor, InvTemplateID.BandedMail, "banded mail", "banded mail", "banded mail", false, false, false, false, false, false,6, 0, 0, 0, 0, 0, 0, 50, 0, new MapGlyph('◘', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Armor, InvTemplateID.PlateMail, "plate mail", "plate mail", "plate mail", false, false, false, false, false,  false,7, 0, 0, 0, 0, 0, 0, 50, 0, new MapGlyph('◘', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Weapon, InvTemplateID.Mace, "mace", "mace", "maces", false, false, true, true, false,  false,0, 0, 1, 1, 2, 8, -3, 50, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Weapon, InvTemplateID.ShortBow, "short bow", "short bow", "short bows", false, false, true, true, false, false, 0, 0, 0, 1, 1, 1, 0, 50, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Weapon, InvTemplateID.Crossbow, "crossbow", "crossbow", "crossbows", false, false, false, true, false, false, 0, 0, 0, 1, 1, 1, 0, 50, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Weapon, InvTemplateID.Dagger, "dagger", "dagger", "daggers", false, false, false, true, false, false,0, 0, 0, 1, 1, 4, 2, 50, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Weapon, InvTemplateID.LongSword, "long sword", "long sword", "long swords", false, false, false, true, false,  false,0, 0, 0, 1, 3, 12, -10, 50, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Weapon, InvTemplateID.Spear, "spear", "spear", "spears", false, false, false, true, false,  false,0, 0, 0, 1, 1, 8, -2, 50, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Weapon, InvTemplateID.TwoHandedSword, "two-handed sword", "two-handed sword", "two-handed swords", false, false, false, true, false,  false,0, 0, 0, 1, 4, 16, -14, 50, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Ammunition, InvTemplateID.Arrow, "arrow", "arrow", "arrows", false, true, true, true, false,  false,0, 0, 0, 0, 1, 1, 4, 50, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Ammunition, InvTemplateID.CrossbowBolt, "crossbow bolt", "crossbow bolt", "crossbow bolts", false, true, false, true, false, false, 0, 0, 0, 0, 1,2, 8, 50, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Ammunition, InvTemplateID.Dart, "dart", "dart", "darts", false, true, false, true, false,  false,0, 0, 0, 0, 1, 1, 2, 50, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
-                new Inventory(InvCategory.Gold, InvTemplateID.Gold, "gold", "gold", "gold", true, true, false, false, false,  false,0, 0, 0, 0, 0, 0, 0, 50, 0, new MapGlyph('*', Color.Gold, Color.Black))
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfIdentify, "", "Identify", "Identify", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfMagicMapping, "", "Magic Mapping", "Magic Mapping", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfEnchantArmor, "", "Enchant Armor", "Enchant Armor", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfEnchantWeapon, "", "Enchant Weapon", "Enchant Weapon", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfFoodDetection, "", "Food Detection", "Food Detection", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfLight, "", "Light", "Light", false, true, false, false, false,  false,0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfConfuseMonster, "", "Confuse Monster", "Confuse Monster", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfRemoveCurse, "", "Remove Curse", "Remove Curse", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfSleep, "", "Sleep", "Sleep", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfTeleportation, "", "Teleportation", "Teleportation", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfAggravateMonsters, "", "Aggravate Monsters", "Aggravate Monsters", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfCreateMonster, "", "Create Monster", "Create Monster", false, true, false, false, false,  false,0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfGoldDetection, "", "Gold Detection", "Gold Detection", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfHoldMonsters, "", "Hold Monsters", "Hold Monsters", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfProtectArmor, "", "Protect Armor", "Protect Armor", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfClearMonsters, "", "Clear Monsters", "Clear Monsters", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfBlankPaper, "", "Blank Paper", "Blank Paper", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfGainStrength, "", "Gain Strength", "Gain Strength", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfHealing, "", "Healing", "Healing", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfLevitation, "", "Levitation", "Levitation", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 1000, 0, new MapGlyph('¡', Color.HotPink, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfMagicDetection, "", "Magic Detection", "Magic Detection", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfMonsterDetection, "", "Monster Detection", "Monster Detection", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfSeeInvisible, "", "See Invisible", "See Invisible", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfExtraHealing, "", "Extra Healing", "Extra Healing", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfHasteSelf, "", "Haste Self", "Haste Self", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfRaiseLevel, "", "Raise Level", "Raise Level", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfRestoreStrength, "", "Restore Strength", "Restore Strength", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfBlindness, "", "Blindness", "Blindness", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfConfusion, "", "Confusion", "Confusion", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfHallucination, "", "Hallucination", "Hallucination", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfParalysis, "", "Paralysis", "Paralysis", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfPoison, "", "Poison", "Poison", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfThirstQuenching, "", "Thirst Quenching", "Thirst Quenching", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Armor, InvTemplateID.StuddedLeatherArmor, "studded leather armor", "studded leather armor", "studded leather armor", false, false, true, false, false, false,3, 1, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Armor, InvTemplateID.LeatherArmor, "leather armor", "leather armor", "leather armor", false, false, false, false, false,  false, 2, 1, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Armor, InvTemplateID.RingMail, "ring mail", "ring mail", "ring mail", false, false, false, false, false, false,3, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Armor, InvTemplateID.ScaleMail, "scale mail", "scale mail", "scale mail", false, false, false, false, false, false,4, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Armor, InvTemplateID.ChainMail, "chain mail", "chain mail", "chain mail", false, false, false, false, false, false,5, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Armor, InvTemplateID.SplintMail, "splint mail", "splint mail", "splint mail", false, false, false, false, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0,new MapGlyph('◘', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Armor, InvTemplateID.BandedMail, "banded mail", "banded mail", "banded mail", false, false, false, false, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Armor, InvTemplateID.PlateMail, "plate mail", "plate mail", "plate mail", false, false, false, false, false,  false,7, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Weapon, InvTemplateID.Mace, "mace", "mace", "maces", false, false, true, true, false,  false,0, 0, 1, 1, 2, 8, -3, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Weapon, InvTemplateID.ShortBow, "short bow", "short bow", "short bows", false, false, true, true, false, false, 0, 0, 0, 1, 1, 1, 0, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Weapon, InvTemplateID.Crossbow, "crossbow", "crossbow", "crossbows", false, false, false, true, false, false, 0, 0, 0, 1, 1, 1, 0, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Weapon, InvTemplateID.Dagger, "dagger", "dagger", "daggers", false, false, false, true, false, false,0, 0, 0, 1, 1, 4, 2, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Weapon, InvTemplateID.LongSword, "long sword", "long sword", "long swords", false, false, false, true, false,  false,0, 0, 0, 1, 3, 12, -10, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Weapon, InvTemplateID.Spear, "spear", "spear", "spears", false, false, false, true, false,  false,0, 0, 0, 1, 1, 8, -2, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Weapon, InvTemplateID.TwoHandedSword, "two-handed sword", "two-handed sword", "two-handed swords", false, false, false, true, false,  false,0, 0, 0, 1, 4, 16, -14, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Ammunition, InvTemplateID.Arrow, "arrow", "arrow", "arrows", false, true, true, true, false,  false,0, 0, 0, 0, 1, 1, 4, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Ammunition, InvTemplateID.CrossbowBolt, "crossbow bolt", "crossbow bolt", "crossbow bolts", false, true, false, true, false, false, 0, 0, 0, 0, 1,2, 8, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Ammunition, InvTemplateID.Dart, "dart", "dart", "darts", false, true, false, true, false,  false,0, 0, 0, 0, 1, 1, 2, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black)),
+                new Inventory(InvCategory.Gold, InvTemplateID.Gold, "gold", "gold", "gold", true, true, false, false, false,  false,0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('*', Color.Gold, Color.Black))
             };
         }
 
@@ -732,20 +732,31 @@ namespace RogueGame
         /// <param name="Location">MapSpace where items should be placed.</param>
         /// <param name="Probability">Returns items with probability occurrence below this limit.</param>
         /// <returns></returns>
-        public Inventory GetInventoryItem(MapSpace Location, int Probability)
+        public Inventory? GetInventoryItem(MapSpace Location)
         {
-            Inventory returnVal;
+            Inventory? returnVal = null;
+            int probabilityTotal;
 
-            // Clone a new object from template.  Exclude gold and amulet.
+            // Clone a new object from template. Exclude gold and amulet.
             List<Inventory> invSelect = (from Inventory item in InventoryItems
-                                         where item.ItemCategory != InvCategory.Gold 
+                                         where item.ItemCategory != InvCategory.Gold
                                          && item.ItemCategory != InvCategory.Amulet
-                                         && item.Probability >= Probability
-                                         select item).ToList();
+                                         select item).OrderBy(x => Random.Shared.Next()).ToList();
 
-            returnVal = new Inventory(invSelect[rand.Next(invSelect.Count)]);
-            returnVal.Location = Location;
+            probabilityTotal = rand.Next(invSelect.Sum(item => item.Probability));
 
+            foreach(Inventory item in invSelect)
+            {
+                probabilityTotal -= item.Probability;
+                
+                if (probabilityTotal < 0)
+                {
+                    returnVal = new Inventory(item);
+                    returnVal.Location = Location;
+                    break;
+                }
+            }
+            
             return returnVal;
         }
 

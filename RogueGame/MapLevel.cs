@@ -348,7 +348,7 @@ namespace RogueGame{
             AddMonsters(rand.Next(MIN_INIT_MONSTERS, MAX_INIT_MONSTERS));
 
             // Add a random number of inventory items.
-            AddInventory(rand.Next(MAX_INVENTORY));
+            AddInventory(rand.Next(5, MAX_INVENTORY));
 
             // Add stairway
             stairway = GetOpenSpace(false);
@@ -439,7 +439,7 @@ namespace RogueGame{
                 while (itemSpace == null);
 
                 do
-                    invItem = GameInventory.GetInventoryItem(itemSpace, rand.Next(1,101));
+                    invItem = GameInventory.GetInventoryItem(itemSpace)!;
                 while (invItem == null);
 
                 if (itemSpace != null && invItem != null)

@@ -561,7 +561,8 @@ namespace RogueGame
                         CurrentPlayer.InventoryEffect = null;
                 }
 
-                // Clear confusion, blindness
+                // Clear confusion, blindness, levitation
+                // 8/16/2026 - Added levitation
                 if (CurrentPlayer.Confused > 0 && CurrentPlayer.Confused <= CurrentTurn)
                 {
                     UpdateStatus("You feel less confused now.", false);
@@ -572,6 +573,12 @@ namespace RogueGame
                 {
                     UpdateStatus("You can see again.", false);
                     CurrentPlayer.Blind = 0;
+                }
+
+                if (CurrentPlayer.Floating > 0 && CurrentPlayer.Floating <= CurrentTurn)
+                {
+                    UpdateStatus("You slowly settle down the floor again.", false);
+                    CurrentPlayer.Floating = 0;
                 }
 
                 // If the player's scheduled to get hungry on the current turn, update the properties.
@@ -785,11 +792,17 @@ namespace RogueGame
                     stopMoving = CurrentMap.DetectObstruction(player.Location.X, player.Location.Y);
 
                     // If the player has just stepped on a trap ...
+                    // 8/16/2026 - Levitation avoids traps and inventory.
                     if (adjacent[direct].MapCharacter.DisplayChar == MapLevel.TRAP.DisplayChar)
-                        SpringTrap(CurrentPlayer, adjacent[direct]);
+                        if (player.Floating == 0) { SpringTrap(CurrentPlayer, adjacent[direct]); }
 
                     // Respond to items on map.
-                    if (invFound != null) UpdateStatus(AddInventory(), false);
+                    if (invFound != null) {
+                        if (player.Floating == 0)
+                            UpdateStatus(AddInventory(), false);
+                        else
+                            UpdateStatus("You are not able to grab the object while levitating.", false);
+                    }
 
                     // Player turn completed.
                     turnComplete = true;
@@ -934,6 +947,9 @@ namespace RogueGame
 
             if (monster.Blind > 0 && monster.Blind <= CurrentTurn)
                 monster.Blind = 0;
+
+            if (monster.Floating > 0 && monster.Floating <= CurrentTurn)
+                monster.Floating = 0;
 
             // Move monster if it's not paralyzed AND
             // (feels like moving OR is aggressive).
