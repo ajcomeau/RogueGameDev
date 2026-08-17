@@ -581,7 +581,7 @@ namespace RogueGame
                     CurrentPlayer.Floating = 0;
                 }
 
-                if (CurrentPlayer.RelativeSpeed.Speed > 0 && CurrentPlayer.RelativeSpeed.Speed <= CurrentTurn)
+                if (CurrentPlayer.RelativeSpeed.ExpTurn > 0 && CurrentPlayer.RelativeSpeed.ExpTurn <= CurrentTurn)
                 {
                     UpdateStatus("You feel yourself slowing down again.", false);
                     CurrentPlayer.RelativeSpeed = (1, 0);
