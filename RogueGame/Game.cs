@@ -2233,7 +2233,7 @@ namespace RogueGame
         /// <returns></returns>
         private void ScrollOfFoodDetection(Character character)
         {
-            bool foodCheck = CurrentMap.DiscoverInventoryByCat(InvCategory.Food);
+            bool foodCheck = CurrentMap.ShowInventoryByCat(InvCategory.Food);
             
             if (foodCheck) 
                 UpdateStatus("Your nose tingles as you smell food nearby.", false);
@@ -2247,7 +2247,7 @@ namespace RogueGame
         /// <returns></returns>
         private void ScrollOfGoldDetection(Character character)
         {
-            bool goldCheck = CurrentMap.DiscoverInventoryByCat(InvCategory.Gold);
+            bool goldCheck = CurrentMap.ShowInventoryByCat(InvCategory.Gold);
 
             if (goldCheck)
                 UpdateStatus("You hear the jingle of coins somewhere on this level.", false);

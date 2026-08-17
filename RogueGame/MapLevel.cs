@@ -892,7 +892,8 @@ namespace RogueGame{
             List<Monster> monsters = (from Monster monster in ActiveMonsters 
                                       select monster).ToList();
 
-            monsters.ForEach(monster => monster.Location!.RemoteSight = true);
+            monsters.ForEach(monster => { monster.Location!.RemoteSight = true; 
+                monster.Location.Discovered = true; monster.Location.Lighted = true; });
         }
 
         /// <summary>
@@ -904,7 +905,8 @@ namespace RogueGame{
                                      where item.IsProtected || item.IsCursed
                                       select item).ToList();
 
-            items.ForEach(item => item.Location!.RemoteSight = true);
+            items.ForEach(item => { item.Location!.RemoteSight = true; 
+                item.Location!.Discovered = true; item.Location!.Lighted = true; });
 
             return items.Count > 0;
         }
@@ -1025,11 +1027,12 @@ namespace RogueGame{
                         if(levelMap[x, y].MapCharacter.DisplayChar != HALLWAY.DisplayChar)
                         {
                             levelMap[x, y].Discovered = true;
-                            levelMap[x, y].Lighted = roomLights;
+                            if (!levelMap[x, y].Lighted) { levelMap[x, y].Lighted = roomLights; }
                         }
                     }
                     //Turn off remote sight for spaces in the room if they're already visible.
-                    levelMap[x, y].RemoteSight = false;
+                    // 8/16/2026 - Disabling this for now.
+                    //levelMap[x, y].RemoteSight = false;
                 }
             }
         }
@@ -1127,11 +1130,15 @@ namespace RogueGame{
         /// </summary>
         public void ClearRemoteSpaces()
         {
+            // Get all spaces with RemoteSight turned on.
             List<MapSpace> remotes = (from MapSpace space in levelMap 
-                                      where space.RemoteSight = true 
-                                      && (InhabitableSpacesGlyphList.Contains(PriorityChar(space, false).DisplayChar)) 
+                                      where space.RemoteSight
                                       select space).ToList();
 
+            // Limit to map spaces that don't contain anything anymore.
+            remotes = remotes.Where(space => InhabitableSpacesGlyphList.Contains(PriorityChar(space, false).DisplayChar)).ToList();
+
+            // Turn off RemoteSight.
             remotes.ForEach(remote => { remote.RemoteSight = false; });
         }
         /// <summary>
@@ -1139,20 +1146,17 @@ namespace RogueGame{
         /// </summary>
         /// <param name="Category">Member of InvCategory enumeration</param>
         /// <returns></returns>
-        public bool DiscoverInventoryByCat(Inventory.InvCategory Category)
+        public bool ShowInventoryByCat(Inventory.InvCategory Category)
         {
-            // Set all the food on the map to discovered and visible.
+            // Set inventory of a specified category to be discovered and visible.
             bool retValue = false;
             
             List<Inventory> mapInventory = (from Inventory inv in MapInventory
                                      where inv.ItemCategory == Category
                                      select inv).ToList();
 
-            mapInventory.ForEach(inv => {
-                inv.Location.Discovered = true; inv.Location.Lighted = true;
-                inv.Location.RemoteSight = true;
-                retValue = true;
-            });
+            mapInventory.ForEach(inv => {inv.Location.RemoteSight = true; inv.Location.Discovered = true; 
+                inv.Location.Lighted = true; retValue = true;});
 
             return retValue;
         }
@@ -1266,17 +1270,21 @@ namespace RogueGame{
                                 (RoomInteriorGlyphList.Contains(CurrentPlayer.Location.MapCharacter.DisplayChar)));
 
                     // If the space is within one space of the character, show standard 
-                    // priority character no matter what.
-                    appendChar = surroundingSpaces.Contains(levelMap[x, y]) ? priorityChar : null;
+                    // priority character unless character is currently blind.
+                    appendChar = (surroundingSpaces.Contains(levelMap[x, y]) && CurrentPlayer.Blind == 0) ? priorityChar : null;
 
                     // Otherwise, if the space is lighted, check if the player is in the same region and within
                     // the room's walls or if the space is marked for RemoteSight. If so, show the priority character.
                     // Else, just show the map character or the alternate map character as appropriate.
                     if (appendChar == null)
                     {
-                        if (levelMap[x, y].Lighted)
+                        if (levelMap[x, y].RemoteSight)
                         {
-                            if (playerInRoom && RoomInteriorGlyphList.Contains(levelMap[x,y].MapCharacter.DisplayChar) || levelMap[x, y].RemoteSight)
+                            appendChar = priorityChar;
+                        }
+                        else if (levelMap[x, y].Lighted)
+                        {
+                            if (playerInRoom && RoomInteriorGlyphList.Contains(levelMap[x,y].MapCharacter.DisplayChar))
                                 appendChar = priorityChar;
                             else
                                 appendChar = (levelMap[x, y].SearchRequired) ?
@@ -1398,7 +1406,7 @@ namespace RogueGame{
             this.Y = oldSpace.Y; 
             this.Lighted = oldSpace.Lighted;
             this.Discovered = oldSpace.Discovered;
-            this.RemoteSight = false;
+            this.RemoteSight = oldSpace.RemoteSight;
         }
 
         /// <summary>
