@@ -51,7 +51,7 @@
         /// <summary>
         /// Current Strength
         /// </summary>
-        public int CurrentStrength { get { return MaxStrength - StrengthMod; } }        
+        public int CurrentStrength { get { return MaxStrength + StrengthMod; } }        
         /// <summary>
         /// Current experience
         /// </summary>
