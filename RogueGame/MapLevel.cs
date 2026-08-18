@@ -225,7 +225,7 @@ namespace RogueGame{
         public List<MapGlyph> AllChars()
         {
             // Start with list of inventory MapGlyphs
-            List<MapGlyph> retList = (from Inventory inv in GameInventory.InventoryItems select inv.DisplayCharacter).ToList();
+            List<MapGlyph> retList = (from Inventory inv in GameInventory.InventoryItems select inv.DisplayCharacter).Distinct().ToList();
             // Add list of monster MapGlyphs
             retList.AddRange(from Monster monster in Monster.Monsters select monster.DisplayCharacter);
             // Add some room interior items.
@@ -1299,9 +1299,13 @@ namespace RogueGame{
                     else if (CurrentPlayer.Hallucinating > 0)
                     {
                         // If the player is hallucinating, substitute random character for anything in the AllChars list.                        
-                        if (CurrentPlayer.Location != levelMap[x,y])
-                            if (OccupiedSpaces().Contains(levelMap[x,y]))
+                        if (CurrentPlayer.Location != levelMap[x, y]) 
+                        { 
+                            if (OccupiedSpaces().Contains(levelMap[x, y]))
                                 appendChar = AllChars()[rand.Next(AllChars().Count - 1)];
+                        }
+                        else
+                            appendChar = priorityChar;
                     }
                     else
                         appendChar = (surroundingSpaces.Contains(levelMap[x, y])) ? priorityChar : null;
