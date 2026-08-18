@@ -1181,8 +1181,7 @@ namespace RogueGame{
                                      where inv.ItemCategory == Category
                                      select inv).ToList();
 
-            mapInventory.ForEach(inv => {inv.Location.RemoteSight = true; inv.Location.Discovered = true; 
-                inv.Location.Lighted = true; retValue = true;});
+            mapInventory.ForEach(inv => {inv.Location.RemoteSight = true;});
 
             return retValue;
         }

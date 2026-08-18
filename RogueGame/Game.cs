@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
 using static RogueGame.Inventory;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace RogueGame
 {    
@@ -210,7 +211,7 @@ namespace RogueGame
             "\n                        ║                             ║" +
             $"\n                        ║{CenterString(CurrentPlayer.CharacterName, 29)}║" +
             "\n                        ║          Killed by          ║" +
-            $"\n                        ║{CenterString(CauseOfDeath, 29)}║" +
+            $"\n                        ║{CenterString(string.Concat(CauseOfDeath, "."), 29)}║" +
             "\n                        ║                             ║" +
             $"\n                        ║{CenterString(CurrentPlayer.Gold.ToString() + " Au", 29)}║" +
             $"\n                        ║           {DateTime.Now.Year + " "}             ║" +
@@ -542,12 +543,13 @@ namespace RogueGame
                 // Check for experience level increase.
                 if (CurrentPlayer.Experience >= CurrentPlayer.NextExpLevelUp)
                 {
+                    int ExpIncrease = rand.Next(1, HP_LEVEL_INCREASE + 1);
                     CurrentPlayer.NextExpLevelUp *= 2;
                     CurrentPlayer.ExpLevel += 1;
-                    CurrentPlayer.MaxHP += rand.Next(1, HP_LEVEL_INCREASE + 1);
+                    CurrentPlayer.MaxHP += ExpIncrease;                   
 
                     if (CurrentPlayer.HPDamage > 0)
-                        CurrentPlayer.HPDamage -= rand.Next(1, CurrentPlayer.HPDamage);
+                        CurrentPlayer.HPDamage += (int)(ExpIncrease / 2);
 
                     UpdateStatus($"Welcome to Level {CurrentPlayer.ExpLevel}.", false);
                 }
@@ -838,7 +840,7 @@ namespace RogueGame
         }
 
         /// <summary>
-        /// Attack routine with calculations - player attacking
+        /// Attack routine with calculations - player attacking q
         /// </summary>
         /// <param name="Attacker">Player object as attacker</param>
         /// <param name="Defender">Monster object as defender</param>
@@ -876,8 +878,31 @@ namespace RogueGame
             if (hitSuccess)
             {
                 UpdateStatus($"You hit the {Defender.CharacterName.ToLower()}.", false);
+                
+                //Identify item if necessary.
+                if (weapon != null && !weapon.IsIdentified)
+                    SetInventoryAsIdentified(weapon.PriorityId);                    
+                
+                // Find and invoke the delegate if there is one.
+                if (weapon != null && InventoryActions.TryGetValue(weapon.PriorityId, out var taskInfo))
+                {
+                    // Remove scrolls and potions from the player's inventory and invoke delegate.
+                    if (weapon.ItemCategory == InvCategory.Potion || weapon.ItemCategory == InvCategory.Scroll)
+                        CurrentPlayer.CharacterInventory.Remove(weapon);
+                    
+                    if (weapon.ItemCategory == InvCategory.Potion)
+                        UpdateStatus("The sound of the flask shattering echoes strangely and its contents spill over your opponent.", false);
+                    else if (weapon.ItemCategory == InvCategory.Scroll)
+                        UpdateStatus("The scroll gives off a quick flash of octarine light and disappears from your hand.", false);
+
+                    if (taskInfo != null)
+                        taskInfo.Invoke(Defender);
+                }
+
+                // Hulk Mode cheat code for (*ahem*) testing.
                 damage = HulkMode ? Defender.MaxHP : rand.Next(minDamage, maxDamage + 1);
 
+                // Invoke any inventory effects the player has right now.
                 if (CurrentPlayer.InventoryEffect != null)
                      CurrentPlayer.InventoryEffect?.TargetFunction.Invoke();
             }
@@ -1377,15 +1402,24 @@ namespace RogueGame
         /// <param name="character"></param>
         private void PotionOfSeeInvisible(Character character)
         {
-            if (character.Blind > 0)
-            {
-                character.Blind = 0;
-            }
-
             if (character is Player)
-                UpdateStatus("You can see again.", false);
+            {
+                if (character.Blind > 0)
+                {
+                    character.Blind = 0;
+                    UpdateStatus("You can see again.", false);
+                }
+            }
             else
-                UpdateStatus("The creature's eyes clear, it looks at you and grins ...", false);
+            {
+                if (character.Blind > 0)
+                {
+                    character.Blind = 0;
+                    UpdateStatus("The creature's eyes clear, it looks at you and grins ...", false);
+                }
+                else
+                    UpdateStatus("'I see all I need to see, just fine ...'", false);
+            }                
 
         }
         /// <summary>
@@ -1654,8 +1688,7 @@ namespace RogueGame
             {
                 // Verify the player has something they can wield.
                 items = (from inv in CurrentPlayer.CharacterInventory
-                         where inv.ItemCategory == InvCategory.Weapon ||
-                         inv.ItemCategory == InvCategory.Ammunition
+                         where inv.IsWieldable
                          select inv).ToList();
 
                 if (items.Count > 0)
@@ -1681,19 +1714,23 @@ namespace RogueGame
                 {
                     // Call the appropriate delegate and remove the item
                     // from inventory.
-                    if (items[0].ItemCategory != InvCategory.Weapon &&
-                        items[0].ItemCategory != InvCategory.Ammunition)
+                    if (!items[0].IsWieldable)
                     {
-                        UpdateStatus($" You should reconsider. {CapitalFirstLetter(items[0].RealName)} is not an effective weapon.", false);
+                        if (items[0].ItemCategory == InvCategory.Food)
+                            if (rand.Next(1, 101) < COIN_FLIP)
+                                UpdateStatus(" Dungeon food is only dangerous to you. Try something else.", false);
+                            else
+                                UpdateStatus(" What is this ... a food fight? Try something else.", false);
+                        else if (items[0].ItemCategory == InvCategory.Gold)
+                                UpdateStatus(" Save your gold and use an actual weapon.", false);
+                        else
+                            UpdateStatus(" That's not an effective weapon. Pick something else.", false);
                         retValue = false;
                     }
                     else
                     {                       
                         CurrentPlayer.Wielding = items[0];
-                        if (items[0].IsGroupable)
-                            UpdateStatus($"You are now wielding some {items[0].PluralName}.", false);
-                        else
-                            UpdateStatus($"You are now wielding {AddEnglishArticle(items[0].PluralName)}.", false);
+                        UpdateStatus($"You are now wielding {GameInventory.ListingDescription(1, items[0])}.", false);
 
                         retValue = true;
                     }
@@ -2241,10 +2278,15 @@ namespace RogueGame
         /// </summary>
         /// <returns></returns>
         private void ScrollOfMagicMapping(Character character)
-        {          
-            UpdateStatus("This scroll has a map on it!", false);
-            CurrentMap.DiscoverMap();
-           
+        {   
+            if(character is Player)
+            {
+                UpdateStatus("This scroll has a map on it!", false);
+                CurrentMap.DiscoverMap();
+            }
+            else
+                UpdateStatus("'Yes, the Dungeon is a large and interesting place.'", false);
+
         }
         /// <summary>
         /// Raise the player's current armor by one level and remove any curse.
@@ -2252,12 +2294,22 @@ namespace RogueGame
         /// <returns></returns>
         private void ScrollOfEnchantArmor(Character character)
         {
-            if(CurrentPlayer.Armor != null) {
-                UpdateStatus($"Your armor's rating has been upgraded to {CurrentPlayer.Armor.ArmorClass + ++CurrentPlayer.Armor.Increment}.", false);
-                CurrentPlayer.Armor.IsCursed = false;
+            if (character is Player)
+            {
+                if (CurrentPlayer.Armor != null)
+                {
+                    UpdateStatus($"Your armor's rating has been upgraded to {CurrentPlayer.Armor.ArmorClass + ++CurrentPlayer.Armor.Increment}.", false);
+                    CurrentPlayer.Armor.IsCursed = false;
+                }
+                else
+                    UpdateStatus($"This is a scroll of enchant armor. Alas, you aren't wearing any.", false);
             }
-            else
-                UpdateStatus($"This is a scroll of enchant armor. Alas, you aren't wearing any.", false);
+            else 
+            { 
+                Monster target = (Monster)character;
+                target.ArmorClass++;
+                UpdateStatus("The monster smiles - 'Thanks! I needed an armor upgrade!'", false);
+            }
 
         }
         /// <summary>
@@ -2266,15 +2318,23 @@ namespace RogueGame
         /// <returns></returns>
         private void ScrollOfEnchantWeapon(Character character)
         {
-            if (CurrentPlayer.Wielding != null)
+            if (character is Player)
             {
-                CurrentPlayer.Wielding.DmgIncrement++;
-                CurrentPlayer.Wielding.IsCursed = false;
-                UpdateStatus($"Your {CurrentPlayer.Wielding.RealName} gives off a bright flash of light.", false);
+                if (CurrentPlayer.Wielding != null)
+                {
+                    CurrentPlayer.Wielding.DmgIncrement++;
+                    CurrentPlayer.Wielding.IsCursed = false;
+                    UpdateStatus($"Your {CurrentPlayer.Wielding.RealName} gives off a bright flash of light.", false);
+                }
+                else
+                    UpdateStatus($"This is a scroll of enchant weapon. Too bad you aren't wielding one.", false);
             }
             else
-                UpdateStatus($"This is a scroll of enchant weapon. Too bad you aren't wielding one.", false);
-            
+            {
+                Monster target = (Monster)character;
+                target.MaxAttackDmg += 5;
+                UpdateStatus("Uh, oh ... he suddenly looks a lot more dangerous.", false);
+            }            
         }
         /// <summary>
         /// Reveal all the food on the map.
@@ -2284,11 +2344,20 @@ namespace RogueGame
         {
             bool foodCheck = CurrentMap.ShowInventoryByCat(InvCategory.Food);
             
-            if (foodCheck) 
-                UpdateStatus("Your nose tingles as you smell food nearby.", false);
+            if (character is Player)
+            {
+                if (foodCheck)
+                    UpdateStatus("Your nose tingles as you smell food nearby.", false);
+                else
+                    UpdateStatus("You hear a growling noise very close to you.", false);
+            }
             else
-                UpdateStatus("You hear a growling noise very close to you.", false);
-
+            {
+                if (foodCheck)
+                    UpdateStatus("The monster sniffs the air ...'Mmmm ... I smell dinner.'", false);
+                else
+                    UpdateStatus("The monster looks at you ravenously.", false);
+            }
         }
         /// <summary>
         /// Reveal all the gold on the map.
@@ -2297,12 +2366,33 @@ namespace RogueGame
         private void ScrollOfGoldDetection(Character character)
         {
             bool goldCheck = CurrentMap.ShowInventoryByCat(InvCategory.Gold);
+            CurrentPlayer.InventoryEffect = (CurrentTurn + 50, ScrollOfGoldDetectionTrack);
+            
+            if(goldCheck)
+                CurrentPlayer.InventoryEffect = (CurrentTurn + 50, ScrollOfGoldDetectionTrack);
 
-            if (goldCheck)
-                UpdateStatus("You hear the jingle of coins somewhere on this level.", false);
+            if (character is Player)
+            {
+                if (goldCheck)
+                    UpdateStatus("You hear the jingle of coins somewhere on this level.", false);
+                else
+                    UpdateStatus("'Check out the Dungeon,' they said. 'There's PLENTY of gold down there!' they said.", false);
+            }
             else
-                UpdateStatus("'Check out the Dungeon,' they said. 'There's PLENTY of gold down there!' they said.", false);
+            {
+                if (goldCheck)
+                    UpdateStatus("'Ah, now I see what brought you here ...'", false);
+                else
+                    UpdateStatus("The monster eyes your purse greedily.", false);
+            }            
 
+        }
+        /// <summary>
+        /// Reveal all the gold on the map.
+        /// </summary>
+        private void ScrollOfGoldDetectionTrack()
+        {
+            CurrentMap.ShowInventoryByCat(InvCategory.Gold);
         }
         /// <summary>
         /// Reveal the player's current room.
@@ -2311,10 +2401,13 @@ namespace RogueGame
         private void ScrollOfLight(Character character)
         {
             if (CurrentPlayer.Location != null)
-            {
-                CurrentMap.LightUpRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
-                UpdateStatus("The entire room is lit by an unearthly glow.", false);
-            }
+                CurrentMap.LightUpRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);                
+
+            if (character is Player)
+                UpdateStatus("The entire room is lit with an unearthly glow.", false);
+            else
+                UpdateStatus("The monster seems dazzled for a moment.", false);
+
 
         }
         /// <summary>
@@ -2323,10 +2416,22 @@ namespace RogueGame
         /// <returns></returns>
         private void ScrollOfConfuseMonsterBegin(Character character)
         {
-            //TODO: Review these values for possible new constants depending on other inventory effect ranges.
-            int turns = rand.Next(100, 150);
-            CurrentPlayer.InventoryEffect = (CurrentTurn + turns, ScrollOfConfuseMonsterEnd);
-            UpdateStatus("Your hands begin to glow red.", false);
+            if (character is Player)
+            {
+                //TODO: Review these values for possible new constants depending on other inventory effect ranges.
+                int turns = rand.Next(100, 150);
+                CurrentPlayer.InventoryEffect = (CurrentTurn + turns, ScrollOfConfuseMonsterEnd);
+                UpdateStatus("Your hands begin to glow red.", false);
+            }
+            else
+            {
+                Monster target = (Monster)character;
+                target.Confused = CurrentTurn + rand.Next(2, 7);
+                UpdateStatus("Was that the game documentation? The monster seems a little confused.", false);
+            }
+
+
+
         }
         /// <summary>
         /// Confuse the next monster the player hits for a random number of turns.
@@ -2349,13 +2454,19 @@ namespace RogueGame
         /// <returns></returns>
         private void ScrollOfRemoveCurse(Character character)
         {
-            if(CurrentPlayer.Armor != null)
-                CurrentPlayer.Armor.IsCursed = false;
+            if (character is Player)
+            {
+                if (CurrentPlayer.Armor != null)
+                    CurrentPlayer.Armor.IsCursed = false;
 
-            if (CurrentPlayer.Wielding != null)
-                CurrentPlayer.Wielding.IsCursed = false;
+                if (CurrentPlayer.Wielding != null)
+                    CurrentPlayer.Wielding.IsCursed = false;
 
-            UpdateStatus("You suddenly feel someone watching over you.", false);
+                UpdateStatus("You suddenly feel someone watching over you.", false);
+            }
+            else
+                UpdateStatus("'Your blessings won't work on me but thanks all the same, ' the monster says with a grin.", false);
+            
         }
         /// <summary>
         /// Put the player to sleep for a few turns.
@@ -2363,8 +2474,12 @@ namespace RogueGame
         /// <returns></returns>
         private void ScrollOfSleep(Character character)
         {
-            CurrentPlayer.Immobile = CurrentTurn + rand.Next(2, 5);
-            UpdateStatus("You fall asleep.", false);
+            character.Immobile = CurrentTurn + rand.Next(2, 5);
+
+            if (character is Player)
+                UpdateStatus("You fall asleep.", false);
+            else
+                UpdateStatus("The monster suddenly decides to lie down for a nap.", false);            
         }
         /// <summary>
         /// Move the player to a random spot on the map and confuse them for a few movesCollect.
@@ -2372,11 +2487,15 @@ namespace RogueGame
         /// <returns></returns>
         private void ScrollOfTeleportation(Character character)
         {
-            CurrentPlayer.Location = CurrentMap.GetOpenSpace(true);
+            character.Location = CurrentMap.GetOpenSpace(true);
+            character.Confused = CurrentTurn + rand.Next(3, 10);
+
             UpdateStatus("This is a scroll of teleportation!", false);
 
-            CurrentPlayer.Confused = CurrentTurn + rand.Next(3, 10);
-            UpdateStatus("You feel rather disoriented ...", false);
+            if (character is Player)
+                UpdateStatus("You feel rather disoriented ...", false);
+            else
+                UpdateStatus("The monster disappears from in front of your eyes.", false);           
 
         }
         /// <summary>
@@ -2403,6 +2522,9 @@ namespace RogueGame
 
             CurrentMap.AddMonsters(1, spaces);
             UpdateStatus("The room suddenly got a bit more crowded.", false);
+
+            if (character is Monster)
+                UpdateStatus("'Oh hey, look, it's a party!'", false);
         }
         /// <summary>
         /// Make every monster within two paces immobile for up to 25 turns.
@@ -2429,15 +2551,24 @@ namespace RogueGame
         /// <returns></returns>
         private void ScrollOfProtectArmor(Character character)
         {
-            if (CurrentPlayer.Armor != null)
+            if (character is Player)
             {
-                CurrentPlayer.Armor.IsProtected = true;
-                CurrentPlayer.Armor.IsCursed = false;
-                UpdateStatus($"Great news! Your {CurrentPlayer.Armor.RealName} is protected against damage, theft and arcane curses up to 1,000,000 gold.", false);
-                UpdateStatus($"At Dungeon Insurance, your safety is our first concern!", false);
+                if (CurrentPlayer.Armor != null)
+                {
+                    CurrentPlayer.Armor.IsProtected = true;
+                    CurrentPlayer.Armor.IsCursed = false;
+                    UpdateStatus($"Great news! Your {CurrentPlayer.Armor.RealName} is protected against damage, theft and arcane curses up to 1,000,000 gold.", false);
+                    UpdateStatus($"At Dungeon Insurance, your safety is our first concern!", false);
+                }
+                else
+                    UpdateStatus($"Hello, {CurrentPlayer.CharacterName}. We've been trying to reach you about your extended armor insurance.", false);
             }
             else
-                UpdateStatus($"Hello, {CurrentPlayer.CharacterName}. We've been trying to reach you about your extended armor insurance.", false);
+            {
+                UpdateStatus("'Was that supposed to do something?'", false);
+            }
+
+            
 
         }
         /// <summary>
@@ -2460,9 +2591,11 @@ namespace RogueGame
                 {
                     invItem = GameInventory.GetInventoryItem(item.RealName)!;
                     CurrentMap.AddInventory(item, CurrentMap.GetOpenSpace(true)!, true);
-                }
-                    
+                }                    
             }
+
+            if(character is Monster)
+                UpdateStatus("'Ooooh, you bas...'", false);
 
             // Clear the monsters off the current level map.
             CurrentMap.ActiveMonsters.Clear();
@@ -2478,6 +2611,8 @@ namespace RogueGame
         {
             UpdateStatus($"The scroll's parchment has a rich and elegant feel to it but is otherwise blank.", false);
 
+            if (character is Monster)
+                UpdateStatus("'Get a deal on office supplies or something?'", false);
         }
 
         #endregion
