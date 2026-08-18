@@ -562,7 +562,7 @@ namespace RogueGame
                 }
 
                 // Clear confusion, blindness, levitation, enhanced speed
-                // 8/16/2026 - Added levitation and enhanced speed
+                // 8/16/2026 - Added levitation and enhanced speed, hallucination.
                 if (CurrentPlayer.Confused > 0 && CurrentPlayer.Confused <= CurrentTurn)
                 {
                     UpdateStatus("You feel less confused now.", false);
@@ -585,6 +585,13 @@ namespace RogueGame
                 {
                     UpdateStatus("You feel yourself slowing down again.", false);
                     CurrentPlayer.RelativeSpeed = (1, 0);
+                }
+
+                if (CurrentPlayer.Hallucinating > 0 && CurrentPlayer.Hallucinating <= CurrentTurn)
+                {                    
+                    UpdateStatus("The potion wears off and things start to look normal again.", false);
+                    UpdateStatus("Anything you still can't deal with is here to stay.", false);
+                    CurrentPlayer.Hallucinating = 0;
                 }
 
                 // If the player's scheduled to get hungry on the current turn, update the properties.
@@ -1041,8 +1048,7 @@ namespace RogueGame
 
                         if (destinationSpace.MapCharacter.DisplayChar == MapLevel.TRAP.DisplayChar)
                             SpringTrap(monster, destinationSpace);
-                    }
-                        
+                    }                        
                 }
             }
         }
@@ -1219,6 +1225,11 @@ namespace RogueGame
                 {TrapArrow, 100}
             };
         }
+
+        #endregion
+
+        #region Potion Methods
+
         /// <summary>
         /// A potion that just displays a message - thirst quencher.
         /// </summary>
@@ -1264,7 +1275,8 @@ namespace RogueGame
             if (character is Player)
             {
                 CurrentPlayer.Hallucinating = CurrentTurn + 250;
-                UpdateStatus("Ooooh ... trippy colors ...", false);
+                UpdateStatus("Ooooh ... pretty colors ... why are the walls melting ...?", false);
+                UpdateStatus("That was a Potion of Hallucination. Enjoy the show.", false);
             }
             else
             {
@@ -1475,6 +1487,7 @@ namespace RogueGame
             else
                 UpdateStatus("The monster looks at you ... 'What was that?'", false);
         }
+        #endregion
 
         #region KeyProcs
 
@@ -1625,7 +1638,8 @@ namespace RogueGame
             FastPlay = !FastPlay;
             UpdateStatus(FastPlay ? "Fast Play mode ON." : "Fast Play mode OFF", false);
         }
-        #endregion
+        
+
         /// <summary>
         /// Wield a specific weapon.
         /// </summary>

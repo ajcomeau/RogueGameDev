@@ -219,6 +219,32 @@ namespace RogueGame{
         private Inventory GameInventory { get; }
         #endregion
         /// <summary>
+        /// Returns a general list of characters from game to be used for hallucinations or other random purposes.
+        /// </summary>
+        /// <returns></returns>
+        public List<MapGlyph> AllChars()
+        {
+            // Start with list of inventory MapGlyphs
+            List<MapGlyph> retList = (from Inventory inv in GameInventory.InventoryItems select inv.DisplayCharacter).ToList();
+            // Add list of monster MapGlyphs
+            retList.AddRange(from Monster monster in Monster.Monsters select monster.DisplayCharacter);
+            // Add some room interior items.
+            retList.AddRange(AMULET, GOLD, STAIRWAY, TRAP, ROOM_INT);
+
+            return retList;
+        }
+        /// <summary>
+        /// Get list of spaces currently holding monsters and inventory.
+        /// </summary>
+        /// <returns></returns>
+        public List<MapSpace> OccupiedSpaces()
+        {
+            List<MapSpace> retList = (from Inventory inv in MapInventory select inv.Location).ToList();
+            retList.AddRange(from Monster monster in ActiveMonsters select monster.Location);
+
+            return retList;
+        }
+        /// <summary>
         /// Constructor - generate a new map for this level.
         /// </summary>
         /// <param name="levelNumber">Map level</param>
@@ -1246,13 +1272,13 @@ namespace RogueGame{
             StringBuilder sbReturn = new StringBuilder();
             List<MapSpace> surroundingSpaces = GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 1);
             int playerRegion = GetRegionNumber(CurrentPlayer.Location.X, CurrentPlayer.Location.Y); 
-            MapGlyph? priorityChar, appendChar;
+            MapGlyph? appendChar;
+            MapGlyph priorityChar;
             bool playerInRoom = false;
             int regionNo;
 
             // Iterate through the two-dimensional levelMap MapSpace array and use determine which MapGlyph objects 
             // to output to the DisplayMap array for display to the user.
-
             for (int y = 0; y <= MAP_HT; y++)
             {
                 for (int x = 0; x <= MAP_WD; x++)
@@ -1268,10 +1294,17 @@ namespace RogueGame{
 
                     // If the space is within one space of the character, show standard 
                     // priority character unless character is currently blind.
-                    if (CurrentPlayer.Blind == 0)
-                        appendChar = (surroundingSpaces.Contains(levelMap[x, y])) ? priorityChar : null;
-                    else
+                    if (CurrentPlayer.Blind > 0)
                         appendChar = (Player.CHARACTER.Equals(priorityChar)) ? priorityChar : null;
+                    else if (CurrentPlayer.Hallucinating > 0)
+                    {
+                        // If the player is hallucinating, substitute random character for anything in the AllChars list.                        
+                        if (CurrentPlayer.Location != levelMap[x,y])
+                            if (OccupiedSpaces().Contains(levelMap[x,y]))
+                                appendChar = AllChars()[rand.Next(AllChars().Count - 1)];
+                    }
+                    else
+                        appendChar = (surroundingSpaces.Contains(levelMap[x, y])) ? priorityChar : null;
 
                     // Otherwise, if the space is lighted, check if the player is in the same region and within
                     // the room's walls or if the space is marked for RemoteSight. If so, show the priority character.
