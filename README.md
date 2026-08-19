@@ -1,4 +1,9 @@
 # Rogue C#
+
+### 8/18/2026
+All potions have now been tested and should generally be working.
+Potions and scrolls can be wielded during combat. Some of them will have interesting effects when used against monsters.
+
 ### 8/14/2026
 All potions have been added to the game but there's a lot of testing to be done. Some might not work at this point. I'm also working on the next writeup.
 
