@@ -1262,9 +1262,11 @@ namespace RogueGame
         {
             List<string> fruits = ["lemon", "blueberry", "mango", "banana", "kiwi", "orange", "nectarine",
                 "blackberry", "cranberry", "watermelon", "grape", "cherry", "peach", "apple", "dates", "papaya"];
-            
+
             if (character is Player)
-                UpdateStatus($"An excellent thirst quencher with a hint of {fruits[rand.Next(fruits.Count-1)]} and a slight fizz.", false);
+                UpdateStatus($"An excellent thirst quencher with a hint of {fruits[rand.Next(fruits.Count - 1)]} and a slight fizz.", false);
+            else
+                UpdateStatus($"'Mmmm .... {fruits[rand.Next(fruits.Count - 1)]}!'", false);
         }
 
         /// <summary>
@@ -1337,8 +1339,7 @@ namespace RogueGame
             {
                 character.Confused = CurrentTurn + 250;
                 UpdateStatus("The monster looks very disoriented.", false);
-            }
-                
+            }                
         }
 
         /// <summary>

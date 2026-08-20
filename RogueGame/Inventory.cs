@@ -741,10 +741,14 @@ namespace RogueGame
             List<Inventory> invSelect = (from Inventory item in InventoryItems
                                          where item.ItemCategory != InvCategory.Gold
                                          && item.ItemCategory != InvCategory.Amulet
-                                         select item).OrderBy(x => Random.Shared.Next()).ToList();
+                                         select item)
+                                         .OrderBy(x => Random.Shared.Next()).ToList();
 
+            // Get a sum of the probability weights and a random number within that limit.
             probabilityTotal = rand.Next(invSelect.Sum(item => item.Probability));
 
+            // Iterate through the list, subtracting weights from
+            // the random number until we get to 0. Return that item.
             foreach(Inventory item in invSelect)
             {
                 probabilityTotal -= item.Probability;

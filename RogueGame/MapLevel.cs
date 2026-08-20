@@ -225,9 +225,13 @@ namespace RogueGame{
         public List<MapGlyph> AllChars()
         {
             // Start with list of inventory MapGlyphs
-            List<MapGlyph> retList = (from Inventory inv in GameInventory.InventoryItems select inv.DisplayCharacter).Distinct().ToList();
+            List<MapGlyph> retList = 
+                (from Inventory inv in GameInventory.InventoryItems 
+                 select inv.DisplayCharacter).Distinct().ToList();
             // Add list of monster MapGlyphs
-            retList.AddRange(from Monster monster in Monster.Monsters select monster.DisplayCharacter);
+            retList.AddRange(
+                from Monster monster in Monster.Monsters 
+                select monster.DisplayCharacter);
             // Add some room interior items.
             retList.AddRange(AMULET, GOLD, STAIRWAY, TRAP, ROOM_INT);
 
@@ -239,8 +243,12 @@ namespace RogueGame{
         /// <returns></returns>
         public List<MapSpace> OccupiedSpaces()
         {
-            List<MapSpace> retList = (from Inventory inv in MapInventory select inv.Location).ToList();
-            retList.AddRange(from Monster monster in ActiveMonsters select monster.Location);
+            List<MapSpace> retList = 
+                (from Inventory inv in MapInventory 
+                 select inv.Location).ToList();
+            retList.AddRange
+                (from Monster monster in ActiveMonsters 
+                 select monster.Location);
 
             return retList;
         }
@@ -1297,7 +1305,8 @@ namespace RogueGame{
                         appendChar = (Player.CHARACTER.Equals(priorityChar)) ? priorityChar : null;
                     else if (CurrentPlayer.Hallucinating > 0)
                     {
-                        // If the player is hallucinating, substitute random character for anything in the AllChars list.                        
+                        // If the player is hallucinating, substitute random character
+                        // for anything in the AllChars list.                        
                         if (CurrentPlayer.Location != levelMap[x, y]) 
                         { 
                             if (OccupiedSpaces().Contains(levelMap[x, y]))
