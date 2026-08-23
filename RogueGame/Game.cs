@@ -413,8 +413,7 @@ namespace RogueGame
         /// <param name="trap"></param>
         private void SpringTrap(Character character, MapSpace trap)
         {
-
-            KeyValuePair<Action<Character>, int> trapDelegate;
+            int trapProbabilityTotal = 0;
 
             // If trap is found by player
 
@@ -425,18 +424,30 @@ namespace RogueGame
             }
 
             // Randomly search trap delegates
-            for (int i = 0; i < Traps.Count * 2; i++)
-            {
-                trapDelegate = Traps.ElementAt(rand.Next(0, Traps.Count));
+            List<KeyValuePair<Action<Character>, int>> trapList = 
+                (from KeyValuePair<Action<Character>, int> trapItem in Traps 
+                 select trapItem).OrderBy(x => Random.Shared.Next()).ToList();
 
-                if (rand.Next(1, 101) < trapDelegate.Value)
+            // Get a sum of the probability weights and a random number within that limit.
+            trapProbabilityTotal = rand.Next(trapList.Sum(item => item.Value));
+
+            // Iterate through the list, subtracting weights from
+            // the random number until we get to 0. Return that item.
+            foreach (KeyValuePair<Action<Character>, int> trapItem in trapList)
+            {
+                trapProbabilityTotal -= trapItem.Value;
+
+                if (trapProbabilityTotal < 0)
                 {
-                    trapDelegate.Key.Invoke(character);
+                    trapItem.Key.Invoke(character);
                     break;
                 }
             }
         }
-
+        /// <summary>
+        /// Method for springing arrow trap.
+        /// </summary>
+        /// <param name="character"></param>
         private void TrapArrow(Character character)
         {
             Inventory? arrow = GameInventory.GetInventoryItem("arrow");
@@ -469,6 +480,94 @@ namespace RogueGame
                     UpdateStatus("An arrow goes whizzing by your head.", false);
             }
         }
+        /// <summary>
+        /// Method for springing poison dart trap.
+        /// </summary>
+        /// <param name="character"></param>
+        private void TrapDart(Character character)
+        {
+            // Tell the player they've been it.
+            if (character is Player)
+            {
+                UpdateStatus("You were shot by an poison dart!", false);
+                UpdateStatus("You suddenly feel weaker.", false);
+                CurrentPlayer.HPDamage++;
+                CurrentPlayer.StrengthMod -= 1;
+            }
+        }
+
+        /// <summary>
+        /// Method for springing armor rust trap.
+        /// </summary>
+        /// <param name="character"></param>
+        private void TrapRust(Character character)
+        {
+            // Tell the player they've been it.
+            if (character is Player)
+            {
+                UpdateStatus("You stepped in a trap!", false);
+
+                if (CurrentPlayer.Armor != null && !CurrentPlayer.Armor.IsProtected)
+                {
+                    UpdateStatus("You hear a creaking sound in your armor and notice it has rusted.", false);
+                    CurrentPlayer.Armor.ArmorClass -= 1;
+                }                    
+            }
+        }
+
+        /// <summary>
+        /// Method for springing trap door to next level.
+        /// </summary>
+        /// <param name="character"></param>
+        private void TrapDoor(Character character)
+        {
+            if(character is Player)
+            {
+                UpdateStatus("You stepped on a level trap.", false);
+                ChangeLevel(1);
+            }
+        }
+        /// <summary>
+        /// Bear trap method, player immobile for 4 turns.
+        /// </summary>
+        /// <param name="character"></param>
+        private void TrapBear(Character character)
+        {
+            if (character is Player)
+            {
+                UpdateStatus("You stepped in a bear trap.", false);
+                CurrentPlayer.Immobile = CurrentTurn + 4;
+            }
+        }
+        /// <summary>
+        /// Sleeping gas trap - player sleeps for six turns.
+        /// </summary>
+        /// <param name="character"></param>
+        private void TrapSleepingGas(Character character)
+        {
+            if (character is Player)
+            {
+                UpdateStatus("There's a strange smell ... you feel woozy ...", false);
+                UpdateStatus("You stepped in a sleeping gas trap.", false);
+                CurrentPlayer.Immobile = CurrentTurn + 6;
+            }
+        }
+        /// <summary>
+        /// Teleport trap
+        /// </summary>
+        /// <param name="character"></param>
+        private void TrapTeleport(Character character)
+        {
+            if (character is Player)
+            {
+                character.Location = CurrentMap.GetOpenSpace(true);
+                character.Confused = CurrentTurn + rand.Next(3, 10);
+
+                UpdateStatus("You stepped in a trap!", false);
+                UpdateStatus("You feel rather disoriented ...", false);                   
+            }
+        }
+
         #endregion
 
         #region Procedures
@@ -1247,7 +1346,13 @@ namespace RogueGame
             // Trap delegates and probability of occurrence.
             Traps = new Dictionary<Action<Character>, int>
             {
-                {TrapArrow, 100}
+                {TrapArrow, 100},
+                {TrapDoor, 100 },
+                {TrapBear, 100 },
+                {TrapSleepingGas, 100 },
+                {TrapDart, 100 },
+                {TrapRust, 100 },
+                {TrapTeleport, 100 }
             };
         }
 
@@ -1659,8 +1764,12 @@ namespace RogueGame
         private void DownStairsProc()
         {            
             TurnInProgress = true;
+
             if (CurrentPlayer.Location!.MapCharacter.DisplayChar == MapLevel.STAIRWAY.DisplayChar)
-                ChangeLevel(1);
+                if (CurrentPlayer.Floating == 0)
+                    ChangeLevel(1);
+                else
+                    UpdateStatus(" You're too far off the ground to reach the stairway.", false);
             else
                 UpdateStatus(" There's no stairway here.", false);
         }
@@ -2496,8 +2605,7 @@ namespace RogueGame
             if (character is Player)
                 UpdateStatus("You feel rather disoriented ...", false);
             else
-                UpdateStatus("The monster disappears from in front of your eyes.", false);           
-
+                UpdateStatus("The monster disappears from in front of your eyes.", false);
         }
         /// <summary>
         /// Make every monster on the map aggressive.
@@ -2543,7 +2651,13 @@ namespace RogueGame
             foreach (Monster monster in monsters)
                 monster.Immobile = CurrentTurn + rand.Next(25);
 
-            UpdateStatus("The monsters around you suddenly freeze in their tracks. A fast and quiet exit would be wise at this point.", false);
+            if(monsters.Count > 0)
+            {
+                UpdateStatus("The monsters around you suddenly freeze in their tracks.", false);
+                UpdateStatus("A fast and quiet exit would be wise at this point.", false);
+            }
+            else
+                UpdateStatus("The air around you suddenly feels very still.", false);
 
         }
         /// <summary>
