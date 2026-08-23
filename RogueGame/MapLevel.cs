@@ -1183,7 +1183,6 @@ namespace RogueGame{
         public bool ShowInventoryByCat(Inventory.InvCategory Category)
         {
             // Set inventory of a specified category to be discovered and visible.
-            bool retValue = false;
             
             List<Inventory> mapInventory = (from Inventory inv in MapInventory
                                      where inv.ItemCategory == Category
@@ -1191,7 +1190,7 @@ namespace RogueGame{
 
             mapInventory.ForEach(inv => {inv.Location.RemoteSight = true;});
 
-            return retValue;
+            return (mapInventory.Count >= 0);
         }
         /// <summary>
         /// Return region number 1 through 9 based on map point.
