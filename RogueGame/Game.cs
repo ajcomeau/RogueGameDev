@@ -239,35 +239,7 @@ namespace RogueGame
             }
             else StatusList.Insert(0, Status);
         }
-
-        /// <summary>
-        /// Centers a text string for display.
-        /// </summary>
-        /// <param name="Text">Text to be centered.</param>
-        /// <param name="Spaces">Total number of spaces in displayed string.</param>
-        /// <returns></returns>
-        private string CenterString(string Text, int Spaces)
-        {
-            // Center the string provided within the specified
-            // number of spaces.
-
-            string retValue = "";
-
-            // If the string is longer than the number, just pass it back.
-            if (Text.Length >= Spaces)
-                retValue = Text;
-            else
-            // Otherwise, use PadLeft / PadRight
-            {
-                retValue = Text.PadLeft(Spaces / 2 + Text.Length / 2).PadRight(Spaces);
-            }
-
-            // If it's still short, keep adding a space.
-            while (retValue.Length < Spaces)
-                retValue = retValue.PadLeft(1);
-
-            return retValue;
-        }
+        
         /// <summary>
         /// Get current player stats display for bottom of screen.
         /// </summary>
@@ -812,7 +784,7 @@ namespace RogueGame
                 }
                 else
                 {
-                    visibleCharacter = MapLevel.EMPTY.DisplayChar;
+                    visibleCharacter = EMPTY.DisplayChar;
                     invFound = null;
                     monster = null;
                 }
@@ -827,7 +799,7 @@ namespace RogueGame
                     player.Location = adjacent[direct];
 
                     // If this is a doorway, determine if the room is lighted.
-                    if (player.Location.MapCharacter.DisplayChar == MapLevel.ROOM_DOOR.DisplayChar && player.Blind == 0)
+                    if (player.Location.MapCharacter.DisplayChar == ROOM_DOOR.DisplayChar && player.Blind == 0)
                         CurrentMap.DiscoverRoom(player.Location.X, player.Location.Y);                    
 
                     // Show the surrounding spaces if the player can see.
@@ -839,7 +811,7 @@ namespace RogueGame
 
                     // If the player has just stepped on a trap ...
                     // 8/16/2026 - Levitation avoids traps and inventory.
-                    if (adjacent[direct].MapCharacter.DisplayChar == MapLevel.TRAP.DisplayChar)
+                    if (adjacent[direct].MapCharacter.DisplayChar == TRAP.DisplayChar)
                         if (player.Floating == 0) { SpringTrap(CurrentPlayer, adjacent[direct]); }
 
                     // Respond to items on map.
@@ -1075,7 +1047,7 @@ namespace RogueGame
                     if (destinationSpace == null)
                     {                        
                         destinationSpace = adjacent
-                            .Where(space => MapLevel.ROOM_DOOR.DisplayChar == space.Value.MapCharacter.DisplayChar).FirstOrDefault().Value;
+                            .Where(space => ROOM_DOOR.DisplayChar == space.Value.MapCharacter.DisplayChar).FirstOrDefault().Value;
 
                         if (destinationSpace != null && rand.Next(100) < COIN_FLIP) { destinationSpace = null; }
                     }
@@ -1103,7 +1075,7 @@ namespace RogueGame
                     {
                         monster.Location = destinationSpace;
 
-                        if (destinationSpace.MapCharacter.DisplayChar == MapLevel.TRAP.DisplayChar)
+                        if (destinationSpace.MapCharacter.DisplayChar == TRAP.DisplayChar)
                             SpringTrap(monster, destinationSpace);
                     }                        
                 }
@@ -1127,7 +1099,7 @@ namespace RogueGame
                 & CurrentMap.DetectInventory(Target) == null // No mnventory  
                 & Target.MapCharacter.DisplayChar == Origin.MapCharacter.DisplayChar
                 & MapLevel.InhabitableSpacesGlyphList.Contains(CurrentMap.PriorityChar(Target, false).DisplayChar)
-                & CurrentMap.SearchAdjacent(MapLevel.HALLWAY.DisplayChar, Origin.X, Origin.Y).Count < 3;
+                & CurrentMap.SearchAdjacent(HALLWAY.DisplayChar, Origin.X, Origin.Y).Count < 3;
         }
 
         #endregion
@@ -1675,7 +1647,7 @@ namespace RogueGame
         private void UpstairsProc()
         {           
             TurnInProgress = true;
-            if (CurrentPlayer.Location!.MapCharacter.DisplayChar == MapLevel.STAIRWAY.DisplayChar)
+            if (CurrentPlayer.Location!.MapCharacter.DisplayChar == STAIRWAY.DisplayChar)
                 ChangeLevel(-1);
             else
                 UpdateStatus("There's no stairway here.", false);
@@ -1687,7 +1659,7 @@ namespace RogueGame
         {            
             TurnInProgress = true;
 
-            if (CurrentPlayer.Location!.MapCharacter.DisplayChar == MapLevel.STAIRWAY.DisplayChar)
+            if (CurrentPlayer.Location!.MapCharacter.DisplayChar == STAIRWAY.DisplayChar)
                 if (CurrentPlayer.Floating == 0)
                     ChangeLevel(1);
                 else
@@ -2126,6 +2098,8 @@ namespace RogueGame
                         }
                         else
                         {
+                            GameMode = DisplayMode.Primary;
+
                             // Set the inventory item as identified if necessary.
                             if (!items[0].IsIdentified) SetInventoryAsIdentified(items[0].PriorityId);
 
@@ -2137,9 +2111,7 @@ namespace RogueGame
                                 CurrentPlayer.CharacterInventory.Remove(items[0]);
                                 taskInfo.Invoke(CurrentPlayer);                                
                                 readScroll = true;
-                            }
-
-                            GameMode = DisplayMode.Primary;                            
+                            }                                                    
                         }
                     }
                     else
@@ -2270,6 +2242,8 @@ namespace RogueGame
         {
             bool retValue = false;
             List<InventoryLine> lines;
+            string description = "";
+
             // Get the selected item.
             lines = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
                      where InventoryLine.ID == ListItem
@@ -2279,7 +2253,10 @@ namespace RogueGame
             {
                 // Update inventory template to Identified and then update player's inventory.
                 SetInventoryAsIdentified(lines[0].InvItem.PriorityId);
-                UpdateStatus(GameInventory.ListingDescription(lines[0].Count, lines[0].InvItem), false);
+
+                description = GameInventory.ListingDescription(lines[0].Count, lines[0].InvItem);
+                description = " " + char.ToUpper(description[0]) + description.Substring(1);
+                UpdateStatus(description, false);
             }
             else
             {
@@ -2497,7 +2474,7 @@ namespace RogueGame
             if (character is Player)
                 UpdateStatus("You fall asleep.", false);
             else
-                UpdateStatus("The monster suddenly decides to lie down for a nap.", false);            
+                UpdateStatus("The monster suddenly decides to lie down for a nap.", false);
         }
         /// <summary>
         /// Move the player to a random spot on the map and confuse them for a few movesCollect.

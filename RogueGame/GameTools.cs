@@ -9,8 +9,66 @@ namespace RogueGame
 {
     public static class GameTools
     {
-        #region Constants
-        // Gameplay
+        #region MapConstants
+        /// <summary>
+        /// Horizontal wall piece
+        /// </summary>
+        public static readonly MapGlyph HORIZONTAL = new MapGlyph('═', Color.SaddleBrown, Color.Black);      // Unicode symbols can be copy-pasted from https://www.w3.org/TR/xml-entity-names/025.html.
+        /// <summary>
+        /// Vertical wall piece.
+        /// </summary>
+        public static readonly MapGlyph VERTICAL = new MapGlyph('║', Color.SaddleBrown, Color.Black);
+        /// <summary>
+        /// Northwest room corner
+        /// </summary>
+        public static readonly MapGlyph CORNER_NW = new MapGlyph('╔', Color.SaddleBrown, Color.Black);
+        /// <summary>
+        /// Southeast room corner
+        /// </summary>
+        public static readonly MapGlyph CORNER_SE = new MapGlyph('╝', Color.SaddleBrown, Color.Black);
+        /// <summary>
+        /// Northeast room corner
+        /// </summary>
+        public static readonly MapGlyph CORNER_NE = new MapGlyph('╗', Color.SaddleBrown, Color.Black);
+        /// <summary>
+        /// Southwest room corner
+        /// </summary>
+        public static readonly MapGlyph CORNER_SW = new MapGlyph('╚', Color.SaddleBrown, Color.Black);
+        /// <summary>
+        /// Room interior space
+        /// </summary>
+        public static readonly MapGlyph ROOM_INT = new MapGlyph('·', Color.Gray, Color.Black);
+        /// <summary>
+        /// Room door piece
+        /// </summary>
+        public static readonly MapGlyph ROOM_DOOR = new MapGlyph('╬', Color.SaddleBrown, Color.Black);
+        /// <summary>
+        /// Hallway space
+        /// </summary>
+        public static readonly MapGlyph HALLWAY = new MapGlyph('▒', Color.White, Color.Black);
+        /// <summary>
+        /// Stairway symbol
+        /// </summary>
+        public static readonly MapGlyph STAIRWAY = new MapGlyph('≣', Color.Black, Color.Green);
+        /// <summary>
+        /// Trap symbol
+        /// </summary>
+        public static readonly MapGlyph TRAP = new MapGlyph('⬥', Color.Brown, Color.Black);
+        /// <summary>
+        /// Gold map symbol
+        /// </summary>
+        public static readonly MapGlyph GOLD = new MapGlyph('*', Color.LightYellow, Color.Black);
+        /// <summary>
+        /// Amulet of Yendor symbol
+        /// </summary>
+        public static readonly MapGlyph AMULET = new MapGlyph('♀', Color.Yellow, Color.Black);
+        /// <summary>
+        /// Empty map space
+        /// </summary>
+        public static readonly MapGlyph EMPTY = new MapGlyph(' ', Color.Black, Color.Black);
+        #endregion
+
+        #region GameplayConstants
 
         // Etc.
         /// <summary>
@@ -107,6 +165,8 @@ namespace RogueGame
         public const int COIN_FLIP = 50;
 
         #endregion
+
+        #region Functions
         public static Random rand = new Random();
 
         /// <summary>
@@ -149,6 +209,35 @@ namespace RogueGame
             return movesAllowed;
         }
 
+        /// <summary>
+        /// Centers a text string for display.
+        /// </summary>
+        /// <param name="Text">Text to be centered.</param>
+        /// <param name="Spaces">Total number of spaces in displayed string.</param>
+        /// <returns></returns>
+        public static string CenterString(string Text, int Spaces)
+        {
+            // Center the string provided within the specified
+            // number of spaces.
 
+            string retValue = "";
+
+            // If the string is longer than the number, just pass it back.
+            if (Text.Length >= Spaces)
+                retValue = Text;
+            else
+            // Otherwise, use PadLeft / PadRight
+            {
+                retValue = Text.PadLeft(Spaces / 2 + Text.Length / 2).PadRight(Spaces);
+            }
+
+            // If it's still short, keep adding a space.
+            while (retValue.Length < Spaces)
+                retValue = retValue.PadLeft(1);
+
+            return retValue;
+        }
+
+        #endregion
     }
 }

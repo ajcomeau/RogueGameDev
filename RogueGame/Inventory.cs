@@ -481,7 +481,7 @@ namespace RogueGame
         {
             this.invItems = new List<Inventory>()
             {
-                new Inventory(InvCategory.Amulet, InvTemplateID.TheAmulet, "The Amulet", "The Amulet", "The Amulets", true, false, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, new MapGlyph(MapLevel.AMULET.DisplayChar, Color.Yellow, Color.Black)),
+                new Inventory(InvCategory.Amulet, InvTemplateID.TheAmulet, "The Amulet", "The Amulet", "The Amulets", true, false, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, new MapGlyph(AMULET.DisplayChar, Color.Yellow, Color.Black)),
                 new Inventory(InvCategory.Food, InvTemplateID.SomeFood, "some food", "some food", "rations of food", new MapGlyph('♣', Color.Red, Color.Black), 50, true),
                 new Inventory(InvCategory.Food, InvTemplateID.Mango, "a mango", "a mango", "mangoes", new MapGlyph('♣', Color.Red, Color.Black), 50, false),
                 new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfIdentify, "", "Identify", "Identify", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black)),

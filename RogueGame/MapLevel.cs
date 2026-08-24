@@ -11,62 +11,6 @@ namespace RogueGame{
 
         #region Supporting Lists
         /// <summary>
-        /// Horizontal wall piece
-        /// </summary>
-        public static readonly MapGlyph HORIZONTAL = new MapGlyph('═', Color.SaddleBrown, Color.Black);      // Unicode symbols can be copy-pasted from https://www.w3.org/TR/xml-entity-names/025.html.
-        /// <summary>
-        /// Vertical wall piece.
-        /// </summary>
-        public static readonly MapGlyph VERTICAL = new MapGlyph('║', Color.SaddleBrown, Color.Black);
-        /// <summary>
-        /// Northwest room corner
-        /// </summary>
-        public static readonly MapGlyph CORNER_NW = new MapGlyph('╔', Color.SaddleBrown, Color.Black);
-        /// <summary>
-        /// Southeast room corner
-        /// </summary>
-        public static readonly MapGlyph CORNER_SE = new MapGlyph('╝', Color.SaddleBrown, Color.Black);
-        /// <summary>
-        /// Northeast room corner
-        /// </summary>
-        public static readonly MapGlyph CORNER_NE = new MapGlyph('╗', Color.SaddleBrown, Color.Black);
-        /// <summary>
-        /// Southwest room corner
-        /// </summary>
-        public static readonly MapGlyph CORNER_SW = new MapGlyph('╚', Color.SaddleBrown, Color.Black);
-        /// <summary>
-        /// Room interior space
-        /// </summary>
-        public static readonly MapGlyph ROOM_INT = new MapGlyph('·', Color.Gray, Color.Black);
-        /// <summary>
-        /// Room door piece
-        /// </summary>
-        public static readonly MapGlyph ROOM_DOOR = new MapGlyph('╬', Color.SaddleBrown, Color.Black);
-        /// <summary>
-        /// Hallway space
-        /// </summary>
-        public static readonly MapGlyph HALLWAY = new MapGlyph('▒', Color.White, Color.Black);
-        /// <summary>
-        /// Stairway symbol
-        /// </summary>
-        public static readonly MapGlyph STAIRWAY = new MapGlyph('≣', Color.Black, Color.Green);
-        /// <summary>
-        /// Trap symbol
-        /// </summary>
-        public static readonly MapGlyph TRAP = new MapGlyph('⬥', Color.Brown, Color.Black);
-        /// <summary>
-        /// Gold map symbol
-        /// </summary>
-        public static readonly MapGlyph GOLD = new MapGlyph('*', Color.LightYellow, Color.Black);
-        /// <summary>
-        /// Amulet of Yendor symbol
-        /// </summary>
-        public static readonly MapGlyph AMULET = new MapGlyph('♀', Color.Yellow, Color.Black);
-        /// <summary>
-        /// Empty map space
-        /// </summary>
-        public static readonly MapGlyph EMPTY = new MapGlyph(' ', Color.Black, Color.Black);
-        /// <summary>
         /// Private array of MapSpace objects to hold map definitions.
         /// </summary>
         private MapSpace[,] levelMap = new MapSpace[80, 25]; // Internal game map.
@@ -1336,7 +1280,7 @@ namespace RogueGame{
                 for (cx = 0; cx < 80; cx++)
                 {
                     DisplayMap[cx, cy] =
-                        new MapGlyph(MapLevel.EMPTY.DisplayChar, Color.Black, Color.Black);
+                        new MapGlyph(EMPTY.DisplayChar, Color.Black, Color.Black);
                 }
             }
 
