@@ -1,6 +1,7 @@
 ﻿using System.CodeDom;
 using System.Diagnostics;
 using System.Text;
+using static RogueGame.GameTools;
 
 namespace RogueGame{
 
@@ -122,18 +123,6 @@ namespace RogueGame{
             West = -2
         }
         /// <summary>
-        /// Max gold amount per stash.
-        /// </summary>
-        public const int MIN_GOLD_AMT = 10;
-        /// <summary>
-        /// Max gold amount per stash.
-        /// </summary>
-        public const int MAX_GOLD_AMT = 125;
-        /// <summary>
-        /// Probability of a monster appearing at any given point.
-        /// </summary>
-        public const int SPAWN_MONSTER = 90;
-        /// <summary>
         /// Width of region holding single room.
         /// </summary>
         private const int REGION_WD = 26;
@@ -182,26 +171,6 @@ namespace RogueGame{
         /// </summary>
         private const int ROOM_LIGHTED = 75; 
         /// <summary>
-        /// Probability that a room will have gold.
-        /// </summary>
-        private const int ROOM_GOLD_PCT = 51; 
-        /// <summary>
-        /// Maximum inventory on a level.
-        /// </summary>
-        private const int MAX_INVENTORY = 20;
-        /// <summary>
-        /// Minimum number of initial monsters on a level.
-        /// </summary>
-        private const int MIN_INIT_MONSTERS = 5;
-        /// <summary>
-        /// Probability of a trap being placed on the level.
-        /// </summary>
-        private const int TRAP_PCT = 25;
-        /// <summary>
-        /// Maximum number of initial monsters on a level.
-        /// </summary>
-        private const int MAX_INIT_MONSTERS = 15;
-        /// <summary>
         /// Random number generator
         /// </summary>
         private static Random rand = new Random();
@@ -241,7 +210,7 @@ namespace RogueGame{
         /// Get list of spaces currently holding monsters and inventory.
         /// </summary>
         /// <returns></returns>
-        public List<MapSpace> OccupiedSpaces()
+        public List<MapSpace> OccupiedSpaces(bool IncludePlayer)
         {
             List<MapSpace> retList = 
                 (from Inventory inv in MapInventory 
@@ -249,6 +218,11 @@ namespace RogueGame{
             retList.AddRange
                 (from Monster monster in ActiveMonsters 
                  select monster.Location);
+
+            // Add the current player's location, if requested.
+            if (IncludePlayer)                
+                if (CurrentPlayer.Location != null)
+                    retList.Add(CurrentPlayer.Location);
 
             return retList;
         }
@@ -319,7 +293,7 @@ namespace RogueGame{
 
             // On the game's final level, verify the amulet is there.
 
-            if (retValue && CurrentLevel == Game.MAX_LEVEL)
+            if (retValue && CurrentLevel == MAX_LEVEL)
                 retValue = (from Inventory item in MapInventory
                             where item.DisplayCharacter.DisplayChar == AMULET.DisplayChar
                             select item).ToList().Count > 0;
@@ -401,7 +375,7 @@ namespace RogueGame{
             }
 
             // Add Amulet to final level.
-            if (CurrentLevel == Game.MAX_LEVEL)
+            if (CurrentLevel == MAX_LEVEL)
             {
                 amulet = GetOpenSpace(false);
                 if (amulet != null)
@@ -481,7 +455,7 @@ namespace RogueGame{
                     // For ammunition that's groupable, decide how many items are in the batch.
                     if (invItem.ItemCategory == Inventory.InvCategory.Ammunition
                         && invItem.IsGroupable)
-                        invItem.Amount = rand.Next(1, Inventory.MAX_AMMO_BATCH + 1);
+                        invItem.Amount = rand.Next(1, MAX_AMMO_BATCH + 1);
 
                     // Update the space and increment the count.
                     MapInventory.Add(invItem);
@@ -1093,7 +1067,6 @@ namespace RogueGame{
                 }
             }
         }
-
         /// <summary>
         /// Set surrounding spaces to Discovered and Lighted.
         /// </summary>
@@ -1116,7 +1089,6 @@ namespace RogueGame{
                 }
             }
         }
-
         /// <summary>
         /// Return True if there's something in one of the surrounding spaces.
         /// </summary>
@@ -1308,7 +1280,7 @@ namespace RogueGame{
                         // for anything in the AllChars list.                        
                         if (CurrentPlayer.Location != levelMap[x, y]) 
                         { 
-                            if (OccupiedSpaces().Contains(levelMap[x, y]))
+                            if (OccupiedSpaces(false).Contains(levelMap[x, y]))
                                 appendChar = AllChars()[rand.Next(AllChars().Count - 1)];
                         }
                         else
@@ -1348,30 +1320,6 @@ namespace RogueGame{
             // Clear any remote sight spaces to prepare for next map redraw.
             ClearRemoteSpaces();
 
-        }
-
-        /// <summary>
-        /// Reads directly from monster and inventory lists to provide a list
-        /// of the occupied spaces.
-        /// </summary>
-        /// <returns></returns>
-        public List<MapSpace> CurrentMapItems()
-        {
-            List<MapSpace> retList = new List<MapSpace>();
-
-            // Add the current player's location.
-            if (CurrentPlayer.Location != null)
-                retList.Add(CurrentPlayer.Location);
-
-            // Add the monsters.
-            foreach (Monster monster in ActiveMonsters)
-                retList.Add(monster.Location!);
-
-            // Add inventory
-            foreach (Inventory item in MapInventory)
-                retList.Add(item.Location!);
-
-            return retList;
         }
         /// <summary>
         /// Accepts ASCII screen string and converts it to array of MapGlyphs

@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using static RogueGame.GameTools;
 
 namespace RogueGame
 {
@@ -34,18 +35,6 @@ namespace RogueGame
         /// List to contain potential code names for non-identified items.
         /// </summary>
         private List<Tuple<InvCategory, string>> CodeNames;
-        /// <summary>
-        /// Maximum turns gained from food ration.
-        /// </summary>
-        public const int MAX_FOODVALUE = 1700;
-        /// <summary>
-        /// Minimum turns gained from food ration.
-        /// </summary>
-        public const int MIN_FOODVALUE = 900;
-        /// <summary>
-        /// Maximum items in a batch of arrows or bolts
-        /// </summary>
-        public const int MAX_AMMO_BATCH = 15;
         /// <summary>
         /// Item category from enumeration
         /// </summary>
@@ -549,7 +538,6 @@ namespace RogueGame
                 new Inventory(InvCategory.Gold, InvTemplateID.Gold, "gold", "gold", "gold", true, true, false, false, false,  false,0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('*', Color.Gold, Color.Black))
             };
         }
-
         /// <summary>
         /// Generates grouped inventory listing for inventory display screen.
         /// </summary>
@@ -598,7 +586,6 @@ namespace RogueGame
 
             return lines;
         }
-
         /// <summary>
         /// Main function for generating item description for inventory display.
         /// </summary>
@@ -623,10 +610,10 @@ namespace RogueGame
                         retValue = Number.ToString() + " " + Item.PluralName;
                     break;
                 case InvCategory.Ammunition:
-                    retValue = Number == 1 ? Game.AddEnglishArticle(Item.RealName) : Number.ToString() + " " + Item.PluralName;
+                    retValue = Number == 1 ? GameTools.AddEnglishArticle(Item.RealName) : Number.ToString() + " " + Item.PluralName;
                     break;
                 case InvCategory.Weapon:
-                    retValue = Game.AddEnglishArticle(Item.RealName);
+                    retValue = GameTools.AddEnglishArticle(Item.RealName);
                     break;
                 case InvCategory.Ring:
                 case InvCategory.Potion:
@@ -685,7 +672,6 @@ namespace RogueGame
             }
 
             return retValue;
-
         }
 
         /// <summary>
@@ -724,7 +710,6 @@ namespace RogueGame
 
             return returnVal;
         }
-
         /// <summary>
         /// Generates random item from inventory template list.
         /// 8/15/2026 - Changed to accept probability limit and changed probability calculation.
@@ -763,7 +748,6 @@ namespace RogueGame
             
             return returnVal;
         }
-
         /// <summary>
         /// Get the list of inventory assigned at the start of the game.
         /// </summary>

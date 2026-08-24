@@ -1,4 +1,7 @@
-﻿namespace RogueGame
+﻿using System.Runtime.InteropServices.Marshalling;
+using static RogueGame.GameTools;
+
+namespace RogueGame
 {
     /// <summary>
     /// Encapsulates all player properties and functions.
@@ -6,18 +9,6 @@
     internal class Player : Character
     {
         #region Constants
-        /// <summary>
-        /// Starting hit points
-        /// </summary>
-        private const int STARTING_HP = 12;
-        /// <summary>
-        /// Starting strength points
-        /// </summary>
-        private const int STARTING_STRENGTH = 16;
-        /// <summary>
-        /// Turns between hunger states
-        /// </summary>
-        public const int HUNGER_TURNS = 150;
         /// <summary>
         /// Display character
         /// </summary>
@@ -43,7 +34,7 @@
         /// <summary>
         /// Current max strength
         /// </summary>
-        public int MaxStrength { get; set; } = STARTING_STRENGTH;
+        public int MaxStrength { get; set; } = PLAYER_START_STRENGTH;
         /// <summary>
         /// Current strength modifier
         /// </summary>
@@ -123,8 +114,8 @@
             this.CharacterInventory = new List<Inventory>();
             this.Gold = 0;
             this.Experience = 1;
-            this.HungerTurn = rand.Next(Inventory.MIN_FOODVALUE, Inventory.MAX_FOODVALUE + 1);
-            this.MaxHP = STARTING_HP;
+            this.HungerTurn = rand.Next(MIN_FOODVALUE, MAX_FOODVALUE + 1);
+            this.MaxHP = PLAYER_START_HP;
 
             if (assigned != null)
             {
@@ -133,7 +124,7 @@
                     // For ammunition, which is always groupable, add a random number.
                     if (item.ItemCategory == Inventory.InvCategory.Ammunition)
                     {
-                        for (int i = 1; i <= rand.Next(1, Inventory.MAX_AMMO_BATCH + 1); i++)
+                        for (int i = 1; i <= rand.Next(1, MAX_AMMO_BATCH + 1); i++)
                             this.CharacterInventory.Add(item);
                     }
                     else

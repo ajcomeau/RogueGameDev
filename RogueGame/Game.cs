@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
 using static RogueGame.Inventory;
+using static RogueGame.GameTools;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace RogueGame
@@ -32,39 +33,7 @@ namespace RogueGame
         private const int KEY_T = 84;
         private const int KEY_W = 87;
         private const int KEY_ESC = 27;
-        private const int KEY_HELP = 191;
-        // Etc.
-        private const int HEAL_RATE = 12;  // Number of turns between each health regen.
-        private const int HP_LEVEL_INCREASE = 10; // Maximum HP to add with each exp. level.
-        
-        /// <summary>
-        /// Probability of search revealing hidden doors, etc..
-        /// </summary>
-        private const int SEARCH_PCT = 20; 
-        /// <summary>
-        /// Maximum dungeon level
-        /// </summary>
-        public const int MAX_LEVEL = 26;   
-        /// <summary>
-        /// Probability of fainting at any given point when FAIN
-        /// </summary>
-        private const int FAINT_PCT = 33;   
-        /// <summary>
-        /// Maximum turns to lose when fainting, etc..
-        /// </summary>
-        private const int MAX_TURN_LOSS = 5;
-        /// <summary>
-        /// Max number of spaces for monster to detect and pursue player.
-        /// </summary>
-        private const int MAX_PURSUIT = 7;
-        /// <summary>
-        /// Probability that wearables will be cursed.
-        /// </summary>
-        private const int ITEM_CURSE_PROB = 15;
-        /// <summary>
-        /// General coin toss constant to be used when a little chaos is needed.
-        /// </summary>
-        private const int COIN_FLIP = 50;        
+        private const int KEY_HELP = 191;        
         /// <summary>
         /// Lists modes to be used for displaying different screens.
         /// </summary>
@@ -77,7 +46,6 @@ namespace RogueGame
             Victory = 6,
             Scoreboard = 7,        
         }
-
         #endregion
         
         #region Properties
@@ -223,7 +191,6 @@ namespace RogueGame
             return screenText;
 
         }
-
         private string VictoryScreen()
         {
             string screenText;
@@ -461,7 +428,7 @@ namespace RogueGame
         {
             Inventory? arrow = GameInventory.GetInventoryItem("arrow");
             MapSpace? landing;
-            bool arrowHit = rand.Next(100) > COIN_FLIP;
+            bool arrowHit = rand.Next(100) > GameTools.COIN_FLIP;
 
             // If an arrow item was found in inventory and if it hit.
             if (arrow != null && arrowHit)
@@ -620,20 +587,6 @@ namespace RogueGame
             // End turn
             TurnInProgress = false;
         }
-
-        private int MovesAllowed(decimal CharacterSpeed)
-        {
-            int movesAllowed = (int)CharacterSpeed;
-            CharacterSpeed -= movesAllowed;
-
-            // Calculate number of movesCollect based on character speed and probability.
-
-            movesAllowed = (rand.Next(1, 101) <= 100 * (CharacterSpeed)) ? movesAllowed + 1 : movesAllowed;
-
-            return movesAllowed;
-        }
-
-
         /// <summary>
         /// Evaluate and adjust all player stats at end of turn.
         /// </summary>
@@ -714,7 +667,7 @@ namespace RogueGame
                     if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied
                         && CurrentPlayer.HungerState > Player.HungerLevel.Dead)
                     {
-                        CurrentPlayer.HungerTurn += Player.HUNGER_TURNS;
+                        CurrentPlayer.HungerTurn += HUNGER_TURNS;
                         UpdateStatus($"You are starting to feel {CurrentPlayer.HungerState.ToString().ToLower()}", false);
                     }
                 }
@@ -777,35 +730,6 @@ namespace RogueGame
                 UpdateStatus(failMessage, false);
 
         }
-        /// <summary>
-        /// Capitalize first letter of text passed in.
-        /// </summary>
-        /// <param name="Text"></param>
-        /// <returns></returns>
-        public static string CapitalFirstLetter(string Text)
-        {
-            // Capitalize as needed.
-            if (Text.Length == 0)
-                return "";
-            else if (Text.Length == 1)
-                return Text.ToUpper();
-            else
-                return Text[0].ToString().ToUpper() + Text[1..];
-        }
-        /// <summary>
-        /// Add 'a' or 'an' as appropriate
-        /// </summary>
-        /// <param name="Text"></param>
-        /// <returns></returns>
-        public static string AddEnglishArticle(string Text)
-        {
-            // Add appropriate article - "a" or "an".
-            if ("AEIOU".Contains(Text.Substring(0, 1)))
-                return $"an {Text}";
-            else
-                return $"a {Text}";
-        }
-
         /// <summary>
         /// When the player identifies a certain inventory type, mark it
         /// so that future items will be identified.
@@ -1068,7 +992,7 @@ namespace RogueGame
             // If the player has been defeated, end the game.
             if (Defender.CurrentHP < 1)
             {
-                CauseOfDeath = (AddEnglishArticle(Attacker.CharacterName.ToLower()));
+                CauseOfDeath = (GameTools.AddEnglishArticle(Attacker.CharacterName.ToLower()));
                 GameMode = DisplayMode.GameOver;                
             }
         }
@@ -1645,65 +1569,55 @@ namespace RogueGame
             // Wield a weapon
             Wield(null);
         }
-
         private void DropProc()
         {
             // Drop an inventory item
             DropInventory(null);
         }
-
         private void EatProc()
         {
             // Eat something
             TurnInProgress = true;
             Eat(null);
         }
-
         private void InventoryProc()
         {
             //Show the inventory.
             GameMode = DisplayMode.Inventory;
         }
-
         private void SearchProc()
         {
             // Search for hidden items
             TurnInProgress = true;
             SearchForHidden();
         }
-
         private void ReadProc()
         {
             // Read scroll
             TurnInProgress = true;
             ReadScroll(null);
         }
-
         private void QuaffProc()
         {
             // Quaff potion
             TurnInProgress = true;
             QuaffPotion(null);
         }
-
         private void WestProc()
         {
             // Move player west
             MovePlayer(CurrentPlayer, MapLevel.Direction.West);
         }
-
         private void NorthProc()
         {
             // Move player north
             MovePlayer(CurrentPlayer, MapLevel.Direction.North);
         }
-
         private void EastProc()
         {
             // Move player east
             MovePlayer(CurrentPlayer, MapLevel.Direction.East);
         }
-
         private void SouthProc()
         {
             // Move player south
@@ -1738,7 +1652,6 @@ namespace RogueGame
             DevMode = !DevMode;
             UpdateStatus(DevMode ? "Developer Mode ON" : "Developer Mode OFF", false);
         }
-
         private void WearArmorProc()
         {
             // Wear armor
@@ -1791,8 +1704,6 @@ namespace RogueGame
             FastPlay = !FastPlay;
             UpdateStatus(FastPlay ? "Fast Play mode ON." : "Fast Play mode OFF", false);
         }
-        
-
         /// <summary>
         /// Wield a specific weapon.
         /// </summary>
@@ -1868,7 +1779,6 @@ namespace RogueGame
 
             return retValue;
         }
-
         /// <summary>
         /// Remove current armor from player.
         /// </summary>
@@ -1889,7 +1799,6 @@ namespace RogueGame
 
             UpdateStatus(status, false);
         }
-
         /// <summary>
         /// Wear specified armor.
         /// </summary>
@@ -1962,7 +1871,6 @@ namespace RogueGame
 
             return retValue;
         }
-
         /// <summary>
         /// Eat specified food.
         /// </summary>
@@ -2035,8 +1943,6 @@ namespace RogueGame
             if (ReturnFunction == null) GameMode = DisplayMode.Primary;
             return retValue;
         }
-
-
         /// <summary>
         /// Drop specified inventory on map.
         /// </summary>
@@ -2105,7 +2011,6 @@ namespace RogueGame
 
             return retValue;
         }
-
         /// <summary>
         /// Add found items to player's inventory.
         /// </summary>
@@ -2125,7 +2030,7 @@ namespace RogueGame
                 {
                     // Add the gold at the current location to the player's purse and remove
                     // it from the map.
-                    int goldAmt = rand.Next(MapLevel.MIN_GOLD_AMT, MapLevel.MAX_GOLD_AMT + 1);
+                    int goldAmt = rand.Next(MIN_GOLD_AMT, MAX_GOLD_AMT + 1);
                     CurrentPlayer.Gold += goldAmt;
                     CurrentMap.MapInventory.Remove(foundItem);
                     retValue = $"You picked up {goldAmt} pieces of gold.";
@@ -2256,7 +2161,6 @@ namespace RogueGame
 
             if (ReturnFunction == null) GameMode = DisplayMode.Primary;
             return readScroll;
-
         }
         /// <summary>
         /// Quaff the selected potion.
@@ -2526,8 +2430,6 @@ namespace RogueGame
                 UpdateStatus("The entire room is lit with an unearthly glow.", false);
             else
                 UpdateStatus("The monster seems dazzled for a moment.", false);
-
-
         }
         /// <summary>
         /// Activate the player's ability to confuse the next monster hit.
@@ -2548,9 +2450,6 @@ namespace RogueGame
                 target.Confused = CurrentTurn + rand.Next(2, 7);
                 UpdateStatus("Was that the game documentation? The monster seems a little confused.", false);
             }
-
-
-
         }
         /// <summary>
         /// Confuse the next monster the player hits for a random number of turns.
@@ -2628,7 +2527,6 @@ namespace RogueGame
             
             UpdateStatus("The scroll emits a high pitched whistling noise.", false);
             UpdateStatus("From every direction, you hear howls of outrage.", false);
-
         }
         /// <summary>
         /// Create a new monster near the player.
@@ -2667,7 +2565,6 @@ namespace RogueGame
             }
             else
                 UpdateStatus("The air around you suddenly feels very still.", false);
-
         }
         /// <summary>
         /// Set the player's current armor as protected.
@@ -2691,9 +2588,6 @@ namespace RogueGame
             {
                 UpdateStatus("'Was that supposed to do something?'", false);
             }
-
-            
-
         }
         /// <summary>
         /// Transfer monsters gold and inventory back to map.
