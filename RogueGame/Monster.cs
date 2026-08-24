@@ -89,7 +89,7 @@ namespace RogueGame
         /// <summary>
         /// Special attack function
         /// </summary>
-        public Func<Player>? SpecialAttack { get; set; }
+        public Action<Character>? SpecialAttack { get; set; }
         /// <summary>
         /// Does the monster initiate attacks on sight?
         /// </summary>
@@ -131,7 +131,7 @@ namespace RogueGame
         public Monster(string monsterName, int minStartingHP, int maxStartingHP,  
             int armorClass, int expReward, int minLevel, int maxLevel, int appearancePct, 
             int minAttackDmg, int maxAttackDmg, MapGlyph displayCharacter, int specialAttackPct, 
-            Func<Player>? specialAttack, bool aggressive, int inertia, bool canRegenerate)
+            Action<Character>? specialAttack, bool aggressive, int inertia, bool canRegenerate)
         {
             this.CharacterName = monsterName;
             this.MinStartingHP = minStartingHP;

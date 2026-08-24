@@ -416,33 +416,42 @@ namespace RogueGame
             int trapProbabilityTotal = 0;
 
             // If trap is found by player
-
             if (character is Player)
             {
                 trap.SearchRequired = false;
                 trap.AltMapCharacter = null;
             }
 
-            // Randomly search trap delegates
-            List<KeyValuePair<Action<Character>, int>> trapList = 
-                (from KeyValuePair<Action<Character>, int> trapItem in Traps 
-                 select trapItem).OrderBy(x => Random.Shared.Next()).ToList();
-
-            // Get a sum of the probability weights and a random number within that limit.
-            trapProbabilityTotal = rand.Next(trapList.Sum(item => item.Value));
-
-            // Iterate through the list, subtracting weights from
-            // the random number until we get to 0. Return that item.
-            foreach (KeyValuePair<Action<Character>, int> trapItem in trapList)
+            if (trap.LandingAction != null)
             {
-                trapProbabilityTotal -= trapItem.Value;
+                trap.LandingAction.Invoke(character);
+            }
+            else
+            {
+                // Randomly search trap delegates
+                List<KeyValuePair<Action<Character>, int>> trapList =
+                    (from KeyValuePair<Action<Character>, int> trapItem in Traps
+                     select trapItem).OrderBy(x => Random.Shared.Next()).ToList();
 
-                if (trapProbabilityTotal < 0)
+                // Get a sum of the probability weights and a random number within that limit.
+                trapProbabilityTotal = rand.Next(trapList.Sum(item => item.Value));
+
+                // Iterate through the list, subtracting weights from
+                // the random number until we get to 0. Return that item.
+                foreach (KeyValuePair<Action<Character>, int> trapItem in trapList)
                 {
-                    trapItem.Key.Invoke(character);
-                    break;
+                    trapProbabilityTotal -= trapItem.Value;
+
+                    if (trapProbabilityTotal < 0)
+                    {
+                        trap.LandingAction = trapItem.Key;
+                        trapItem.Key.Invoke(character);
+                        break;
+                    }
                 }
             }
+
+            
         }
         /// <summary>
         /// Method for springing arrow trap.

@@ -1437,9 +1437,12 @@ namespace RogueGame{
         /// Is space supposed to be visible.
         /// </summary>
         public bool Lighted { get; set; }
+        /// <summary>
+        /// Action to happen if a character lands on the space
+        /// </summary>
+        public Action<Character> LandingAction { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
-
         /// <summary>
         /// Constructor to create new MapSpace, reusing settings from the previous one.
         /// </summary>
