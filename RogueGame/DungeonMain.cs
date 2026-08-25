@@ -41,8 +41,6 @@ namespace RogueGame
             {
                 if (currentGame.GameMode < DisplayMode.GameOver)
                 {
-                    // Invalidate to redraw map.
-                    this.Invalidate(true);
                     listStatus.Visible = (currentGame.GameMode is DisplayMode.Primary or DisplayMode.Inventory);
 
                     // Don't send keys until the game has been instantiated
@@ -55,6 +53,8 @@ namespace RogueGame
                         listStatus.SelectedIndex = 0;
                         listStatus.SelectedIndex = -1;
                     }
+                    // Invalidate to redraw map.
+                    this.Invalidate(true);
                 }
 
                 // Evaluate GameMode again. If the game has ended, clear and let player start new game.                
@@ -77,7 +77,7 @@ namespace RogueGame
         {
             // Redraw the map from the ScreenDisplay array.
             int cellWidth = 12;
-            int cellHeight = 24;
+            int cellHeight = 22;
             int px, py;
             string[] lines;
 
