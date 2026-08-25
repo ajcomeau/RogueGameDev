@@ -1,16 +1,20 @@
 ﻿using System.Collections.ObjectModel;
+using System.Data;
 
 namespace RogueGame
 {
     internal class Monster : Character
     {
+        private static Random rand = new Random();
+        private const int COIN_TOSS = 50;
+
         #region Constants and Properties            
         /// <summary>
         /// Monster templates - program grabs these at random to spawn new monsters on map.
         /// </summary>
-        private static List<Monster> monsterIncubator = new List<Monster>()
+        private static List<Monster> monsterInc = new List<Monster>()
         {
-            new Monster("Aquator"       , 5, 40, 5, 9, 7, 15, 50, 0, 0, new MapGlyph('A', Color.LightGray, Color.Black), 50, null, true, 35, false),
+            new Monster("Aquator"       , 5, 40, 5, 9, 7, 15, 50, 0, 0, new MapGlyph('A', Color.LightGray, Color.Black), 50, Aquator, true, 35, false),
             new Monster("Bat"           , 1, 8, 4, 1, 1, 5, 50, 1, 2, new MapGlyph('B', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Centaur"       , 4, 32, 5, 15, 8, 17, 50, 3, 12, new MapGlyph('C', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Dragon"        , 10, 80, 10, 6800, 22, 26, 50, 5, 46, new MapGlyph('D', Color.LightGray, Color.Black), 0, null, true,  35, false),
@@ -18,7 +22,7 @@ namespace RogueGame
             new Monster("Flytrap"       , 8, 64, 9, 80, 15, 20, 50, 0, 0, new MapGlyph('F', Color.LightGray, Color.Black), 0, null, true, 35,  false),
             new Monster("Griffin"       , 13, 104, 5, 7, 12, 20, 50, 7, 27, new MapGlyph('G', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Hobgoblin"     , 1, 8, 3, 3, 1, 10, 50, 1, 8, new MapGlyph('H', Color.LightGray, Color.Black), 0, null, true, 35, false),
-            new Monster("Ice Monster"   , 1, 8, 2, 120, 3, 12, 50, 0, 0, new MapGlyph('I', Color.LightGray, Color.Black), 0, null, true, 35, false),
+            new Monster("Ice Monster"   , 1, 8, 2, 120, 3, 12, 50, 0, 0, new MapGlyph('I', Color.LightGray, Color.Black), 0, IceMonster, true, 35, false),
             new Monster("Jabberwock"    , 15, 120, 9, 2, 20, 26, 50, 4, 32, new MapGlyph('J', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Kestral"       , 1, 8, 2, 1, 1, 6, 50, 1, 4, new MapGlyph('K', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Leprechaun"    , 3, 24, 5, 10, 7, 16, 50, 1, 1, new MapGlyph('L', Color.LightGray, Color.Black), 0, null, true, 35, false),
@@ -27,7 +31,7 @@ namespace RogueGame
             new Monster("Orc"           , 1, 8, 3, 5, 4, 13, 50, 1, 8, new MapGlyph('O', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Phantom"       , 8, 64, 9, 4000, 20, 26, 50, 4, 16, new MapGlyph('P', Color.Black, Color.Black), 0, null, true, 35, false),
             new Monster("Quagga"        , 3, 24, 9, 32, 10, 19, 50, 2, 10, new MapGlyph('Q', Color.LightGray, Color.Black), 0, null, true, 35, false),
-            new Monster("Rattlesnake"   , 2, 16, 5, 20, 9, 18, 50, 1, 6, new MapGlyph('R', Color.LightGray, Color.Black), 0, null, true, 35, false),
+            new Monster("Rattlesnake"   , 2, 16, 5, 20, 9, 18, 50, 1, 6, new MapGlyph('R', Color.LightGray, Color.Black), 0, Rattlesnake, true, 35, false),
             new Monster("Snake"         , 1, 8, 2, 2, 1, 9, 50, 1, 3, new MapGlyph('S', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Troll"         , 6, 48, 9, 120, 13, 22, 50, 4, 28, new MapGlyph('T', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Ur-vile"       , 7, 56, 9, 200, 18, 26, 50, 4, 36, new MapGlyph('U', Color.LightGray, Color.Black), 0, null, true, 35, false),
@@ -41,7 +45,7 @@ namespace RogueGame
         /// <summary>
         /// Read-only collection of monster templates.
         /// </summary>
-        public static ReadOnlyCollection<Monster> Monsters => monsterIncubator.AsReadOnly();
+        public static ReadOnlyCollection<Monster> Monsters => monsterInc.AsReadOnly();
         /// <summary>
         /// Min limit for starting HP to be determined randomly.
         /// </summary>
@@ -87,9 +91,9 @@ namespace RogueGame
         /// </summary>
         public int SpecialAttackPct { get; set; }
         /// <summary>
-        /// Special attack function
+        /// Special attack function - requires Character object and current turn number.
         /// </summary>
-        public Action<Character>? SpecialAttack { get; set; }
+        public Func<Character, int, string>? SpecialAttack { get; set; }
         /// <summary>
         /// Does the monster initiate attacks on sight?
         /// </summary>
@@ -131,7 +135,7 @@ namespace RogueGame
         public Monster(string monsterName, int minStartingHP, int maxStartingHP,  
             int armorClass, int expReward, int minLevel, int maxLevel, int appearancePct, 
             int minAttackDmg, int maxAttackDmg, MapGlyph displayCharacter, int specialAttackPct, 
-            Action<Character>? specialAttack, bool aggressive, int inertia, bool canRegenerate)
+            Func<Character, int, string>? specialAttack, bool aggressive, int inertia, bool canRegenerate)
         {
             this.CharacterName = monsterName;
             this.MinStartingHP = minStartingHP;
@@ -201,8 +205,81 @@ namespace RogueGame
             else return null;
                 
         }
+        #region MonsterPowers
+        /// <summary>
+        /// Ice monster has a 50% chance of freezing the opponent for a few turns.
+        /// </summary>
+        /// <param name="character">Current player or monster</param>
+        /// <param name="currentTurn">Current turn number for lingering effects</param>
+        /// <returns></returns>
+        public static string IceMonster(Character character, int currentTurn) 
+        {
+            bool strike = rand.Next(1, 101) > COIN_TOSS;
+            string returnMsg = "";
 
+            if (strike && character is Player)
+            {
+                character.Immobile = currentTurn + rand.Next(1, 4);
+                returnMsg = "A touch from the Ice Monster freezes your limbs. You can't move ... so cold ...";
+            }
+
+            return returnMsg;
         
+        }
+
+        /// <summary>
+        /// Rattlesnake bites drain strength. 
+        /// </summary>
+        /// <param name="character">Current player or monster</param>
+        /// <param name="currentTurn">Current turn number for lingering effects</param>
+        /// <returns></returns>
+        public static string Rattlesnake(Character character, int currentTurn)
+        {
+            bool strike = rand.Next(1, 101) > COIN_TOSS;
+            string returnMsg = "";
+
+            if (strike && character is Player)
+            {
+                ((Player)character).StrengthMod -= 1;
+                returnMsg = "The rattlesnake bites you and you feel a little weaker.";
+            }
+
+            return returnMsg;
+
+        }
+
+        /// <summary>
+        /// Aquator rusts armor. 
+        /// </summary>
+        /// <param name="character">Current player or monster</param>
+        /// <param name="currentTurn">Current turn number for lingering effects</param>
+        /// <returns></returns>
+        public static string Aquator(Character character, int currentTurn)
+        {
+            bool strike = rand.Next(1, 101) > COIN_TOSS;
+            string returnMsg = "";
+            Player player;
+
+            if (strike && character is Player)
+            {
+                player = (Player)character;
+
+                if(player.Armor != null && !player.Armor.IsProtected)
+                {
+                    if(player.Armor!.Increment > 0)
+                        player.Armor!.Increment -= 1;
+                    else if (player.Armor!.ArmorClass > 0)
+                        player.Armor!.ArmorClass -= 1;
+                }
+
+                returnMsg = "Oh no ... your armor is rusting away!";
+            }
+
+            return returnMsg;
+
+        }
+
+        #endregion
 
     }
 }

@@ -654,7 +654,9 @@ namespace RogueGame
                     }
                 }
                 // If the player is now dead, signal the game over.
-                else if (CurrentPlayer.HungerState == Player.HungerLevel.Dead)
+                // 8/24/2026 - Added test for current strength.
+                else if (CurrentPlayer.HungerState == Player.HungerLevel.Dead 
+                    || CurrentPlayer.CurrentStrength <= 0)
                 {
                     CauseOfDeath = "starvation";
                     GameMode = DisplayMode.GameOver;
@@ -932,6 +934,7 @@ namespace RogueGame
         private void Attack(Monster Attacker, Player Defender)
         {
             int hitChance, armorRating, damage = 0;
+            string statusUpdate;
             bool hitSuccess;
             Inventory? armor = CurrentPlayer.Armor;
 
@@ -952,9 +955,18 @@ namespace RogueGame
             hitSuccess = rand.Next(1, 101) <= hitChance;
 
             // Random HP between monster's min and max attack damage.
+            // Invoke special attack if there is one.
             if (hitSuccess)
             {
                 UpdateStatus($"The {Attacker.CharacterName.ToLower()} hit you.", false);
+
+                if (Attacker.SpecialAttack != null)
+                {
+                    statusUpdate = Attacker.SpecialAttack.Invoke(Defender, CurrentTurn);
+                    if(statusUpdate.Length > 0)
+                        UpdateStatus(statusUpdate, false);
+                }
+
                 damage = rand.Next(Attacker.MinAttackDmg, Attacker.MaxAttackDmg + 1);
             }
             else UpdateStatus($"The {Attacker.CharacterName.ToLower()} missed you.", false);
