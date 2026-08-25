@@ -1,5 +1,9 @@
 # Rogue C#
 
+### 8/24/2026
+Monster special attacks have been implemented in the game.  Aquators, Ice Monsters and Rattlesnakes have extra abilities.
+More to come.  Writeup in progress.
+
 ### 8/18/2026
 All potions have now been tested and should generally be working.
 Potions and scrolls can be wielded during combat. Some of them will have interesting effects when used against monsters.
