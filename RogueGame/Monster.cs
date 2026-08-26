@@ -22,16 +22,16 @@ namespace RogueGame
             new Monster("Flytrap"       , 8, 64, 9, 80, 15, 20, 50, 0, 0, new MapGlyph('F', Color.LightGray, Color.Black), 0, null, true, 35,  false),
             new Monster("Griffin"       , 13, 104, 5, 7, 12, 20, 50, 7, 27, new MapGlyph('G', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Hobgoblin"     , 1, 8, 3, 3, 1, 10, 50, 1, 8, new MapGlyph('H', Color.LightGray, Color.Black), 0, null, true, 35, false),
-            new Monster("Ice Monster"   , 1, 8, 2, 120, 3, 12, 50, 0, 0, new MapGlyph('I', Color.LightGray, Color.Black), 0, IceMonster, true, 35, false),
+            new Monster("Ice Monster"   , 1, 8, 2, 120, 3, 12, 50, 0, 0, new MapGlyph('I', Color.LightGray, Color.Black), 50, IceMonster, true, 35, false),
             new Monster("Jabberwock"    , 15, 120, 9, 2, 20, 26, 50, 4, 32, new MapGlyph('J', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Kestral"       , 1, 8, 2, 1, 1, 6, 50, 1, 4, new MapGlyph('K', Color.LightGray, Color.Black), 0, null, true, 35, false),
-            new Monster("Leprechaun"    , 3, 24, 5, 10, 7, 16, 50, 1, 1, new MapGlyph('L', Color.LightGray, Color.Black), 0, Leprechaun, false, 95, false),
+            new Monster("Leprechaun"    , 3, 24, 5, 10, 7, 16, 50, 1, 1, new MapGlyph('L', Color.LightGray, Color.Black), 95, Leprechaun, false, 95, false),
             new Monster("Medusa"        , 8, 64, 5, 100, 19, 26, 50, 8, 34, new MapGlyph('M', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Nymph"         , 3, 24, 5, 37, 11, 20, 50, 0, 0, new MapGlyph('N', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Orc"           , 1, 8, 3, 5, 4, 13, 50, 1, 8, new MapGlyph('O', Color.LightGray, Color.Black), 0, null, true, 85, false),
             new Monster("Phantom"       , 8, 64, 9, 4000, 20, 26, 50, 4, 16, new MapGlyph('P', Color.Black, Color.Black), 0, null, true, 35, false),
             new Monster("Quagga"        , 3, 24, 9, 32, 10, 19, 50, 2, 10, new MapGlyph('Q', Color.LightGray, Color.Black), 0, null, true, 35, false),
-            new Monster("Rattlesnake"   , 2, 16, 5, 20, 9, 18, 50, 1, 6, new MapGlyph('R', Color.LightGray, Color.Black), 0, Rattlesnake, true, 35, false),
+            new Monster("Rattlesnake"   , 2, 16, 5, 20, 9, 18, 50, 1, 6, new MapGlyph('R', Color.LightGray, Color.Black), 50, Rattlesnake, true, 35, false),
             new Monster("Snake"         , 1, 8, 2, 2, 1, 9, 50, 1, 3, new MapGlyph('S', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Troll"         , 6, 48, 9, 120, 13, 22, 50, 4, 28, new MapGlyph('T', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Ur-vile"       , 7, 56, 9, 200, 18, 26, 50, 4, 36, new MapGlyph('U', Color.LightGray, Color.Black), 0, null, true, 35, false),
@@ -188,6 +188,38 @@ namespace RogueGame
             this.CharacterInventory = new List<Inventory>();            
         }
         /// <summary>
+        /// Returns the special attack probability for the 
+        /// specified monster.
+        /// </summary>
+        /// <param name="original"></param>
+        /// <returns></returns>
+        public static int AttackProb(Character original)
+        {
+            int returnVal = 0;
+            List<Monster> monsterList = Monsters.ToList();
+            Monster? monster = null;
+
+            // Get the monster depending on what was passed.
+            if (original is Monster)
+                monster = (Monster)original;
+            else if (original is Player)
+            {
+                if (((Player)original).Opponent != null)
+                    monster = ((Player)original).Opponent!;
+            }
+
+            // If there's a monster, get the probability
+            // of special attack.
+            if (monster != null)
+            {
+                returnVal = monsterList.Find(m => 
+                    m.CharacterName == monster.CharacterName)!.SpecialAttackPct;
+            }
+
+            return returnVal;
+        }
+
+        /// <summary>
         /// Get a Monster object appropriate to a specific map level.
         /// </summary>
         /// <param name="LevelNumber">Number of current map level</param>
@@ -219,7 +251,7 @@ namespace RogueGame
         /// <returns></returns>
         private static string IceMonster(Character character, int currentTurn) 
         {
-            bool strike = rand.Next(1, 101) > COIN_TOSS;
+            bool strike = rand.Next(1, 101) < AttackProb(character);
             string returnMsg = "";
 
             if (strike && character is Player)
@@ -229,7 +261,6 @@ namespace RogueGame
             }
 
             return returnMsg;
-        
         }
 
         /// <summary>
@@ -240,7 +271,7 @@ namespace RogueGame
         /// <returns></returns>
         private static string Rattlesnake(Character character, int currentTurn)
         {
-            bool strike = rand.Next(1, 101) > COIN_TOSS;
+            bool strike = rand.Next(1, 101) < AttackProb(character);
             string returnMsg = "";
 
             if (strike && character is Player)
@@ -261,7 +292,7 @@ namespace RogueGame
         /// <returns></returns>
         private static string Aquator(Character character, int currentTurn)
         {
-            bool strike = rand.Next(1, 101) > COIN_TOSS;
+            bool strike = rand.Next(1, 101) < AttackProb(character);
             string returnMsg = "";
             Player player;
 
@@ -292,7 +323,7 @@ namespace RogueGame
         /// <returns></returns>
         private static string Leprechaun(Character character, int currentTurn)
         {
-            bool strike = rand.Next(1, 101) > 25;
+            bool strike = rand.Next(1, 101) < AttackProb(character);
             string returnMsg = "";
             int tax = 0;
             Player player;
