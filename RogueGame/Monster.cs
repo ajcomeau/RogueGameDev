@@ -16,8 +16,8 @@ namespace RogueGame
         {
             new Monster("Aquator"       , 5, 40, 5, 9, 7, 15, 50, 0, 0, new MapGlyph('A', Color.LightGray, Color.Black), 50, Aquator, true, 35, false),
             new Monster("Bat"           , 1, 8, 4, 1, 1, 5, 50, 1, 2, new MapGlyph('B', Color.LightGray, Color.Black), 0, null, true, 35, false),
-            new Monster("Centaur"       , 4, 32, 5, 15, 8, 17, 50, 3, 12, new MapGlyph('C', Color.LightGray, Color.Black), 0, null, true, 35, false),
-            new Monster("Dragon"        , 10, 80, 10, 6800, 22, 26, 50, 5, 46, new MapGlyph('D', Color.LightGray, Color.Black), 0, null, true,  35, false),
+            new Monster("Centaur"       , 4, 32, 5, 15, 8, 17, 50, 3, 12, new MapGlyph('C', Color.LightGray, Color.Black), 0, null, true, 95, false),
+            new Monster("Dragon"        , 10, 80, 10, 6800, 22, 26, 50, 5, 46, new MapGlyph('D', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Emu"           , 1, 8, 2, 5, 2, 11, 50, 1, 2, new MapGlyph('E', Color.LightGray, Color.Black), 0, null, true,  35, false),
             new Monster("Flytrap"       , 8, 64, 9, 80, 15, 20, 50, 0, 0, new MapGlyph('F', Color.LightGray, Color.Black), 0, null, true, 35,  false),
             new Monster("Griffin"       , 13, 104, 5, 7, 12, 20, 50, 7, 27, new MapGlyph('G', Color.LightGray, Color.Black), 0, null, true, 35, false),
@@ -25,10 +25,10 @@ namespace RogueGame
             new Monster("Ice Monster"   , 1, 8, 2, 120, 3, 12, 50, 0, 0, new MapGlyph('I', Color.LightGray, Color.Black), 0, IceMonster, true, 35, false),
             new Monster("Jabberwock"    , 15, 120, 9, 2, 20, 26, 50, 4, 32, new MapGlyph('J', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Kestral"       , 1, 8, 2, 1, 1, 6, 50, 1, 4, new MapGlyph('K', Color.LightGray, Color.Black), 0, null, true, 35, false),
-            new Monster("Leprechaun"    , 3, 24, 5, 10, 7, 16, 50, 1, 1, new MapGlyph('L', Color.LightGray, Color.Black), 0, null, true, 35, false),
+            new Monster("Leprechaun"    , 3, 24, 5, 10, 7, 16, 50, 1, 1, new MapGlyph('L', Color.LightGray, Color.Black), 0, Leprechaun, false, 95, false),
             new Monster("Medusa"        , 8, 64, 5, 100, 19, 26, 50, 8, 34, new MapGlyph('M', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Nymph"         , 3, 24, 5, 37, 11, 20, 50, 0, 0, new MapGlyph('N', Color.LightGray, Color.Black), 0, null, true, 35, false),
-            new Monster("Orc"           , 1, 8, 3, 5, 4, 13, 50, 1, 8, new MapGlyph('O', Color.LightGray, Color.Black), 0, null, true, 35, false),
+            new Monster("Orc"           , 1, 8, 3, 5, 4, 13, 50, 1, 8, new MapGlyph('O', Color.LightGray, Color.Black), 0, null, true, 85, false),
             new Monster("Phantom"       , 8, 64, 9, 4000, 20, 26, 50, 4, 16, new MapGlyph('P', Color.Black, Color.Black), 0, null, true, 35, false),
             new Monster("Quagga"        , 3, 24, 9, 32, 10, 19, 50, 2, 10, new MapGlyph('Q', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Rattlesnake"   , 2, 16, 5, 20, 9, 18, 50, 1, 6, new MapGlyph('R', Color.LightGray, Color.Black), 0, Rattlesnake, true, 35, false),
@@ -39,7 +39,7 @@ namespace RogueGame
             new Monster("Wraith"        , 5, 40, 9, 55, 14, 23, 50, 1, 6, new MapGlyph('W', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Xeroc"         , 7, 56, 9, 190, 17, 26, 50, 4, 16, new MapGlyph('X', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Yeti"          , 4, 32, 5, 50, 12, 21, 50, 2, 12, new MapGlyph('Y', Color.LightGray, Color.Black), 0, null, true, 35, false),
-            new Monster("Zombie"        , 2, 16, 5, 6, 7, 14, 50, 1, 8, new MapGlyph('Z', Color.LightGray, Color.Black), 0, null, true, 35, false),
+            new Monster("Zombie"        , 2, 16, 5, 6, 7, 14, 50, 1, 8, new MapGlyph('Z', Color.LightGray, Color.Black), 0, null, true, 50, false),
         };
 
         /// <summary>
@@ -110,6 +110,11 @@ namespace RogueGame
         /// A persistent direction of movement for the monster. Maintained between turns.
         /// </summary>
         public MapLevel.Direction? Direction { get; set; }
+        /// <summary>
+        /// Monster should teleport to another part at the end of move.
+        /// Often used after special attacks
+        /// </summary>
+        public bool Teleport { get; set; } = false;
 
         #endregion
 
@@ -212,7 +217,7 @@ namespace RogueGame
         /// <param name="character">Current player or monster</param>
         /// <param name="currentTurn">Current turn number for lingering effects</param>
         /// <returns></returns>
-        public static string IceMonster(Character character, int currentTurn) 
+        private static string IceMonster(Character character, int currentTurn) 
         {
             bool strike = rand.Next(1, 101) > COIN_TOSS;
             string returnMsg = "";
@@ -233,7 +238,7 @@ namespace RogueGame
         /// <param name="character">Current player or monster</param>
         /// <param name="currentTurn">Current turn number for lingering effects</param>
         /// <returns></returns>
-        public static string Rattlesnake(Character character, int currentTurn)
+        private static string Rattlesnake(Character character, int currentTurn)
         {
             bool strike = rand.Next(1, 101) > COIN_TOSS;
             string returnMsg = "";
@@ -254,7 +259,7 @@ namespace RogueGame
         /// <param name="character">Current player or monster</param>
         /// <param name="currentTurn">Current turn number for lingering effects</param>
         /// <returns></returns>
-        public static string Aquator(Character character, int currentTurn)
+        private static string Aquator(Character character, int currentTurn)
         {
             bool strike = rand.Next(1, 101) > COIN_TOSS;
             string returnMsg = "";
@@ -279,6 +284,39 @@ namespace RogueGame
 
         }
 
+        /// <summary>
+        /// Leprechaun steals gold and disappears. 
+        /// </summary>
+        /// <param name="character">Current player or monster</param>
+        /// <param name="currentTurn">Current turn number for lingering effects</param>
+        /// <returns></returns>
+        private static string Leprechaun(Character character, int currentTurn)
+        {
+            bool strike = rand.Next(1, 101) > 25;
+            string returnMsg = "";
+            int tax = 0;
+            Player player;
+
+            if (strike && character is Player)
+            {
+                player = (Player)character;
+
+                // Take up to 25% of the player's gold and transfer it
+                // to the Leprechaun.
+
+                if(player.Opponent != null && player.Opponent.CharacterName == "Leprechaun")
+                {
+                    tax = rand.Next(1, (int)(player.Gold * .25) + 1);
+                    player.Gold -= tax;
+                    player.Opponent.Gold += tax;
+                    player.Opponent.Teleport = true;
+                    returnMsg = "Your purse feels lighter.";
+                }                
+            }
+
+            return returnMsg;
+
+        }
         #endregion
 
     }

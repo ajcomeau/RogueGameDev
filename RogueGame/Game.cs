@@ -938,6 +938,9 @@ namespace RogueGame
             bool hitSuccess;
             Inventory? armor = CurrentPlayer.Armor;
 
+            // Set the attacker as the player's current opponent.
+            Defender.Opponent = Attacker;
+
             // Chance of landing a punch - 30% + (5% * monster min hit points)  - (5% * player armor class)
             // (protection rings will be factored in later)
 
@@ -968,6 +971,13 @@ namespace RogueGame
                 }
 
                 damage = rand.Next(Attacker.MinAttackDmg, Attacker.MaxAttackDmg + 1);
+
+                // If the monster needs relocation, do that now.
+                if (Attacker.Teleport)
+                {
+                    Attacker.Location = CurrentMap.GetOpenSpace(true);
+                    Attacker.Teleport = false;
+                }
             }
             else UpdateStatus($"The {Attacker.CharacterName.ToLower()} missed you.", false);
 
