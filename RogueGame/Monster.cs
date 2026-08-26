@@ -304,14 +304,15 @@ namespace RogueGame
                 // Take up to 25% of the player's gold and transfer it
                 // to the Leprechaun.
 
-                if(player.Opponent != null && player.Opponent.CharacterName == "Leprechaun")
+                if(player.Opponent != null && player.Gold > 4 && 
+                    player.Opponent.DisplayCharacter.DisplayChar == 'L')
                 {
                     tax = rand.Next(1, (int)(player.Gold * .25) + 1);
                     player.Gold -= tax;
                     player.Opponent.Gold += tax;
                     player.Opponent.Teleport = true;
-                    returnMsg = "Your purse feels lighter.";
-                }                
+                    returnMsg = "Your purse feels lighter.";                    
+                }
             }
 
             return returnMsg;
