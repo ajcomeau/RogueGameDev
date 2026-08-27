@@ -965,7 +965,7 @@ namespace RogueGame
 
                 if (Attacker.SpecialAttack != null)
                 {
-                    statusUpdate = Attacker.SpecialAttack.Invoke(Defender, CurrentTurn);
+                    statusUpdate = Attacker.SpecialAttack.Invoke(Attacker, Defender, CurrentTurn);
                     if(statusUpdate.Length > 0)
                         UpdateStatus(statusUpdate, false);
                 }

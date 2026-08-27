@@ -14,7 +14,7 @@ namespace RogueGame
         /// </summary>
         private static List<Monster> monsterInc = new List<Monster>()
         {
-            new Monster("Aquator"       , 5, 40, 5, 9, 7, 15, 50, 0, 0, new MapGlyph('A', Color.LightGray, Color.Black), 50, Aquator, true, 35, false),
+            new Monster("Aquator"       , 5, 40, 5, 9, 7, 15, 50, 0, 0, new MapGlyph('A', Color.LightGray, Color.Black), 85, Aquator, true, 35, false),
             new Monster("Bat"           , 1, 8, 4, 1, 1, 5, 50, 1, 2, new MapGlyph('B', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Centaur"       , 4, 32, 5, 15, 8, 17, 50, 3, 12, new MapGlyph('C', Color.LightGray, Color.Black), 0, null, true, 95, false),
             new Monster("Dragon"        , 10, 80, 10, 6800, 22, 26, 50, 5, 46, new MapGlyph('D', Color.LightGray, Color.Black), 0, null, true, 35, false),
@@ -25,7 +25,7 @@ namespace RogueGame
             new Monster("Ice Monster"   , 1, 8, 2, 120, 3, 12, 50, 0, 0, new MapGlyph('I', Color.LightGray, Color.Black), 50, IceMonster, true, 35, false),
             new Monster("Jabberwock"    , 15, 120, 9, 2, 20, 26, 50, 4, 32, new MapGlyph('J', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Kestral"       , 1, 8, 2, 1, 1, 6, 50, 1, 4, new MapGlyph('K', Color.LightGray, Color.Black), 0, null, true, 35, false),
-            new Monster("Leprechaun"    , 3, 24, 5, 10, 7, 16, 50, 1, 1, new MapGlyph('L', Color.LightGray, Color.Black), 85, Leprechaun, false, 95, false),
+            new Monster("Leprechaun"    , 3, 24, 5, 10, 7, 16, 50, 1, 1, new MapGlyph('L', Color.LightGray, Color.Black), 95, Leprechaun, false, 95, false),
             new Monster("Medusa"        , 8, 64, 5, 100, 19, 26, 50, 8, 34, new MapGlyph('M', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Nymph"         , 3, 24, 5, 37, 11, 20, 50, 0, 0, new MapGlyph('N', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Orc"           , 1, 8, 3, 5, 4, 13, 50, 1, 8, new MapGlyph('O', Color.LightGray, Color.Black), 0, null, true, 85, false),
@@ -93,7 +93,7 @@ namespace RogueGame
         /// <summary>
         /// Special attack function - requires Character object and current turn number.
         /// </summary>
-        public Func<Character, int, string>? SpecialAttack { get; set; }
+        public Func<Monster, Character, int, string>? SpecialAttack { get; set; }
         /// <summary>
         /// Does the monster initiate attacks on sight?
         /// </summary>
@@ -140,7 +140,7 @@ namespace RogueGame
         public Monster(string monsterName, int minStartingHP, int maxStartingHP,  
             int armorClass, int expReward, int minLevel, int maxLevel, int appearancePct, 
             int minAttackDmg, int maxAttackDmg, MapGlyph displayCharacter, int specialAttackPct, 
-            Func<Character, int, string>? specialAttack, bool aggressive, int inertia, bool canRegenerate)
+            Func<Monster, Character, int, string>? specialAttack, bool aggressive, int inertia, bool canRegenerate)
         {
             this.CharacterName = monsterName;
             this.MinStartingHP = minStartingHP;
@@ -211,10 +211,7 @@ namespace RogueGame
             // If there's a monster, get the probability
             // of special attack.
             if (monster != null)
-            {
-                returnVal = monsterList.Find(m => 
-                    m.CharacterName == monster.CharacterName)!.SpecialAttackPct;
-            }
+                returnVal = monster.SpecialAttackPct;
 
             return returnVal;
         }
@@ -240,7 +237,6 @@ namespace RogueGame
                 return new Monster(retList[itemSelect]);
             }
             else return null;
-                
         }
         #region MonsterPowers
         /// <summary>
@@ -249,14 +245,14 @@ namespace RogueGame
         /// <param name="character">Current player or monster</param>
         /// <param name="currentTurn">Current turn number for lingering effects</param>
         /// <returns></returns>
-        private static string IceMonster(Character character, int currentTurn) 
+        private static string IceMonster(Monster attacker, Character defender, int currentTurn) 
         {
-            bool strike = rand.Next(1, 101) > COIN_TOSS;
+            bool strike = rand.Next(1, 101) < attacker.SpecialAttackPct;
             string returnMsg = "";
 
-            if (strike && character is Player)
+            if (strike && defender is Player)
             {
-                character.Immobile = currentTurn + rand.Next(1, 4);
+                defender.Immobile = currentTurn + rand.Next(1, 4);
                 returnMsg = "A touch from the Ice Monster freezes your limbs. You can't move ... so cold ...";
             }
 
@@ -269,14 +265,14 @@ namespace RogueGame
         /// <param name="character">Current player or monster</param>
         /// <param name="currentTurn">Current turn number for lingering effects</param>
         /// <returns></returns>
-        private static string Rattlesnake(Character character, int currentTurn)
+        private static string Rattlesnake(Monster attacker, Character defender, int currentTurn)
         {
-            bool strike = rand.Next(1, 101) > COIN_TOSS;
+            bool strike = rand.Next(1, 101) < attacker.SpecialAttackPct;
             string returnMsg = "";
 
-            if (strike && character is Player)
+            if (strike && defender is Player)
             {
-                ((Player)character).StrengthMod -= 1;
+                ((Player)defender).StrengthMod -= 1;
                 returnMsg = "The rattlesnake bites you and you feel a little weaker.";
             }
 
@@ -290,15 +286,15 @@ namespace RogueGame
         /// <param name="character">Current player or monster</param>
         /// <param name="currentTurn">Current turn number for lingering effects</param>
         /// <returns></returns>
-        private static string Aquator(Character character, int currentTurn)
+        private static string Aquator(Monster attacker, Character defender, int currentTurn)
         {
-            bool strike = rand.Next(1, 101) > COIN_TOSS;
+            bool strike = rand.Next(1, 101) < attacker.SpecialAttackPct;
             string returnMsg = "";
             Player player;
 
-            if (strike && character is Player)
+            if (strike && defender is Player)
             {
-                player = (Player)character;
+                player = (Player)defender;
 
                 if(player.Armor != null && !player.Armor.IsProtected)
                 {
@@ -321,16 +317,16 @@ namespace RogueGame
         /// <param name="character">Current player or monster</param>
         /// <param name="currentTurn">Current turn number for lingering effects</param>
         /// <returns></returns>
-        private static string Leprechaun(Character character, int currentTurn)
+        private static string Leprechaun(Monster attacker, Character defender, int currentTurn)
         {
-            bool strike = rand.Next(1, 101) > 25;
+            bool strike = rand.Next(1, 101) < attacker.SpecialAttackPct;
             string returnMsg = "";
             int tax = 0;
             Player player;
 
-            if (strike && character is Player)
+            if (strike && defender is Player)
             {
-                player = (Player)character;
+                player = (Player)defender;
 
                 // Take up to 25% of the player's gold and transfer it
                 // to the Leprechaun.
