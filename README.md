@@ -1,5 +1,10 @@
 # Rogue C#
 
+### 8/27/2026
+Newest writeup online! 
+The Monsters Evolve
+https://www.andrewcomeau.com/programming/roguelike-monster-abilities/
+
 ### 8/24/2026
 Monster special attacks have been implemented in the game.  Aquators, Ice Monsters and Rattlesnakes have extra abilities.
 More to come.  Writeup in progress.
