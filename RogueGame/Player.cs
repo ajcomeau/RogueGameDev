@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices.Marshalling;
 using static RogueGame.GameTools;
+using static RogueGame.Inventory.InvTemplateID;
 
 namespace RogueGame
 {
@@ -165,6 +166,24 @@ namespace RogueGame
 
             if (this.Hallucinating > 0)
                 this.Hallucinating = expTurn;
+        }
+        /// <summary>
+        /// Get the player's actual strength with any rings and other bonuses.
+        /// </summary>
+        /// <returns></returns>
+        public int TotalStrength()
+        {
+            int retValue = 0;
+
+            retValue = this.CurrentStrength;
+
+            if (this.LeftHand != null && this.LeftHand.PriorityId == RingOfAddStrength)
+                retValue += this.LeftHand.Increment;
+
+            if (this.RightHand != null && this.RightHand.PriorityId == RingOfAddStrength)
+                retValue += this.RightHand.Increment;
+
+            return retValue;
         }
 
         #endregion

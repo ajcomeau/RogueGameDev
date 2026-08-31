@@ -77,7 +77,7 @@ namespace RogueGame
         {
             // Redraw the map from the ScreenDisplay array.
             int cellWidth = 12;
-            int cellHeight = 22;
+            int cellHeight = 24;
             int px, py;
             string[] lines;
 

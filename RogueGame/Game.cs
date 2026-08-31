@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel;
+using System.Net.NetworkInformation;
 using System.Reflection;
-using static RogueGame.Inventory;
 using static RogueGame.GameTools;
+using static RogueGame.Inventory;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace RogueGame
@@ -21,6 +22,7 @@ namespace RogueGame
         private const int KEY_UPLEVEL = 188;
         private const int KEY_DOWNLEVEL = 190;
         // Command keys
+        private const int KEY_P = 80;
         private const int KEY_Q = 81;
         private const int KEY_R = 82;
         private const int KEY_S = 83;
@@ -32,6 +34,8 @@ namespace RogueGame
         private const int KEY_F = 70;
         private const int KEY_T = 84;
         private const int KEY_W = 87;
+        private const int KEY_LBRACE = 219;
+        private const int KEY_RBRACE = 221;
         private const int KEY_ESC = 27;
         private const int KEY_HELP = 191;        
         /// <summary>
@@ -45,6 +49,12 @@ namespace RogueGame
             GameOver = 5,
             Victory = 6,
             Scoreboard = 7,        
+        }
+
+        public enum RingHand
+        {
+            Left = 0,
+            Right = 1
         }
         #endregion
         
@@ -388,9 +398,7 @@ namespace RogueGame
                         break;
                     }
                 }
-            }
-
-            
+            }            
         }
         /// <summary>
         /// Method for springing arrow trap.
@@ -1212,9 +1220,11 @@ namespace RogueGame
                 {new recKeyChord(KEY_DOWNLEVEL, false, true), (DownStairsProc, "> - Go downstairs")},
                 {new recKeyChord(KEY_UPLEVEL, false, true), (UpstairsProc, "< - Go upstairs (requires amulet)")},
                 {new recKeyChord(KEY_F, false, true), (FastPlayProc, "F - Fast Play ON / OFF")},
-                {new recKeyChord(KEY_HELP, false, true), (HelpProc, "? - Show help screen")},
-                {new recKeyChord(KEY_T, false, true), (RemoveArmorProc, "R - Remove armor")},
+                {new recKeyChord(KEY_P, false, true), (WearRingProc, "P - Put on ring")},
+                {new recKeyChord(KEY_LBRACE, false, true), (RemoveLeftRing, "{ - Remove ring from left hand")},
+                {new recKeyChord(KEY_RBRACE, false, true), (RemoveRightRing, "} - Remove ring from right hand")},
                 {new recKeyChord(KEY_W, false, true), (WearArmorProc, "W - Wear armor")},
+                {new recKeyChord(KEY_T, false, true), (RemoveArmorProc, "T - Remove armor")},
                 {new recKeyChord(KEY_SOUTH, false, false), (SouthProc, "Down arrow - Move south")},
                 {new recKeyChord(KEY_WEST, false, false), (WestProc, "Left arrow - Move west")},
                 {new recKeyChord(KEY_NORTH, false, false), (NorthProc, "Up arrow - Move north")},
@@ -1226,6 +1236,7 @@ namespace RogueGame
                 {new recKeyChord(KEY_I, false, false), (InventoryProc, "i - Show inventory")},
                 {new recKeyChord(KEY_D, false, false), (DropProc, "d - Drop item")},
                 {new recKeyChord(KEY_W, false, false), (WieldProc, "w - Wield a weapon")},
+                {new recKeyChord(KEY_HELP, false, true), (HelpProc, "? - Show help screen")},
                 {new recKeyChord(KEY_D, true, false), (DevModeProc, "CTRL-D - Dev Mode ON / OFF")},
                 {new recKeyChord(KEY_N, true, false), (NewMapProc, "CTRL-N - Draw new map (Dev mode)")},
                 {new recKeyChord(KEY_H, true, false), (HulkModeProc, "CTRL-H - Hulk mode (cheat)")},
@@ -1658,6 +1669,24 @@ namespace RogueGame
             TurnInProgress = true;
             RemoveArmor();
         }
+        private void WearRingProc()
+        {
+            // Wear ring
+            TurnInProgress = true;
+            PutOnRing(null);
+        }
+        private void RemoveLeftRing()
+        {
+            // Take off ring
+            TurnInProgress = true;
+            RemoveRing(RingHand.Left);
+        }
+        private void RemoveRightRing()
+        {
+            // Take off ring
+            TurnInProgress = true;
+            RemoveRing(RingHand.Right);
+        }
         private void HelpProc()
         {
             // Display help screen.
@@ -1774,22 +1803,119 @@ namespace RogueGame
             return retValue;
         }
         /// <summary>
-        /// Remove current armor from player.
+        /// Put on a specific ring.
         /// </summary>
-        private void RemoveArmor()
+        /// <param name="ListItem">Menu character of chosen item</param>
+        /// <returns>True / False indicating if item was sucessfuly worn</returns>
+        private bool PutOnRing(char? ListItem)
+        {
+            bool retValue = false;
+            string hand = "";
+            List<Inventory> items;
+
+            if (GameMode != DisplayMode.Inventory)
+            {
+                if (CurrentPlayer.LeftHand != null && CurrentPlayer.RightHand != null)
+                    UpdateStatus(" You have rings on both hands. You must remove one first.", false);
+                else
+                {
+                    // Verify the player has a ring in inventory.
+                    items = (from inv in CurrentPlayer.CharacterInventory
+                             where inv.ItemCategory == InvCategory.Ring
+                             select inv).ToList();
+
+                    if (items.Count > 0)
+                    {
+                        // If there are rings, show the inventory
+                        // and let the player select it.  Set to return and exit.
+                        GameMode = DisplayMode.Inventory;
+                        UpdateStatus(" Please select a ring to wear.", false);
+                        ReturnFunction = PutOnRing;
+                    }
+                    else
+                        // Otherwise, they're stuck with whatever they have.
+                        UpdateStatus(" You don't have any rings in inventory.", false);
+                }
+            }
+            else
+            {
+                // Get the selected item.
+                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
+                         where InventoryLine.ID == ListItem
+                         select InventoryLine.InvItem).ToList();
+
+                if (items.Count > 0)
+                {
+                    if (items[0].ItemCategory != InvCategory.Ring)
+                    {
+                        UpdateStatus(" You can't wear that on your finger!", false);
+                        GameMode = DisplayMode.Primary;
+                        retValue = false;
+                    }
+                    else
+                    {
+                        // If the player selects a valid item, add it as their armor and decide if it's cursed.
+                        if (!items[0].IsProtected)
+                            items[0].IsCursed = rand.Next(1, 101) <= ITEM_CURSE_PROB ? true : false;
+                        else
+                            items[0].IsCursed = false;
+
+                        if (CurrentPlayer.LeftHand == null)
+                        {
+                            CurrentPlayer.LeftHand = items[0];
+                            hand = "left";
+                        }
+                        else if (CurrentPlayer.RightHand == null)                            
+                        {
+                            CurrentPlayer.RightHand = items[0];
+                            hand = "right";
+                        }                            
+                        else
+                            UpdateStatus(" You have rings on both hands. You must remove one first.", false);
+
+                        if (hand.Length > 0)
+                            UpdateStatus($"You are now wearing {GameInventory.ListingDescription(1, items[0])} on your {hand} hand.", false);
+
+                        retValue = true;
+                    }
+                }
+                else
+                {
+                    // Process non-existent option.
+                    UpdateStatus(" Please select a ring to wear.", false);
+                    retValue = false;
+                }
+
+                ReturnFunction = null;
+            }
+
+            if (ReturnFunction == null) GameMode = DisplayMode.Primary;
+
+            return retValue;
+        }
+        /// <summary>
+        /// Remove ring from player hand.
+        /// </summary>
+        private void RemoveRing(RingHand LeftOrRight)
         {
             string status = "";
-            Inventory? armor = CurrentPlayer.Armor;
+            Inventory? ring;
 
-            if (armor != null && !armor.IsCursed)
+            ring = (LeftOrRight == RingHand.Left) ? CurrentPlayer.LeftHand : CurrentPlayer.RightHand;            
+
+            if (ring != null && !ring.IsCursed)
             {
-                CurrentPlayer.Armor = null;
-                status = $"You removed {armor.RealName}";
+                if (LeftOrRight == RingHand.Left)
+                    CurrentPlayer.LeftHand = null;
+                else
+                    CurrentPlayer.RightHand = null;
+                
+                status = $"You removed {GameInventory.ListingDescription(1, ring)}";
             }
-            else if (armor != null && armor.IsCursed)
-                status = "You try to remove the armor but it's cursed.";
+            else if (ring != null && ring.IsCursed)
+                status = "You try to remove the ring but it's cursed.";
             else
-                status = "You aren't wearing any armor.";
+                status = "You aren't wearing a ring on that hand.";
 
             UpdateStatus(status, false);
         }
@@ -1845,9 +1971,14 @@ namespace RogueGame
                     else
                     {
                         // If the player selects a valid item, add it as their armor and decide if it's cursed.
+                        if (!items[0].IsProtected)
+                            items[0].IsCursed = rand.Next(1, 101) <= ITEM_CURSE_PROB ? true : false;
+                        else
+                            items[0].IsCursed = false;
+
                         CurrentPlayer.Armor = items[0];
-                        CurrentPlayer.Armor.IsCursed = rand.Next(1, 101) <= ITEM_CURSE_PROB ? true : false;
-                        UpdateStatus($"You are now wearing {items[0].RealName}.", false);
+
+                        UpdateStatus($"You are now wearing {GameInventory.ListingDescription(1, items[0])}.", false);
                         retValue = true;
                     }
                 }
@@ -1864,6 +1995,26 @@ namespace RogueGame
             if (ReturnFunction == null) GameMode = DisplayMode.Primary;
 
             return retValue;
+        }
+        /// <summary>
+        /// Remove current armor from player.
+        /// </summary>
+        private void RemoveArmor()
+        {
+            string status = "";
+            Inventory? armor = CurrentPlayer.Armor;
+
+            if (armor != null && !armor.IsCursed)
+            {
+                CurrentPlayer.Armor = null;
+                status = $"You removed {armor.RealName}";
+            }
+            else if (armor != null && armor.IsCursed)
+                status = "You try to remove the armor but it's cursed.";
+            else
+                status = "You aren't wearing any armor.";
+
+            UpdateStatus(status, false);
         }
         /// <summary>
         /// Eat specified food.
