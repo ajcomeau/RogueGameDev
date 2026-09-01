@@ -263,7 +263,7 @@ namespace RogueGame
                 // Assemble stats display for the bottom of the screen.
                 retValue = $"Level: {CurrentLevel}  ";
                 retValue += $"HP: {CurrentPlayer.CurrentHP}/{CurrentPlayer.MaxHP}  ";
-                retValue += $"Strength: {CurrentPlayer.CurrentStrength}/{CurrentPlayer.MaxStrength}  ";
+                retValue += $"Strength: {CurrentPlayer.TotalStrength()}/{CurrentPlayer.MaxStrength}  ";
                 retValue += $"Gold: {CurrentPlayer.Gold}  ";
                 retValue += $"Armor: {(CurrentPlayer.Armor != null ? CurrentPlayer.Armor.ArmorClass + CurrentPlayer.Armor.Increment : 0)}  ";
                 retValue += $"Turn: {CurrentTurn}  ";
@@ -638,7 +638,7 @@ namespace RogueGame
                 }
 
                 // If the player's scheduled to get hungry on the current turn, update the properties.
-                if (CurrentPlayer.HungerTurn == CurrentTurn)
+                if (CurrentPlayer.HungerTurn <= CurrentTurn)
                 {
                     CurrentPlayer.HungerState = (CurrentPlayer.HungerState > 0)
                         ? --CurrentPlayer.HungerState : 0;
@@ -664,7 +664,7 @@ namespace RogueGame
                 // If the player is now dead, signal the game over.
                 // 8/24/2026 - Added test for current strength.
                 else if (CurrentPlayer.HungerState == Player.HungerLevel.Dead 
-                    || CurrentPlayer.CurrentStrength <= 0)
+                    || CurrentPlayer.TotalStrength() <= 0)
                 {
                     CauseOfDeath = "starvation";
                     GameMode = DisplayMode.GameOver;
@@ -807,6 +807,10 @@ namespace RogueGame
                 {
                     // Move the character.
                     player.Location = adjacent[direct];
+
+                    // If the player has an automatic search activated ...
+                    for (int i = 1; i <= player.AutoSearch(); i++)
+                        SearchForHidden();
 
                     // If this is a doorway, determine if the room is lighted.
                     if (player.Location.MapCharacter.DisplayChar == ROOM_DOOR.DisplayChar && player.Blind == 0)
@@ -1854,12 +1858,7 @@ namespace RogueGame
                     }
                     else
                     {
-                        // If the player selects a valid item, add it as their armor and decide if it's cursed.
-                        if (!items[0].IsProtected)
-                            items[0].IsCursed = rand.Next(1, 101) <= ITEM_CURSE_PROB ? true : false;
-                        else
-                            items[0].IsCursed = false;
-
+                        // If the player selects a valid item, add it to an available hand..
                         if (CurrentPlayer.LeftHand == null)
                         {
                             CurrentPlayer.LeftHand = items[0];
@@ -1874,7 +1873,18 @@ namespace RogueGame
                             UpdateStatus(" You have rings on both hands. You must remove one first.", false);
 
                         if (hand.Length > 0)
+                        {
                             UpdateStatus($"You are now wearing {GameInventory.ListingDescription(1, items[0])} on your {hand} hand.", false);
+                            
+                            // If there's an activation message, might as well identify the item.
+                            // TODO:  Add this to other inventory types.
+                            if (items[0].ActivateMessage.Length > 0 && !items[0].IsIdentified)
+                            {
+                                SetInventoryAsIdentified(items[0].PriorityId);
+                                UpdateStatus(items[0].ActivateMessage, false);
+                            }
+                        }
+                            
 
                         retValue = true;
                     }
@@ -1901,16 +1911,22 @@ namespace RogueGame
             string status = "";
             Inventory? ring;
 
+            // Get the correct hand.
             ring = (LeftOrRight == RingHand.Left) ? CurrentPlayer.LeftHand : CurrentPlayer.RightHand;            
 
             if (ring != null && !ring.IsCursed)
             {
+                // If there's a ring and it's not cursed, remove it.
                 if (LeftOrRight == RingHand.Left)
                     CurrentPlayer.LeftHand = null;
                 else
                     CurrentPlayer.RightHand = null;
                 
-                status = $"You removed {GameInventory.ListingDescription(1, ring)}";
+                status = $"You removed {GameInventory.ListingDescription(1, ring)}. ";
+
+                // Show the deactivation message if there is one.
+                if (ring.DeactivateMessage.Length > 0)
+                    status += ring.DeactivateMessage;
             }
             else if (ring != null && ring.IsCursed)
                 status = "You try to remove the ring but it's cursed.";
@@ -1970,12 +1986,7 @@ namespace RogueGame
                     }
                     else
                     {
-                        // If the player selects a valid item, add it as their armor and decide if it's cursed.
-                        if (!items[0].IsProtected)
-                            items[0].IsCursed = rand.Next(1, 101) <= ITEM_CURSE_PROB ? true : false;
-                        else
-                            items[0].IsCursed = false;
-
+                        // If the player selects a valid item, add it as their armor.
                         CurrentPlayer.Armor = items[0];
 
                         UpdateStatus($"You are now wearing {GameInventory.ListingDescription(1, items[0])}.", false);

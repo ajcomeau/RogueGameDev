@@ -185,6 +185,30 @@ namespace RogueGame
 
             return retValue;
         }
+        /// <summary>
+        /// If the player has any searching assists, 
+        /// return the degree of assistance.
+        /// </summary>
+        /// <returns></returns>
+        public int AutoSearch()
+        {
+            int retValue = 0;
+
+            // Look for the Ring of Searching on both hands.
+            if (this.LeftHand != null &&
+                this.LeftHand.PriorityId == RingOfSearching)
+                retValue += this.LeftHand.Increment;
+
+
+            if (this.RightHand != null &&
+                this.RightHand.PriorityId == RingOfSearching)
+                retValue += this.RightHand.Increment;
+
+            // This ring makes the player hungry faster.
+            this.HungerTurn -= retValue;
+
+            return retValue;
+        }
 
         #endregion
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics.Eventing.Reader;
 using static RogueGame.GameTools;
 
 namespace RogueGame
@@ -543,7 +544,7 @@ namespace RogueGame
                 new Inventory(InvCategory.Potion, InvTemplateID.PotionOfParalysis, "", "Paralysis", "Paralysis", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Potion, InvTemplateID.PotionOfPoison, "", "Poison", "Poison", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Potion, InvTemplateID.PotionOfThirstQuenching, "", "Thirst Quenching", "Thirst Quenching", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Ring, InvTemplateID.RingOfAddStrength, "", "Add Strength", "Add Strength", false, true, false, false, false, false, 0, 1, 0, 0, 0, 0, 0, 2000, 0, new MapGlyph('ö', Color.HotPink, Color.Black), "You feel a little stronger now.", "You feel a little weaker."),
+                new Inventory(InvCategory.Ring, InvTemplateID.RingOfAddStrength, "", "Add Strength", "Add Strength", false, true, false, false, false, false, 0, 1, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('ö', Color.Orange, Color.Black), "You feel a little stronger now.", "You feel a little weaker."),
                 new Inventory(InvCategory.Ring, InvTemplateID.RingOfProtection, "", "Protection", "Protection", false, true, false, false, false, false, 0, 1, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('ö', Color.Orange, Color.Black), "", ""),
                 new Inventory(InvCategory.Ring, InvTemplateID.RingOfSearching, "", "Searching", "Searching", false, true, false, false, false, false, 0, 1, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('ö', Color.Orange, Color.Black), "", ""),
                 new Inventory(InvCategory.Ring, InvTemplateID.RingOfIncreaseDamage, "", "Increase Damage", "Increase Damage", false, true, false, false, false, false, 0, 1, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('ö', Color.Orange, Color.Black), "", ""),
@@ -635,6 +636,8 @@ namespace RogueGame
             // Single function to create inventory listing description for item and 
             // handle all the grammatical adjustments.
 
+            // TODO:  This really needs to be cleaned up.
+
             string increments = "";
             string retValue = "";
 
@@ -654,6 +657,13 @@ namespace RogueGame
                     retValue = GameTools.AddEnglishArticle(Item.RealName);
                     break;
                 case InvCategory.Ring:
+                    if (Item.IsIdentified)
+                        retValue = Number == 1 ? "a " + Item.Increment.ToString() + " " + Item.ItemCategory.ToString().ToLower() + " of " + Item.RealName
+                            : Number.ToString() + " " + Item.Increment.ToString() + " " + Item.ItemCategory.ToString().ToLower() + "s of " + Item.RealName;
+                    else
+                        retValue = Number == 1 ? "a " + Item.CodeName + " " + Item.ItemCategory.ToString().ToLower()
+                            : Number.ToString() + " " + Item.CodeName + " " + Item.ItemCategory.ToString().ToLower() + "s";
+                    break;
                 case InvCategory.Potion:
                 case InvCategory.Wand:
                 case InvCategory.Staff:
@@ -719,13 +729,34 @@ namespace RogueGame
         /// <returns></returns>
         public Inventory? GetInventoryItem(string ItemName)
         {
-            
+            Inventory? retInv = null;
+
             List<Inventory> retList = (from Inventory item in InventoryItems
                         where item.RealName == ItemName
                         select item).ToList();
 
-            // Clone a new object from template.
-            if (retList.Count > 0) return new Inventory(retList[0]); else return null;
+            // Clone a new object from template and make some adjustments.
+            if (retList.Count > 0) {
+                retInv = new Inventory(retList[0]);
+                InventoryVariation(retInv);
+            }
+
+            return retInv;
+        }
+        /// <summary>
+        /// Introduces random variations into inventory items.
+        /// </summary>
+        /// <param name="item"></param>
+        public void InventoryVariation(Inventory item)
+        {
+            item.IsCursed = (!item.IsProtected && rand.Next(1, 101) > ITEM_CURSE_PROB);
+
+            switch (item.ItemCategory)
+            {                
+                case InvCategory.Ring:                    
+                    item.Increment = item.IsCursed ? rand.Next(1, 6) : rand.Next(-5, 0);
+                    break;
+            }
         }
 
         /// <summary>
@@ -745,6 +776,7 @@ namespace RogueGame
             // Clone a new object from template.
             returnVal = new Inventory(invSelect[rand.Next(invSelect.Count)]);
             returnVal.Location = Location;
+            returnVal.InventoryVariation(returnVal);
 
             return returnVal;
         }
@@ -780,6 +812,7 @@ namespace RogueGame
                 {
                     returnVal = new Inventory(item);
                     returnVal.Location = Location;
+                    InventoryVariation(item);
                     break;
                 }
             }
@@ -792,7 +825,6 @@ namespace RogueGame
         /// <returns></returns>
         public List<Inventory>? GetAssignedInventory()
         {
-
             List<Inventory> retList = (from Inventory item in this.InventoryItems
                                        where item.IsAssigned
                                        select item).ToList();
@@ -800,8 +832,6 @@ namespace RogueGame
             // Clone a new object from template.
             if (retList.Count > 0) return retList; else return null;
         }
-
-
     }
     #endregion
 
