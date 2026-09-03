@@ -199,13 +199,126 @@ namespace RogueGame
                 this.LeftHand.PriorityId == RingOfSearching)
                 retValue += this.LeftHand.Increment;
 
-
             if (this.RightHand != null &&
                 this.RightHand.PriorityId == RingOfSearching)
                 retValue += this.RightHand.Increment;
 
             // This ring makes the player hungry faster.
             this.HungerTurn -= retValue;
+
+            return retValue;
+        }
+        /// <summary>
+        /// Combines player's armor with other kinds of protection
+        /// for total.
+        /// </summary>
+        /// <returns>Player's protection rating</returns>
+        public int TotalProtection()
+        {
+            int retValue = 0;
+            
+            // Get player's armor.
+            if (this.Armor != null)
+                retValue = this.Armor.ArmorClass + this.Armor.Increment;
+
+            // Look for the Ring of Protection on both hands.
+            if (this.LeftHand != null &&
+                this.LeftHand.PriorityId == RingOfProtection)
+            {
+                retValue += this.LeftHand.Increment;
+                this.HungerTurn -= this.LeftHand.Increment;
+            }                
+
+            if (this.RightHand != null &&
+                this.RightHand.PriorityId == RingOfProtection)
+            {
+                retValue += this.RightHand.Increment;
+                this.HungerTurn -= this.RightHand.Increment;
+            }
+
+            // Return total
+            return retValue;
+
+        }
+        /// <summary>
+        /// Minimum and maximum damage potential for player.
+        /// </summary>
+        /// <returns></returns>
+        public (int Min, int Max) DamagePotential()
+        {
+            (int Min, int Max) retValue = (0, 0);
+            int stregthAdj = 0;
+
+            // Start with weapon potential.
+            if (this.Wielding != null)
+            {
+                retValue.Min = Wielding.MinDamage + Wielding.DmgIncrement;
+                retValue.Max = Wielding.MaxDamage + Wielding.DmgIncrement;
+            }
+            else
+            {
+                retValue.Min = 1;
+                retValue.Max = 4;
+            }
+
+            // Factor in player strength
+            switch (this.TotalStrength())
+            {
+                case < 4:
+                    stregthAdj = -4;
+                    break;
+                case 4:
+                    stregthAdj = -3;
+                    break;
+                case 5:
+                    stregthAdj = -2;
+                    break;
+                case 6:
+                    stregthAdj = -1;
+                    break;
+                case <= 15:
+                    stregthAdj = 0;
+                    break;
+                case <= 17:
+                    stregthAdj = 1;
+                    break;
+                case 18:
+                    stregthAdj = 2;
+                    break;
+                case <= 20:
+                    stregthAdj = 3;
+                    break;
+                case 21:
+                    stregthAdj = 4;
+                    break;
+                case <= 30:
+                    stregthAdj = 5;
+                    break;
+                case >= 31:
+                    stregthAdj = 6;
+                    break;
+
+            }
+
+            retValue.Min += stregthAdj;
+            retValue.Max += stregthAdj;
+
+            // Look for the Ring of Increase Damage on both hands.
+            if (this.LeftHand != null &&
+                this.LeftHand.PriorityId == RingOfIncreaseDamage)
+            {
+                retValue.Min += this.LeftHand.Increment;
+                retValue.Max += this.LeftHand.Increment;
+                this.HungerTurn -= this.LeftHand.Increment;
+            }
+
+            if (this.RightHand != null &&
+                this.RightHand.PriorityId == RingOfIncreaseDamage)
+            {
+                retValue.Min += this.RightHand.Increment;
+                retValue.Max += this.RightHand.Increment;
+                this.HungerTurn -= this.RightHand.Increment;
+            }
 
             return retValue;
         }

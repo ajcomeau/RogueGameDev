@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using static RogueGame.GameTools;
@@ -265,7 +266,7 @@ namespace RogueGame
                 retValue += $"HP: {CurrentPlayer.CurrentHP}/{CurrentPlayer.MaxHP}  ";
                 retValue += $"Strength: {CurrentPlayer.TotalStrength()}/{CurrentPlayer.MaxStrength}  ";
                 retValue += $"Gold: {CurrentPlayer.Gold}  ";
-                retValue += $"Armor: {(CurrentPlayer.Armor != null ? CurrentPlayer.Armor.ArmorClass + CurrentPlayer.Armor.Increment : 0)}  ";
+                retValue += $"Armor: {(CurrentPlayer.TotalProtection())}  ";
                 retValue += $"Turn: {CurrentTurn}  ";
                 retValue += $"Exp: {CurrentPlayer.ExpLevel}/{CurrentPlayer.Experience}";
                 
@@ -661,12 +662,17 @@ namespace RogueGame
                         UpdateStatus("You fainted from lack of food.", true);
                     }
                 }
-                // If the player is now dead, signal the game over.
-                // 8/24/2026 - Added test for current strength.
-                else if (CurrentPlayer.HungerState == Player.HungerLevel.Dead 
-                    || CurrentPlayer.TotalStrength() <= 0)
+                // If the player is now dead, signal the game over.                
+                else if (CurrentPlayer.HungerState == Player.HungerLevel.Dead)
                 {
                     CauseOfDeath = "starvation";
+                    GameMode = DisplayMode.GameOver;
+                }
+
+                // Test for any other death.                
+                if (CurrentPlayer.TotalStrength() <= 0 || CurrentPlayer.CurrentHP < 1)
+                {
+                    CauseOfDeath = "misadventure";
                     GameMode = DisplayMode.GameOver;
                 }
 
@@ -743,8 +749,7 @@ namespace RogueGame
         /// </summary>
         private void SearchForHidden()
         {
-            // Search for hiden items and reveal them if found.
-            // TODO: This could be made dependent on player stats.
+            // Search for hiden items and reveal them if found.            
             List<MapSpace> spaces;
 
             // Search if we roll within probability constant.
@@ -866,7 +871,8 @@ namespace RogueGame
         {
             int hitChance;
             bool hitSuccess;
-            int damage = 0, minDamage = 1, maxDamage = 4;
+            int damage = 0;
+            (int Min, int Max) damagePotential = Attacker.DamagePotential();
             Inventory? weapon = CurrentPlayer.Wielding;
 
             // Set the monster as the current opponent.
@@ -884,13 +890,6 @@ namespace RogueGame
 
             // Either way, if the monster wasn't angry before, it sure is now.
             Defender.Aggressive = true;
-
-            // Get weapon damage rating, default to bare hands (1-4)
-            if (weapon != null)
-            {
-                minDamage = weapon.MinDamage;
-                maxDamage = weapon.MaxDamage;
-            }
 
             // Random HP damage within weapon potential.
             if (hitSuccess)
@@ -918,7 +917,7 @@ namespace RogueGame
                 }
 
                 // Hulk Mode cheat code for (*ahem*) testing.
-                damage = HulkMode ? Defender.MaxHP : rand.Next(minDamage, maxDamage + 1);
+                damage = HulkMode ? Defender.MaxHP : rand.Next(damagePotential.Min, damagePotential.Max + 1);
 
                 // Invoke any inventory effects the player has right now.
                 if (CurrentPlayer.InventoryEffect != null)
@@ -945,7 +944,7 @@ namespace RogueGame
         /// <param name="Defender">Player object as defender</param>
         private void Attack(Monster Attacker, Player Defender)
         {
-            int hitChance, armorRating, damage = 0;
+            int hitChance, damage = 0;
             string statusUpdate;
             bool hitSuccess;
             Inventory? armor = CurrentPlayer.Armor;
@@ -953,17 +952,11 @@ namespace RogueGame
             // Set the attacker as the player's current opponent.
             Defender.Opponent = Attacker;
 
-            // Chance of landing a punch - 30% + (5% * monster min hit points)  - (5% * player armor class)
-            // (protection rings will be factored in later)
+            // Chance of landing a punch: 50% + (5% * monster min hit points)  - (5% * total protecton)        
 
-            if (armor != null)
-                armorRating = armor.ArmorClass + armor.Increment;
-            else
-                armorRating = 1;
-
-            hitChance = 50 + (Attacker.MinStartingHP * 5) - (armorRating * 5);
+            hitChance = 50 + (Attacker.MinStartingHP * 5) - (Defender.TotalProtection() * 5);
             
-            // If the monster is confused, decrease the chance to 25%.
+            // If the monster is confused, decrease the chance 25%.
             if (Attacker.Confused > 0)
                 hitChance = (int)(hitChance * 0.25);
 
@@ -974,11 +967,11 @@ namespace RogueGame
             if (hitSuccess)
             {
                 UpdateStatus($"The {Attacker.CharacterName.ToLower()} hit you.", false);
-
+                Debug.Print($"The {Attacker.CharacterName} hit you with a {hitChance.ToString()} chance of hitting.");
                 if (Attacker.SpecialAttack != null)
                 {
                     statusUpdate = Attacker.SpecialAttack.Invoke(Attacker, Defender, CurrentTurn);
-                    if(statusUpdate.Length > 0)
+                    if (statusUpdate.Length > 0)
                         UpdateStatus(statusUpdate, false);
                 }
 
@@ -991,9 +984,13 @@ namespace RogueGame
                     Attacker.Teleport = false;
                 }
             }
-            else UpdateStatus($"The {Attacker.CharacterName.ToLower()} missed you.", false);
+            else
+            {
+                UpdateStatus($"The {Attacker.CharacterName.ToLower()} missed you.", false);
+                Debug.Print($"The {Attacker.CharacterName} missed you with a {hitChance.ToString()} chance of hitting.");
+            }
 
-            Defender.HPDamage += damage;
+                Defender.HPDamage += damage;
 
             // If the player has been defeated, end the game.
             if (Defender.CurrentHP < 1)
@@ -2076,11 +2073,18 @@ namespace RogueGame
                     }
                     else
                     {
+                        // Determine next hunger turn.
                         foodValue = rand.Next(MIN_FOODVALUE, MAX_FOODVALUE + 1);
                         CurrentPlayer.HungerTurn += foodValue;
                         CurrentPlayer.HungerState = Player.HungerLevel.Satisfied;
-                        CurrentPlayer.CharacterInventory.Remove(items[0]);
-                        UpdateStatus("Mmmm, that hit the spot.", false);
+                        
+                        // Cursed food just tastes really bad ... for now.
+                        if (items[0].IsCursed)
+                            UpdateStatus("Ugh...that food tastes awful.", false);
+                        else
+                            UpdateStatus("Mmmm, that hit the spot.", false);
+
+                        CurrentPlayer.CharacterInventory.Remove(items[0]);                        
                         // Reward a strength point if needed.
                         if (CurrentPlayer.StrengthMod > 0) CurrentPlayer.StrengthMod--;
                         retValue = true;
@@ -2381,7 +2385,14 @@ namespace RogueGame
                             }                                                        
                         }
 
-                        GameMode = DisplayMode.Primary;
+                        // If the player's health is now 0, end the game.
+                        if (CurrentPlayer.TotalStrength() <= 0 || CurrentPlayer.CurrentHP < 1)
+                        {
+                            CauseOfDeath = "a potion";
+                            GameMode = DisplayMode.GameOver;
+                        }
+                        else
+                            GameMode = DisplayMode.Primary;
                     }
                     else
                     {
@@ -2448,10 +2459,8 @@ namespace RogueGame
                 UpdateStatus(" That item doesn't exist.", false);
             }
 
-            ReturnFunction = null;            
-
+            ReturnFunction = null;
             retValue = true;
-
             GameMode = DisplayMode.Primary;
 
             return retValue;
