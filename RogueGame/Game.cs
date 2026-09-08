@@ -573,12 +573,13 @@ namespace RogueGame
         /// </summary>
         private void EvaluatePlayer()
         {
-            // TODO:  Review this method.
+            // TODO: Review this method.
             if (GameMode < DisplayMode.GameOver)
             {
                 // Regenerate hit points.
+                // TODO: Change HEAL_RATE to be dependend on player experience level.
                 if (CurrentTurn % HEAL_RATE == 0 && CurrentPlayer.HPDamage > 0)
-                    CurrentPlayer.HPDamage -= rand.Next(1, (int)(CurrentPlayer.ExpLevel / 3 + 1));
+                    CurrentPlayer.HPDamage -= CurrentPlayer.HealingFactor();
 
                 if (CurrentPlayer.HPDamage < 0) CurrentPlayer.HPDamage = 0;
 
@@ -648,7 +649,7 @@ namespace RogueGame
                     if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied
                         && CurrentPlayer.HungerState > Player.HungerLevel.Dead)
                     {
-                        CurrentPlayer.HungerTurn += HUNGER_TURNS;
+                        CurrentPlayer.HungerTurn += HUNGER_TURNS * CurrentPlayer.DigestionAdjustment();
                         UpdateStatus($"You are starting to feel {CurrentPlayer.HungerState.ToString().ToLower()}", false);
                     }
                 }

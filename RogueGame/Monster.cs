@@ -295,16 +295,16 @@ namespace RogueGame
             if (strike && defender is Player)
             {
                 player = (Player)defender;
-
-                if(player.Armor != null && !player.Armor.IsProtected)
+                // TODO: This will work for now but the protection should be better calculated.
+                if(player.Armor != null && player.ArmorProtection() < 1)
                 {
                     if(player.Armor!.Increment > 0)
                         player.Armor!.Increment -= 1;
                     else if (player.Armor!.ArmorClass > 0)
                         player.Armor!.ArmorClass -= 1;
-                }
 
-                returnMsg = "Oh no ... your armor is rusting away!";
+                    returnMsg = "Oh no ... your armor is rusting away!";
+                }                
             }
 
             return returnMsg;

@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices.Marshalling;
+﻿using System.Net.Http.Headers;
+using System.Runtime.InteropServices.Marshalling;
 using static RogueGame.GameTools;
 using static RogueGame.Inventory.InvTemplateID;
 
@@ -60,7 +61,6 @@ namespace RogueGame
         /// Next turn at which hunger state will change
         /// </summary>
         public int HungerTurn { get; set; }
-
         /// <summary>
         /// Whether player has found the amulet
         /// </summary>
@@ -318,6 +318,90 @@ namespace RogueGame
                 retValue.Min += this.RightHand.Increment;
                 retValue.Max += this.RightHand.Increment;
                 this.HungerTurn -= this.RightHand.Increment;
+            }
+
+            return retValue;
+        }
+
+        /// <summary>
+        /// Ring of Protect armor and other armor enhancements.
+        /// </summary>
+        /// <returns></returns>
+        public int ArmorProtection()
+        {
+            int retValue = 0;
+
+            if (this.Armor != null && this.Armor.IsProtected)
+                retValue++;
+
+            // Look for the Ring of Increase Damage on both hands.
+            if (this.LeftHand != null &&
+                this.LeftHand.PriorityId == RingOfMaintainArmor)
+            {
+                retValue += this.LeftHand.Increment;
+                this.HungerTurn -= this.LeftHand.Increment;
+            }
+
+            if (this.RightHand != null &&
+                this.RightHand.PriorityId == RingOfIncreaseDamage)
+            {
+                retValue += this.RightHand.Increment;
+                this.HungerTurn -= this.RightHand.Increment;
+            }
+
+            return retValue;
+        }
+
+        /// <summary>
+        /// Ring of Regeneration and other healing bonuses
+        /// </summary>
+        /// <returns></returns>
+        public int HealingFactor()
+        {
+            // Start with the basic healing rate.
+            // TODO: Probably want to flesh this out at some point and
+            // make it more in line with the original game.
+            int retValue = rand.Next(1, (int)(this.ExpLevel / 3 + 1));
+
+            // Look for the Ring of Regeneration on both hands.
+            if (this.LeftHand != null &&
+                this.LeftHand.PriorityId == RingOfRegeneration)
+            {
+                retValue += this.LeftHand.Increment;
+                this.HungerTurn -= this.LeftHand.Increment;
+            }
+
+            if (this.RightHand != null &&
+                this.RightHand.PriorityId == RingOfRegeneration)
+            {
+                retValue += this.RightHand.Increment;
+                this.HungerTurn -= this.RightHand.Increment;
+            }
+
+            return retValue;
+        }
+
+        /// <summary>
+        /// Ring of Slow Digestion
+        /// </summary>
+        /// <returns></returns>
+        public int DigestionAdjustment()
+        {
+            // Start with 1 as normal digestion.
+            
+            int retValue = 1;
+
+            // Look for the Ring of Slow Digestion on both hands.
+            if (this.LeftHand != null &&
+                this.LeftHand.PriorityId == RingOfSlowDigestion)
+            {
+                retValue += this.LeftHand.Increment;
+            }
+
+            if (this.RightHand != null &&
+                this.RightHand.PriorityId == RingOfSlowDigestion)
+            {
+                retValue += this.RightHand.Increment;
             }
 
             return retValue;
