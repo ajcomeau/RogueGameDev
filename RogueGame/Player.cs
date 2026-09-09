@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Runtime.InteropServices.Marshalling;
 using static RogueGame.GameTools;
 using static RogueGame.Inventory.InvTemplateID;
@@ -83,6 +84,7 @@ namespace RogueGame
         public Inventory? Wielding { get; set; }
         /// <summary>
         /// Player experience level based on experience points.
+        /// TODO: This should be replaced by a function.
         /// </summary>
         public int ExpLevel { get; set; } = 1;
         /// <summary>
@@ -353,29 +355,67 @@ namespace RogueGame
         }
 
         /// <summary>
-        /// Ring of Regeneration and other healing bonuses
+        /// Determine player's healing rate based on their
+        /// experience level.
         /// </summary>
         /// <returns></returns>
-        public int HealingFactor()
+        public (int HP, int Turns) HealingFactor()
         {
-            // Start with the basic healing rate.
-            // TODO: Probably want to flesh this out at some point and
-            // make it more in line with the original game.
-            int retValue = rand.Next(1, (int)(this.ExpLevel / 3 + 1));
+            (int HP, int Turns) retValue = (0,0);
+            int ringBonus = 0;
 
             // Look for the Ring of Regeneration on both hands.
             if (this.LeftHand != null &&
                 this.LeftHand.PriorityId == RingOfRegeneration)
             {
-                retValue += this.LeftHand.Increment;
+                ringBonus += this.LeftHand.Increment;
                 this.HungerTurn -= this.LeftHand.Increment;
             }
 
             if (this.RightHand != null &&
                 this.RightHand.PriorityId == RingOfRegeneration)
             {
-                retValue += this.RightHand.Increment;
+                ringBonus += this.RightHand.Increment;
                 this.HungerTurn -= this.RightHand.Increment;
+            }
+
+            // Apply player's experience level.
+            switch (this.ExpLevel) {
+                case 1:
+                    retValue = (1, 18);
+                    break;
+                case 2:
+                    retValue = (1, 17);
+                    break;
+                case 3:
+                    retValue = (1, 15);
+                    break;
+                case 4:
+                    retValue = (1, 13);
+                    break;
+                case 5:
+                    retValue = (1, 11);
+                    break;
+                case 6:
+                    retValue = (1, 9);
+                    break;
+                case 7:
+                    retValue = (1, 7);
+                    break;
+                case 8:
+                    retValue = (1, 3);
+                    break;
+                case > 8:
+                    retValue = (rand.Next(this.ExpLevel - 6), 3);
+                    break;
+                default:
+                    break;
+            }
+
+            // Add ring bonus if there is one.
+            if (ringBonus != 0) {
+                retValue.HP += ringBonus;
+                retValue.Turns -= ringBonus;            
             }
 
             return retValue;

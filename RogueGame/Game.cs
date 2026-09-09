@@ -572,26 +572,68 @@ namespace RogueGame
         /// </summary>
         private void EvaluatePlayer()
         {
-            // TODO: Review this method.
+            // Evaluate if the player is healthy enough to continue.
+            // If not, end the game.
+            if (GameMode < DisplayMode.GameOver)
+            {
+                // If the player's scheduled to get hungry on the current turn, update the properties.
+                if (CurrentPlayer.HungerTurn <= CurrentTurn)
+                {
+                    CurrentPlayer.HungerState = (CurrentPlayer.HungerState > 0)
+                        ? --CurrentPlayer.HungerState : 0;
+
+                    // If the player is now hungry, weak or faint, add some turns.
+                    if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied
+                        && CurrentPlayer.HungerState > Player.HungerLevel.Dead)
+                    {
+                        CurrentPlayer.HungerTurn += HUNGER_TURNS * CurrentPlayer.DigestionAdjustment();
+                        UpdateStatus($"You are starting to feel {CurrentPlayer.HungerState.ToString().ToLower()}", false);
+                    }
+                }
+
+                // If the player is FAINT, decide if they should faint on this move.
+                if (CurrentPlayer.HungerState == Player.HungerLevel.Faint && CurrentPlayer.Immobile == 0)
+                {
+                    if (rand.Next(1, 101) < FAINT_PCT)
+                    {
+                        CurrentPlayer.Immobile = CurrentTurn + rand.Next(1, MAX_TURN_LOSS + 1);
+                        UpdateStatus("You fainted from lack of food.", true);
+                    }
+                }
+                // If the player is now dead, signal the game over.                
+                else if (CurrentPlayer.HungerState == Player.HungerLevel.Dead)
+                {
+                    CauseOfDeath = "starvation";
+                    GameMode = DisplayMode.GameOver;
+                }
+
+                // Test for any other death.                
+                if (CurrentPlayer.TotalStrength() <= 0 || CurrentPlayer.CurrentHP < 1)
+                {
+                    CauseOfDeath = "misadventure";
+                    GameMode = DisplayMode.GameOver;
+                }
+            }
+
+            // Don't bother evaluating further if the game has ended.
             if (GameMode < DisplayMode.GameOver)
             {
                 // Regenerate hit points.
-                // TODO: Change HEAL_RATE to be dependend on player experience level.
-                if (CurrentTurn % HEAL_RATE == 0 && CurrentPlayer.HPDamage > 0)
-                    CurrentPlayer.HPDamage -= CurrentPlayer.HealingFactor();
+                if (CurrentTurn % CurrentPlayer.HealingFactor().Turns == 0 && CurrentPlayer.HPDamage > 0)
+                    CurrentPlayer.HPDamage -= CurrentPlayer.HealingFactor().HP;                 
 
                 if (CurrentPlayer.HPDamage < 0) CurrentPlayer.HPDamage = 0;
 
                 // Check for experience level increase.
                 if (CurrentPlayer.Experience >= CurrentPlayer.NextExpLevelUp)
                 {
-                    int ExpIncrease = rand.Next(1, HP_LEVEL_INCREASE + 1);
+                    int HPIncrease = rand.Next(1, HP_LEVEL_INCREASE + 1);
                     CurrentPlayer.NextExpLevelUp *= 2;
                     CurrentPlayer.ExpLevel += 1;
-                    CurrentPlayer.MaxHP += ExpIncrease;                   
+                    CurrentPlayer.MaxHP += HPIncrease;                   
 
                     if (CurrentPlayer.HPDamage > 0)
-                        CurrentPlayer.HPDamage += (int)(ExpIncrease / 2);
+                        CurrentPlayer.HPDamage += (int)(HPIncrease / 2);
 
                     UpdateStatus($"Welcome to Level {CurrentPlayer.ExpLevel}.", false);
                 }
@@ -636,46 +678,7 @@ namespace RogueGame
                     UpdateStatus("The potion wears off and things start to look normal again.", false);
                     UpdateStatus("Anything you still can't deal with is here to stay.", false);
                     CurrentPlayer.Hallucinating = 0;
-                }
-
-                // If the player's scheduled to get hungry on the current turn, update the properties.
-                if (CurrentPlayer.HungerTurn <= CurrentTurn)
-                {
-                    CurrentPlayer.HungerState = (CurrentPlayer.HungerState > 0)
-                        ? --CurrentPlayer.HungerState : 0;
-
-                    // If the player is now hungry, weak or faint, add some turns.
-                    if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied
-                        && CurrentPlayer.HungerState > Player.HungerLevel.Dead)
-                    {
-                        CurrentPlayer.HungerTurn += HUNGER_TURNS * CurrentPlayer.DigestionAdjustment();
-                        UpdateStatus($"You are starting to feel {CurrentPlayer.HungerState.ToString().ToLower()}", false);
-                    }
-                }
-
-                // If the player is FAINT, decide if they should faint on this move.
-                if (CurrentPlayer.HungerState == Player.HungerLevel.Faint && CurrentPlayer.Immobile == 0)
-                {
-                    if (rand.Next(1, 101) < FAINT_PCT)
-                    {
-                        CurrentPlayer.Immobile = CurrentTurn + rand.Next(1, MAX_TURN_LOSS + 1);
-                        UpdateStatus("You fainted from lack of food.", true);
-                    }
-                }
-                // If the player is now dead, signal the game over.                
-                else if (CurrentPlayer.HungerState == Player.HungerLevel.Dead)
-                {
-                    CauseOfDeath = "starvation";
-                    GameMode = DisplayMode.GameOver;
-                }
-
-                // Test for any other death.                
-                if (CurrentPlayer.TotalStrength() <= 0 || CurrentPlayer.CurrentHP < 1)
-                {
-                    CauseOfDeath = "misadventure";
-                    GameMode = DisplayMode.GameOver;
-                }
-
+                }                
             }
         }
         /// <summary>

@@ -88,7 +88,7 @@ namespace RogueGame
         /// </summary>
         public const int MAX_LEVEL = 26;
         /// <summary>
-        /// Probability of fainting at any given point when FAIN
+        /// Probability of fainting at any given point when FAINT
         /// </summary>
         public const int FAINT_PCT = 33;
         /// <summary>
