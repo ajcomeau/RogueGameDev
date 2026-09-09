@@ -102,9 +102,8 @@ namespace RogueGame
         public string? CauseOfDeath { get; set; }
         /// <summary>
         /// Delgate used to return to function that enables an inventory item to be used.
-        /// TODO:  Evaluate this for change to Action
         /// </summary>
-        public Func<char?, bool>? ReturnFunction { get; set; }         
+        public Action<char?>? ReturnFunction { get; set; }         
         /// <summary>
         /// Status message for top of screen.
         /// </summary>
@@ -1734,9 +1733,8 @@ namespace RogueGame
         /// </summary>
         /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns></returns>
-        private bool Wield(char? ListItem)
+        private void Wield(char? ListItem)
         {
-            bool retValue = false;
             List<Inventory> items;
 
             if (GameMode != DisplayMode.Inventory)
@@ -1780,38 +1778,30 @@ namespace RogueGame
                                 UpdateStatus(" Save your gold and use an actual weapon.", false);
                         else
                             UpdateStatus(" That's not an effective weapon. Pick something else.", false);
-                        retValue = false;
                     }
                     else
                     {                       
                         CurrentPlayer.Wielding = items[0];
                         UpdateStatus($"You are now wielding {GameInventory.ListingDescription(1, items[0])}.", false);
-
-                        retValue = true;
                     }
                 }
                 else
                 {
                     // Process non-existent option.
                     UpdateStatus(" Please select something to wield.", false);
-                    retValue = false;
                 }
 
                 ReturnFunction = null;
                 GameMode = DisplayMode.Primary;
-
             }
-
-            return retValue;
         }
         /// <summary>
         /// Put on a specific ring.
         /// </summary>
         /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns>True / False indicating if item was sucessfuly worn</returns>
-        private bool PutOnRing(char? ListItem)
+        private void PutOnRing(char? ListItem)
         {
-            bool retValue = false;
             string hand = "";
             List<Inventory> items;
 
@@ -1852,7 +1842,6 @@ namespace RogueGame
                     {
                         UpdateStatus(" You can't wear that on your finger!", false);
                         GameMode = DisplayMode.Primary;
-                        retValue = false;
                     }
                     else
                     {
@@ -1882,16 +1871,12 @@ namespace RogueGame
                                 UpdateStatus(items[0].ActivateMessage, false);
                             }
                         }
-                            
-
-                        retValue = true;
                     }
                 }
                 else
                 {
                     // Process non-existent option.
                     UpdateStatus(" Please select a ring to wear.", false);
-                    retValue = false;
                 }
 
                 ReturnFunction = null;
@@ -1899,7 +1884,6 @@ namespace RogueGame
 
             if (ReturnFunction == null) GameMode = DisplayMode.Primary;
 
-            return retValue;
         }
         /// <summary>
         /// Remove ring from player hand.
@@ -1938,9 +1922,8 @@ namespace RogueGame
         /// </summary>
         /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns>True / False indicating if item was sucessfuly worn</returns>
-        private bool WearArmor(char? ListItem)
+        private void WearArmor(char? ListItem)
         {
-            bool retValue = false;
             List<Inventory> items;
 
             if (GameMode != DisplayMode.Inventory)
@@ -1980,7 +1963,6 @@ namespace RogueGame
                     {
                         UpdateStatus(" You can't wear that.", false);
                         GameMode = DisplayMode.Primary;
-                        retValue = false;
                     }
                     else
                     {
@@ -1988,14 +1970,12 @@ namespace RogueGame
                         CurrentPlayer.Armor = items[0];
 
                         UpdateStatus($"You are now wearing {GameInventory.ListingDescription(1, items[0])}.", false);
-                        retValue = true;
                     }
                 }
                 else
                 {
                     // Process non-existent option.
                     UpdateStatus(" Please select some armor to wear.", false);
-                    retValue = false;
                 }
 
                 ReturnFunction = null;
@@ -2003,7 +1983,6 @@ namespace RogueGame
 
             if (ReturnFunction == null) GameMode = DisplayMode.Primary;
 
-            return retValue;
         }
         /// <summary>
         /// Remove current armor from player.
@@ -2030,9 +2009,8 @@ namespace RogueGame
         /// </summary>
         /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns>True / False indicating if item was eaten</returns>
-        private bool Eat(char? ListItem)
+        private void Eat(char? ListItem)
         {
-            bool retValue = false;
             List<Inventory> items;
             int foodValue = 0;
 
@@ -2070,7 +2048,6 @@ namespace RogueGame
                     if (items[0].ItemCategory != InvCategory.Food)
                     {
                         UpdateStatus(" You can't eat THAT!", false);
-                        retValue = false;
                     }
                     else
                     {
@@ -2088,30 +2065,26 @@ namespace RogueGame
                         CurrentPlayer.CharacterInventory.Remove(items[0]);                        
                         // Reward a strength point if needed.
                         if (CurrentPlayer.StrengthMod > 0) CurrentPlayer.StrengthMod--;
-                        retValue = true;
                     }
                 }
                 else
                 {
                     // Process non-existent option.
                     UpdateStatus(" Please select something to eat.", false);
-                    retValue = false;
                 }
 
                 ReturnFunction = null;
             }
 
             if (ReturnFunction == null) GameMode = DisplayMode.Primary;
-            return retValue;
         }
         /// <summary>
         /// Drop specified inventory on map.
         /// </summary>
         /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns>True / False indicating success</returns>
-        private bool DropInventory(char? ListItem)
+        private void DropInventory(char? ListItem)
         {
-            bool retValue = false;
             List<InventoryLine> items;
 
             if (GameMode != DisplayMode.Inventory)
@@ -2150,19 +2123,16 @@ namespace RogueGame
 
                         items[0].InvItem.Location = CurrentPlayer.Location!;
                         CurrentMap.MapInventory.Add(items[0].InvItem);
-                        retValue = true;
                     }
                     else
                     {
                         UpdateStatus(" There is already an item there.", false);
                         GameMode = DisplayMode.Primary;
-                        retValue = false;
                     }
                 }
                 else
                 {
                     UpdateStatus(" Please select an inventory item to drop.", false);
-                    retValue = false;
                 }
 
                 ReturnFunction = null;
@@ -2170,7 +2140,6 @@ namespace RogueGame
 
             if (ReturnFunction == null) GameMode = DisplayMode.Primary;
 
-            return retValue;
         }
         /// <summary>
         /// Add found items to player's inventory.
@@ -2243,9 +2212,8 @@ namespace RogueGame
         /// </summary>
         /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns></returns>
-        private bool ReadScroll(char? ListItem)
+        private void ReadScroll(char? ListItem)
         {
-            bool readScroll = false;
             List<Inventory> items;
 
             try
@@ -2283,7 +2251,6 @@ namespace RogueGame
                         if (items[0].ItemCategory != InvCategory.Scroll)
                         {
                             UpdateStatus(" There's nothing on it to read.", false);
-                            readScroll = false;
                         }
                         else
                         {
@@ -2299,7 +2266,6 @@ namespace RogueGame
                                 ReturnFunction = null;
                                 CurrentPlayer.CharacterInventory.Remove(items[0]);
                                 taskInfo.Invoke(CurrentPlayer);                                
-                                readScroll = true;
                             }                                                    
                         }
                     }
@@ -2309,28 +2275,24 @@ namespace RogueGame
                         UpdateStatus(" Please select something to read.", false);
 
                         ReturnFunction = null;
-                        readScroll = false;
                     }
                 }
             }
             catch (NotImplementedException)
             {
-                readScroll = false;
                 UpdateStatus("This scroll doesn't seem to do anything at all ... yet.", false);
                 UpdateStatus("Watch for side effects like headache, itchiness, sudden metamorphosis, etc.", false);
             }
 
             if (ReturnFunction == null) GameMode = DisplayMode.Primary;
-            return readScroll;
         }
         /// <summary>
         /// Quaff the selected potion.
         /// </summary>
         /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns></returns>
-        private bool QuaffPotion(char? ListItem)
+        private void QuaffPotion(char? ListItem)
         {
-            bool quaffPotion = false;
             List<Inventory> items;
 
             try
@@ -2368,7 +2330,6 @@ namespace RogueGame
                         if (items[0].ItemCategory != InvCategory.Potion)
                         {
                             UpdateStatus(" You can't drink that.", false);
-                            quaffPotion = false;
                         }
                         else
                         {
@@ -2382,7 +2343,6 @@ namespace RogueGame
                                 ReturnFunction = null;
                                 CurrentPlayer.CharacterInventory.Remove(items[0]);
                                 taskInfo.Invoke(CurrentPlayer);                                                                
-                                quaffPotion = true;
                             }                                                        
                         }
 
@@ -2400,19 +2360,16 @@ namespace RogueGame
                         // Process non-existent option.
                         UpdateStatus(" Please select something to drink.", false);
                         ReturnFunction = null;
-                        quaffPotion = false;
                     }                    
                 }
             }
             catch (NotImplementedException)
             {
-                quaffPotion = false;
                 UpdateStatus("This potion doesn't seem to do anything at all ... yet.", false);
                 UpdateStatus("Watch for side effects like headache, itchiness, sudden metamorphosis, etc.", false);
             }
 
             if (ReturnFunction == null) GameMode = DisplayMode.Primary;
-            return quaffPotion;
         }
 
         #endregion
@@ -2434,9 +2391,8 @@ namespace RogueGame
         /// </summary>
         /// <param name="ListItem"></param>
         /// <returns></returns>
-        private bool ScrollOfIdentifyEnd(char? ListItem)
+        private void ScrollOfIdentifyEnd(char? ListItem)
         {
-            bool retValue = false;
             List<InventoryLine> lines;
             string description = "";
 
@@ -2461,11 +2417,7 @@ namespace RogueGame
             }
 
             ReturnFunction = null;
-            retValue = true;
             GameMode = DisplayMode.Primary;
-
-            return retValue;
-
         }
         /// <summary>
         /// Reveal entire map

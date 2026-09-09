@@ -349,7 +349,7 @@ namespace RogueGame{
                     spawned = Monster.SpawnMonster(CurrentLevel);
                 } while (spawned != null && rand.Next(1, 101) <= spawned.AppearancePct);
 
-                // Place monster on map. If the spaces are specified, then make sure
+                // Place monster on map. If the spaces are not specified, then make sure
                 // it's not in the same region as the player.
                 do
                 {
