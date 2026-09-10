@@ -990,10 +990,22 @@ namespace RogueGame{
         {
             // Get region limits
             (MapSpace, MapSpace) corners = GetRegionLimits(xPos, yPos);
+            List<MapSpace> spaces = (from MapSpace space in levelMap
+                                     where space.X >= corners.Item1.X && space.X <= corners.Item2.X
+                                     && space.Y >= corners.Item1.Y && space.Y <= corners.Item2.Y
+                                     && space.MapCharacter.DisplayChar != HALLWAY.DisplayChar
+                                     select space).ToList();
+
 
             // For all room spaces in region, set Discovered = True and 
             // Lighted. Leave HALLWAY spaces alone and just focus on the room.
-            // TODO:  Possibly replace with LINQ.
+            foreach (MapSpace space in spaces)
+            {
+                space.Discovered = true;
+                space.Lighted = true;
+            }
+
+            /*
             for (int y = corners.Item1.Y; y <= corners.Item2.Y; y++)
             {
                 for (int x = corners.Item1.X; x <= corners.Item2.X; x++)
@@ -1005,6 +1017,7 @@ namespace RogueGame{
                     }
                 }
             }
+            */
         }
         /// <summary>
         /// Set surrounding spaces to Discovered and Lighted.
