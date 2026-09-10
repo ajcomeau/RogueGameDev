@@ -34,9 +34,8 @@ namespace RogueGame
         private static Random rand = new Random();
         /// <summary>
         /// List to contain potential code names for non-identified items.
-        /// TODO: Hunt down and change all <Tuple></Tuple> constructions to value tuples 
         /// </summary>
-        private List<Tuple<InvCategory, string>> CodeNames;
+        private List<(InvCategory, string)> CodeNames;
         /// <summary>
         /// Item category from enumeration
         /// </summary>
@@ -289,8 +288,8 @@ namespace RogueGame
         /// </summary>
         public void InitializeInventory()
         {
-            List<Tuple<InvCategory, string>> names = new List<Tuple<InvCategory, string>>();
-            Tuple<InvCategory, string> code;
+            List<(InvCategory, string)> names = new List<(InvCategory, string)>();
+            (InvCategory, string) code;
 
             // Iterate through template collection and assign code names.
 
@@ -313,99 +312,97 @@ namespace RogueGame
         /// </summary>
         private void LoadCodeNames()
         {
-            this.CodeNames =
-            new List<Tuple<InvCategory, string>>()
-            {
-                new Tuple<InvCategory, string>(InvCategory.Ring, "agate"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "adamite"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "amethyst"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "beryl"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "bloodstone"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "carnelian"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "diamond"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "emerald"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "garnet"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "iolite"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "jade"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "lapis-lazuli"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "moonstone"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "onyx"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "opal"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "pearl"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "sapphire"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "stibotantalite"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "tiger-eye"),
-                new Tuple<InvCategory, string>(InvCategory.Ring, "turquoise"),
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Forsan et haec olim meminisse iuvabit."), // Perhaps even these things will be pleasing to remember one day.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Ab antiquo"), // From antiquity
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Acta deos numquam mortalia fallunt."), // Mortal deeds never deceive the gods.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Ad astra per aspera"), // To the stars through difficulties
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Aquila non capit muscas."), // The eagle does not catch flies
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Audentes fortuna iuvat."), // Fortune favors the brave.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Audi, vide, tace."), // Hear, see, be silent.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Aurum potestas est."),  // Gold is power.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Carpe noctem."), // Seize the night.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Charta pardonationis utlagariae"), // A letter of pardon for the outlaw.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Comedamus et bibamus, cras enim moriemur."), // Let us eat and drink for tomorrow we die.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Cuncti adsint meritaeque expectent praemia palmae."), // Let all come who by merit deserve the most reward
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Defendit numerus"), // Safety in numbers.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Descensus in cuniculi cavum"), // The descent into the cave of the rabbit (Down the rabbit hole)
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Dies tenebrosa sicut nox"),  // A day as dark as night.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Ducunt volentem fata, nolentem trahunt."), // Fates lead the willing, drag the unwilling.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Troglodytae dormientes titillari non debent."), // Sleeping trolls should not be tickled.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Dum vivimus, vivamus."),  // While we live, let us live.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Heu, fugaces labuntur horae!"), // Alas the fleeting hours slip away.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Errare humanum est."), // To err is human.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Videre nec videre."), // To see and not be seen.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Experientia docet."),  // Experience teaches.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Faber est suae quisque fortunae."), // every man is the artisan of his own fortune
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Fac fortia et patere."), // Do brave deeds and endure.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Factum fieri infectum non potest."), // It is impossible for a deed to be undone.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Fortis cadere, cedere non potest."), // The brave may fall but cannot yield.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Hic sunt monstra."), // Here there be monsters.
-                new Tuple<InvCategory, string>(InvCategory.Scroll, "Ignis aurum probat."), // Fire tests gold.
-                new Tuple<InvCategory, string>(InvCategory.Wand, "copper"),
-                new Tuple<InvCategory, string>(InvCategory.Wand, "gold"),
-                new Tuple<InvCategory, string>(InvCategory.Wand, "iron"),
-                new Tuple<InvCategory, string>(InvCategory.Wand, "nickel"),
-                new Tuple<InvCategory, string>(InvCategory.Wand, "silver"),
-                new Tuple<InvCategory, string>(InvCategory.Wand, "titanium"),
-                new Tuple<InvCategory, string>(InvCategory.Wand, "steel"),
-                new Tuple<InvCategory, string>(InvCategory.Wand, "aluminum"),
-                new Tuple<InvCategory, string>(InvCategory.Wand, "brass"),
-                new Tuple<InvCategory, string>(InvCategory.Wand, "bronze"),
-                new Tuple<InvCategory, string>(InvCategory.Wand, "glass"),
-                new Tuple<InvCategory, string>(InvCategory.Wand, "granite"),
-                new Tuple<InvCategory, string>(InvCategory.Wand, "platinum"),
-                new Tuple<InvCategory, string>(InvCategory.Staff, "birch"),
-                new Tuple<InvCategory, string>(InvCategory.Staff, "cedar"),
-                new Tuple<InvCategory, string>(InvCategory.Staff, "elm"),
-                new Tuple<InvCategory, string>(InvCategory.Staff, "maple"),
-                new Tuple<InvCategory, string>(InvCategory.Staff, "redwood"),
-                new Tuple<InvCategory, string>(InvCategory.Staff, "teak"),
-                new Tuple<InvCategory, string>(InvCategory.Staff, "walnut"),
-                new Tuple<InvCategory, string>(InvCategory.Staff, "pine"),
-                new Tuple<InvCategory, string>(InvCategory.Staff, "oak"),
-                new Tuple<InvCategory, string>(InvCategory.Staff, "dogwood"),
-                new Tuple<InvCategory, string>(InvCategory.Staff, "fir"),
-                new Tuple<InvCategory, string>(InvCategory.Staff, "acacia"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "crimson"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "blue"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "green"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "brown"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "orange"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "jade"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "pale"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "electric blue"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "pink"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "clear"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "black"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "purple"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "magenta"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "red"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "golden"),
-                new Tuple<InvCategory, string>(InvCategory.Potion, "amber"),
-            };
+            this.CodeNames =[
+                (InvCategory.Ring, "agate"),
+                (InvCategory.Ring, "adamite"),
+                (InvCategory.Ring, "amethyst"),
+                (InvCategory.Ring, "beryl"),
+                (InvCategory.Ring, "bloodstone"),
+                (InvCategory.Ring, "carnelian"),
+                (InvCategory.Ring, "diamond"),
+                (InvCategory.Ring, "emerald"),
+                (InvCategory.Ring, "garnet"),
+                (InvCategory.Ring, "iolite"),
+                (InvCategory.Ring, "jade"),
+                (InvCategory.Ring, "lapis-lazuli"),
+                (InvCategory.Ring, "moonstone"),
+                (InvCategory.Ring, "onyx"),
+                (InvCategory.Ring, "opal"),
+                (InvCategory.Ring, "pearl"),
+                (InvCategory.Ring, "sapphire"),
+                (InvCategory.Ring, "stibotantalite"),
+                (InvCategory.Ring, "tiger-eye"),
+                (InvCategory.Ring, "turquoise"),
+                (InvCategory.Scroll, "Forsan et haec olim meminisse iuvabit."), // Perhaps even these things will be pleasing to remember one day.
+                (InvCategory.Scroll, "Ab antiquo"), // From antiquity
+                (InvCategory.Scroll, "Acta deos numquam mortalia fallunt."), // Mortal deeds never deceive the gods.
+                (InvCategory.Scroll, "Ad astra per aspera"), // To the stars through difficulties
+                (InvCategory.Scroll, "Aquila non capit muscas."), // The eagle does not catch flies
+                (InvCategory.Scroll, "Audentes fortuna iuvat."), // Fortune favors the brave.
+                (InvCategory.Scroll, "Audi, vide, tace."), // Hear, see, be silent.
+                (InvCategory.Scroll, "Aurum potestas est."),  // Gold is power.
+                (InvCategory.Scroll, "Carpe noctem."), // Seize the night.
+                (InvCategory.Scroll, "Charta pardonationis utlagariae"), // A letter of pardon for the outlaw.
+                (InvCategory.Scroll, "Comedamus et bibamus, cras enim moriemur."), // Let us eat and drink for tomorrow we die.
+                (InvCategory.Scroll, "Cuncti adsint meritaeque expectent praemia palmae."), // Let all come who by merit deserve the most reward
+                (InvCategory.Scroll, "Defendit numerus"), // Safety in numbers.
+                (InvCategory.Scroll, "Descensus in cuniculi cavum"), // The descent into the cave of the rabbit (Down the rabbit hole)
+                (InvCategory.Scroll, "Dies tenebrosa sicut nox"),  // A day as dark as night.
+                (InvCategory.Scroll, "Ducunt volentem fata, nolentem trahunt."), // Fates lead the willing, drag the unwilling.
+                (InvCategory.Scroll, "Troglodytae dormientes titillari non debent."), // Sleeping trolls should not be tickled.
+                (InvCategory.Scroll, "Dum vivimus, vivamus."),  // While we live, let us live.
+                (InvCategory.Scroll, "Heu, fugaces labuntur horae!"), // Alas the fleeting hours slip away.
+                (InvCategory.Scroll, "Errare humanum est."), // To err is human.
+                (InvCategory.Scroll, "Videre nec videre."), // To see and not be seen.
+                (InvCategory.Scroll, "Experientia docet."),  // Experience teaches.
+                (InvCategory.Scroll, "Faber est suae quisque fortunae."), // every man is the artisan of his own fortune
+                (InvCategory.Scroll, "Fac fortia et patere."), // Do brave deeds and endure.
+                (InvCategory.Scroll, "Factum fieri infectum non potest."), // It is impossible for a deed to be undone.
+                (InvCategory.Scroll, "Fortis cadere, cedere non potest."), // The brave may fall but cannot yield.
+                (InvCategory.Scroll, "Hic sunt monstra."), // Here there be monsters.
+                (InvCategory.Scroll, "Ignis aurum probat."), // Fire tests gold.
+                (InvCategory.Wand, "copper"),
+                (InvCategory.Wand, "gold"),
+                (InvCategory.Wand, "iron"),
+                (InvCategory.Wand, "nickel"),
+                (InvCategory.Wand, "silver"),
+                (InvCategory.Wand, "titanium"),
+                (InvCategory.Wand, "steel"),
+                (InvCategory.Wand, "aluminum"),
+                (InvCategory.Wand, "brass"),
+                (InvCategory.Wand, "bronze"),
+                (InvCategory.Wand, "glass"),
+                (InvCategory.Wand, "granite"),
+                (InvCategory.Wand, "platinum"),
+                (InvCategory.Staff, "birch"),
+                (InvCategory.Staff, "cedar"),
+                (InvCategory.Staff, "elm"),
+                (InvCategory.Staff, "maple"),
+                (InvCategory.Staff, "redwood"),
+                (InvCategory.Staff, "teak"),
+                (InvCategory.Staff, "walnut"),
+                (InvCategory.Staff, "pine"),
+                (InvCategory.Staff, "oak"),
+                (InvCategory.Staff, "dogwood"),
+                (InvCategory.Staff, "fir"),
+                (InvCategory.Staff, "acacia"),
+                (InvCategory.Potion, "crimson"),
+                (InvCategory.Potion, "blue"),
+                (InvCategory.Potion, "green"),
+                (InvCategory.Potion, "brown"),
+                (InvCategory.Potion, "orange"),
+                (InvCategory.Potion, "jade"),
+                (InvCategory.Potion, "pale"),
+                (InvCategory.Potion, "electric blue"),
+                (InvCategory.Potion, "pink"),
+                (InvCategory.Potion, "clear"),
+                (InvCategory.Potion, "black"),
+                (InvCategory.Potion, "purple"),
+                (InvCategory.Potion, "magenta"),
+                (InvCategory.Potion, "red"),
+                (InvCategory.Potion, "golden"),
+                (InvCategory.Potion, "amber"),
+            ];
         }
         /// <summary>
         /// PropertyID enumeration for inventory templates.

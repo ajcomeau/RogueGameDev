@@ -1149,7 +1149,7 @@ namespace RogueGame{
         /// </summary>
         /// <param name="RegionNumber">Specific region number</param>
         /// <returns></returns>
-        private Tuple<MapSpace, MapSpace> GetRegionLimits(int RegionNumber)
+        private (MapSpace, MapSpace) GetRegionLimits(int RegionNumber)
         {
             // Get a pair of MapSpaces defining the limits of the region based
             // on the region number from the 3 x 3 grid of regions.
@@ -1162,7 +1162,7 @@ namespace RogueGame{
             int xBottomRight = xTopLeft + REGION_WD - 1;
             int yBottomRight = yTopLeft + REGION_HT - 1;
 
-            return new Tuple<MapSpace, MapSpace>(levelMap[xTopLeft, yTopLeft], levelMap[xBottomRight, yBottomRight]);
+            return (levelMap[xTopLeft, yTopLeft], levelMap[xBottomRight, yBottomRight]);
         }
         /// <summary>
         /// For Dev mode. Output the array with no alternate characters and everything visible.
