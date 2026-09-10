@@ -267,7 +267,7 @@ namespace RogueGame
                 retValue += $"Gold: {CurrentPlayer.Gold}  ";
                 retValue += $"Armor: {(CurrentPlayer.TotalProtection())}  ";
                 retValue += $"Turn: {CurrentTurn}  ";
-                retValue += $"Exp: {CurrentPlayer.ExpLevel}/{CurrentPlayer.Experience}";
+                retValue += $"Exp: {CurrentPlayer.ExperienceLevel()}/{CurrentPlayer.Experience}";
                 
                 if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied)
                     retValue += $"  {CurrentPlayer.HungerState}     ";
@@ -628,14 +628,13 @@ namespace RogueGame
                 if (CurrentPlayer.Experience >= CurrentPlayer.NextExpLevelUp)
                 {
                     int HPIncrease = rand.Next(1, HP_LEVEL_INCREASE + 1);
+                    CurrentPlayer.MaxHP += HPIncrease;
                     CurrentPlayer.NextExpLevelUp *= 2;
-                    CurrentPlayer.ExpLevel += 1;
-                    CurrentPlayer.MaxHP += HPIncrease;                   
 
                     if (CurrentPlayer.HPDamage > 0)
                         CurrentPlayer.HPDamage += (int)(HPIncrease / 2);
 
-                    UpdateStatus($"Welcome to Level {CurrentPlayer.ExpLevel}.", false);
+                    UpdateStatus($"Welcome to Level {CurrentPlayer.ExperienceLevel()}.", false);
                 }
 
                 // Apply any inventory effects that haven't ended and end those that have.
@@ -883,7 +882,7 @@ namespace RogueGame
 
             // Chance of landing a punch - 30% + (5% * XP level) - (5% * monster armor class).
             // Hulk mode can be used for "testing" - certain punch with immediate kill.
-            hitChance = 50 + (5 * CurrentPlayer.ExpLevel) - (5 * Defender.ArmorClass);
+            hitChance = 50 + (5 * CurrentPlayer.ExperienceLevel()) - (5 * Defender.ArmorClass);
 
             // If the player is confused, decrease the chance to 25%.
             if (Attacker.Confused > 0)
@@ -1431,7 +1430,7 @@ namespace RogueGame
         {
             if (character is Player)
             {
-                int healing = CurrentPlayer.ExpLevel * rand.Next(1, 9);
+                int healing = CurrentPlayer.ExperienceLevel() * rand.Next(1, 9);
                 CurrentPlayer.Healing(healing, CurrentTurn - 1);
                 UpdateStatus("Oh, that feels MUCH better ...", false);
             }
@@ -1536,7 +1535,7 @@ namespace RogueGame
         /// </summary>
         private void PotionOfHealing(Character character)
         {
-            int healing = CurrentPlayer.ExpLevel * rand.Next(1, 5);
+            int healing = CurrentPlayer.ExperienceLevel() * rand.Next(1, 5);
 
             if (character is Player)
             {

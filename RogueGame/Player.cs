@@ -83,11 +83,6 @@ namespace RogueGame
         /// </summary>
         public Inventory? Wielding { get; set; }
         /// <summary>
-        /// Player experience level based on experience points.
-        /// TODO: This should be replaced by a function.
-        /// </summary>
-        public int ExpLevel { get; set; } = 1;
-        /// <summary>
         /// Hit points at which to level up player next.
         /// </summary>
         public int NextExpLevelUp { get; set; } = 10;
@@ -207,6 +202,23 @@ namespace RogueGame
 
             // This ring makes the player hungry faster.
             this.HungerTurn -= retValue;
+
+            return retValue;
+        }
+        /// <summary>
+        /// Returns the player experience level based on
+        /// experience points.
+        /// </summary>
+        /// <returns></returns>
+        public int ExperienceLevel()
+        {
+            int threshold = 10;
+            int retValue = 1;
+
+            if (this.Experience >= 10)
+                do
+                    retValue++;
+                while ((threshold *= 2) <= this.Experience);
 
             return retValue;
         }
@@ -380,7 +392,7 @@ namespace RogueGame
             }
 
             // Apply player's experience level.
-            switch (this.ExpLevel) {
+            switch (this.ExperienceLevel()) {
                 case 1:
                     retValue = (1, 18);
                     break;
@@ -406,7 +418,7 @@ namespace RogueGame
                     retValue = (1, 3);
                     break;
                 case > 8:
-                    retValue = (rand.Next(this.ExpLevel - 6), 3);
+                    retValue = (rand.Next(this.ExperienceLevel() - 6), 3);
                     break;
                 default:
                     break;
