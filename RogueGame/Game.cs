@@ -1862,16 +1862,17 @@ namespace RogueGame
                             UpdateStatus(" You have rings on both hands. You must remove one first.", false);
 
                         if (hand.Length > 0)
-                        {
-                            UpdateStatus($"You are now wearing {GameInventory.ListingDescription(1, items[0])} on your {hand} hand.", false);
-                            
-                            // If there's an activation message, might as well identify the item.
-                            // TODO:  Add this to other inventory types.
-                            if (items[0].ActivateMessage.Length > 0 && !items[0].IsIdentified)
+                        {   
+                            // Identify rings when they are put on a hand. They might not come off, after all.
+                            if (!items[0].IsIdentified)
                             {
                                 SetInventoryAsIdentified(items[0].PriorityId);
-                                UpdateStatus(items[0].ActivateMessage, false);
+
+                                if(items[0].ActivateMessage.Length > 1)
+                                    UpdateStatus(items[0].ActivateMessage, false);
                             }
+
+                            UpdateStatus($"You are now wearing {GameInventory.ListingDescription(1, items[0])} on your {hand} hand.", false);
                         }
                     }
                 }
@@ -2046,11 +2047,8 @@ namespace RogueGame
                 {
                     // Call the appropriate delegate and remove the item
                     // from inventory.
-                    // TODO: In this case, it makes more sense to complete this here than in a delegate function. Continue to evaluate as other inventory is implemented.
                     if (items[0].ItemCategory != InvCategory.Food)
-                    {
                         UpdateStatus(" You can't eat THAT!", false);
-                    }
                     else
                     {
                         // Determine next hunger turn.
@@ -2564,7 +2562,6 @@ namespace RogueGame
         {
             if (character is Player)
             {
-                //TODO: Review these values for possible new constants depending on other inventory effect ranges.
                 int turns = rand.Next(100, 150);
                 CurrentPlayer.InventoryEffect = (CurrentTurn + turns, ScrollOfConfuseMonsterEnd);
                 UpdateStatus("Your hands begin to glow red.", false);

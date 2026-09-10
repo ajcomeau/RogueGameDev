@@ -954,37 +954,32 @@ namespace RogueGame{
         {
             // When the player enters a room, decide if the room should be lighted.
 
-            // Get region limits
-            Tuple<MapSpace, MapSpace> corners = GetRegionLimits(xPos, yPos);
-            
             // Decide if room is lighted.
             bool roomLights = (rand.Next(1, 101) <= ROOM_LIGHTED);
+
+            // Get region limits
+            (MapSpace TopLeft, MapSpace BottomRight) corners = GetRegionLimits(xPos, yPos);
+            List<MapSpace> spaces = (from MapSpace space in levelMap
+                                     where space.X >= corners.TopLeft.X && space.X <= corners.BottomRight.X
+                                     && space.Y >= corners.TopLeft.Y && space.Y <= corners.BottomRight.Y
+                                     && !space.Discovered
+                                     && space.MapCharacter.DisplayChar != HALLWAY.DisplayChar
+                                     select space).ToList();
+
+            // For all room spaces in region that have not been discovered,
+            // set Discovered = True and Lighted according to probability.
+            // Leave HALLWAY and already discovered spaces alone and just focus on rooms.
+            foreach (MapSpace space in spaces)
+            {
+                space.Discovered = true;
+                if (!space.Lighted) { space.Lighted = roomLights; }
+            }
+            
 
             Debug.WriteLine($"Opening room {corners.Item1.X}, {corners.Item1.Y} to " +
                 $"{corners.Item2.X}, {corners.Item2.Y} in region " +
                 $"{GetRegionNumber(corners.Item1.X, corners.Item1.Y)}");
 
-            // For all room spaces in region that have not been discovered,
-            // set Discovered = True and Lighted according to probability.
-            // Leave HALLWAY and already discovered spaces alone and just focus on rooms.
-            // TODO: Replace this with LINQ.
-            for (int y = corners.Item1.Y; y <= corners.Item2.Y; y++)
-            {
-                for (int x = corners.Item1.X; x <= corners.Item2.X; x++)
-                {
-                    if (!levelMap[x, y].Discovered)
-                    {
-                        if(levelMap[x, y].MapCharacter.DisplayChar != HALLWAY.DisplayChar)
-                        {
-                            levelMap[x, y].Discovered = true;
-                            if (!levelMap[x, y].Lighted) { levelMap[x, y].Lighted = roomLights; }
-                        }
-                    }
-                    //Turn off remote sight for spaces in the room if they're already visible.
-                    // 8/16/2026 - Disabling this for now.
-                    //levelMap[x, y].RemoteSight = false;
-                }
-            }
         }
         /// <summary>
         /// Reveals a specific room, discovered or not.
@@ -994,7 +989,7 @@ namespace RogueGame{
         public void LightUpRoom(int xPos, int yPos)
         {
             // Get region limits
-            Tuple<MapSpace, MapSpace> corners = GetRegionLimits(xPos, yPos);
+            (MapSpace, MapSpace) corners = GetRegionLimits(xPos, yPos);
 
             // For all room spaces in region, set Discovered = True and 
             // Lighted. Leave HALLWAY spaces alone and just focus on the room.
@@ -1137,7 +1132,7 @@ namespace RogueGame{
         /// <param name="xPos">Map X coordinate within region</param>
         /// <param name="yPos">Map Y coordinate within region</param>
         /// <returns></returns>
-        private Tuple<MapSpace, MapSpace> GetRegionLimits(int xPos, int yPos)
+        private (MapSpace TopLeft, MapSpace BottomRight) GetRegionLimits(int xPos, int yPos)
         {
             // Get a pair of MapSpaces defining the limits of the region based
             // on an internal x and y coordinate.
@@ -1147,7 +1142,7 @@ namespace RogueGame{
             int xBottomRight = xTopLeft + REGION_WD - 1;
             int yBottomRight = yTopLeft + REGION_HT - 1;
 
-            return new Tuple<MapSpace, MapSpace>(levelMap[xTopLeft, yTopLeft], levelMap[xBottomRight, yBottomRight]);
+            return (levelMap[xTopLeft, yTopLeft], levelMap[xBottomRight, yBottomRight]);
         }
         /// <summary>
         /// Get northwest and south east corners of specific region.

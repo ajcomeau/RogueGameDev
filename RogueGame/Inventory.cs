@@ -34,6 +34,7 @@ namespace RogueGame
         private static Random rand = new Random();
         /// <summary>
         /// List to contain potential code names for non-identified items.
+        /// TODO: Hunt down and change all <Tuple></Tuple> constructions to value tuples 
         /// </summary>
         private List<Tuple<InvCategory, string>> CodeNames;
         /// <summary>
@@ -506,6 +507,7 @@ namespace RogueGame
         /// </summary>
         private void LoadInventory()
         {
+            // TODO:  Add activate / deactivate messages to more inventory types.
             this.invItems = new List<Inventory>()
             {
                 new Inventory(InvCategory.Amulet, InvTemplateID.TheAmulet, "The Amulet", "The Amulet", "The Amulets", true, false, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, new MapGlyph(AMULET.DisplayChar, Color.Yellow, Color.Black), "", ""),
