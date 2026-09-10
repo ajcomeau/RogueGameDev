@@ -660,8 +660,8 @@ namespace RogueGame
                         retValue = Number == 1 ? "a " + Item.Increment.ToString() + " " + Item.ItemCategory.ToString().ToLower() + " of " + Item.RealName
                             : Number.ToString() + " " + Item.Increment.ToString() + " " + Item.ItemCategory.ToString().ToLower() + "s of " + Item.RealName;
                     else
-                        retValue = Number == 1 ? "a " + Item.CodeName + " " + Item.ItemCategory.ToString().ToLower()
-                            : Number.ToString() + " " + Item.CodeName + " " + Item.ItemCategory.ToString().ToLower() + "s";
+                        retValue = Number == 1 ? "a " + GameTools.AddEnglishArticle(Item.CodeName!) + " " + Item.ItemCategory.ToString().ToLower()
+                            : Number.ToString() + " " + GameTools.AddEnglishArticle(Item.CodeName!) + " " + Item.ItemCategory.ToString().ToLower() + "s";
                     break;
                 case InvCategory.Potion:
                 case InvCategory.Wand:
@@ -670,8 +670,8 @@ namespace RogueGame
                         retValue = Number == 1 ? "a " + Item.ItemCategory.ToString().ToLower() + " of " + Item.RealName
                             : Number.ToString() + " " + Item.ItemCategory.ToString().ToLower() + "s of " + Item.RealName;
                     else
-                        retValue = Number == 1 ? "a " + Item.CodeName + " " + Item.ItemCategory.ToString().ToLower()
-                            : Number.ToString() + " " + Item.CodeName + " " + Item.ItemCategory.ToString().ToLower() + "s";
+                        retValue = Number == 1 ? "a " + GameTools.AddEnglishArticle(Item.CodeName!) + " " + Item.ItemCategory.ToString().ToLower()
+                            : Number.ToString() + " " + GameTools.AddEnglishArticle(Item.CodeName!) + " " + Item.ItemCategory.ToString().ToLower() + "s";
                     break;
                 case InvCategory.Scroll:
                     if (Item.IsIdentified)

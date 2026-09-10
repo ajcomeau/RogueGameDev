@@ -773,8 +773,8 @@ namespace RogueGame{
         /// <returns></returns>
         public MapSpace? SearchDirection(Direction direction, int startX, int startY)
         {
-            // TODO: Evaluate for simpler method.
             int currentX = startX, currentY = startY;
+            char empty = EMPTY.DisplayChar;
             MapSpace? retValue = null;
 
             currentY = (currentY > MAP_HT) ? MAP_HT : currentY;
@@ -782,22 +782,24 @@ namespace RogueGame{
             currentX = (currentX > MAP_WD) ? MAP_WD : currentX;
             currentX = (currentX < 0) ? 0 : currentX;
 
+            char currChar() => levelMap[currentX, currentY].MapCharacter.DisplayChar;
+
             switch (direction)
             {
                 case Direction.North:
-                    while (levelMap[currentX, currentY].MapCharacter.DisplayChar == EMPTY.DisplayChar && currentY > 0)
+                    while (currChar() == empty && currentY > 0)
                         currentY--;
                     break;
                 case Direction.East:
-                    while (levelMap[currentX, currentY].MapCharacter.DisplayChar == EMPTY.DisplayChar && currentX < MAP_WD)
+                    while (currChar() == empty && currentX < MAP_WD)
                         currentX++;
                     break;
                 case Direction.South:
-                    while (levelMap[currentX, currentY].MapCharacter.DisplayChar == EMPTY.DisplayChar && currentY < MAP_HT)
+                    while (currChar() == empty && currentY < MAP_HT)
                         currentY++;
                     break;
                 case Direction.West:
-                    while (levelMap[currentX, currentY].MapCharacter.DisplayChar == EMPTY.DisplayChar && currentX > 0)
+                    while (currChar() == empty && currentX > 0)
                         currentX--;
                     break;
             }
