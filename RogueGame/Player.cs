@@ -348,7 +348,7 @@ namespace RogueGame
             if (this.Armor != null && this.Armor.IsProtected)
                 retValue++;
 
-            // Look for the Ring of Increase Damage on both hands.
+            // Look for the Ring of Maintain Armor on both hands.
             if (this.LeftHand != null &&
                 this.LeftHand.PriorityId == RingOfMaintainArmor)
             {

@@ -103,7 +103,7 @@ namespace RogueGame
         /// <summary>
         /// Delgate used to return to function that enables an inventory item to be used.
         /// </summary>
-        public Action<char?>? ReturnFunction { get; set; }         
+        public Action<char?>? ReturnFunction { get; set; }
         /// <summary>
         /// Status message for top of screen.
         /// </summary>
