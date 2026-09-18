@@ -550,6 +550,34 @@ namespace RogueGame
 
             return retValue;
         }
+
+        /// <summary>
+        /// The Ring of Aggravate Monster makes the player very 
+        /// unpopular in the dungeon.
+        /// </summary>
+        /// <returns></returns>
+        public int AggravationFactor()
+        {
+            int retValue = 0;
+
+            // Look for the Ring of Aggravate Monster on both hands.
+            if (this.LeftHand != null &&
+                this.LeftHand.PriorityId == RingOfAggravateMonster)
+            {
+                retValue += this.LeftHand.Increment;
+                this.HungerTurn -= this.LeftHand.Increment;
+            }
+
+            if (this.RightHand != null &&
+                this.RightHand.PriorityId == RingOfAggravateMonster)
+            {
+                retValue += this.RightHand.Increment;
+                this.HungerTurn -= this.RightHand.Increment;
+            }
+
+            return retValue;
+        }
+
         #endregion
 
     }

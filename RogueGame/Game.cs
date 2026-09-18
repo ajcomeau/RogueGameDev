@@ -780,6 +780,7 @@ namespace RogueGame
             char visibleCharacter;
             bool canMove, stopMoving = false, turnComplete = false;
             int teleport = CurrentPlayer.Teleportation() * 10;
+            int aggravate = CurrentPlayer.AggravationFactor() * 10;
             Inventory? invFound = null; Monster? monster = null;
             Dictionary<MapLevel.Direction, MapSpace> adjacent =
                 CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);            
@@ -873,6 +874,11 @@ namespace RogueGame
 
                 } while (!stopMoving && invFound == null && CanAutoMove(player.Location, adjacent[direct]));
             }
+
+            // Check for the Ring of Aggravate Monsters or other irritating qualities.
+            if (aggravate > 0 && rand.Next(1, 101) < aggravate)
+                AggravateMonsters();
+
         }
 
         /// <summary>
@@ -2583,7 +2589,7 @@ namespace RogueGame
             {
                 Monster target = (Monster)character;
                 target.Confused = CurrentTurn + rand.Next(2, 7);
-                UpdateStatus("Was that the game documentation? The monster seems a little confused.", false);
+                UpdateStatus("'Was that the game documentation?' The monster seems a little confused.", false);
             }
         }
         /// <summary>
@@ -2661,6 +2667,19 @@ namespace RogueGame
                 monster.Aggressive = true;
             
             UpdateStatus("The scroll emits a high pitched whistling noise.", false);
+            UpdateStatus("From every direction, you hear howls of outrage.", false);
+        }
+        /// <summary>
+        /// Make every monster on the map aggressive.
+        /// </summary>
+        /// <returns></returns>
+        private void AggravateMonsters()
+        {
+            foreach (Monster monster in (from Monster in CurrentMap.ActiveMonsters
+                                         select Monster))
+                monster.Aggressive = true;
+
+            UpdateStatus("Your ring-bearing hand involuntarily jerks upward in a very obscene gesture.", false);
             UpdateStatus("From every direction, you hear howls of outrage.", false);
         }
         /// <summary>
