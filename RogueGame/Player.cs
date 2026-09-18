@@ -458,6 +458,30 @@ namespace RogueGame
 
             return retValue;
         }
+        /// <summary>
+        /// The Ring of Stealth keeps the player from being noticed
+        /// by monsters.
+        /// </summary>
+        /// <returns></returns>
+        public int Stealth()
+        {
+            int retValue = 0;
+
+            // Look for the Ring of Stealth on both hands.
+            if (this.LeftHand != null &&
+                this.LeftHand.PriorityId == RingOfStealth)
+            {
+                retValue += this.LeftHand.Increment;
+            }
+
+            if (this.RightHand != null &&
+                this.RightHand.PriorityId == RingOfStealth)
+            {
+                retValue += this.RightHand.Increment;
+            }
+
+            return retValue;
+        }
 
         #endregion
 

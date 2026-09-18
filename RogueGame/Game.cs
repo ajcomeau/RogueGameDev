@@ -770,7 +770,6 @@ namespace RogueGame
                 }
             }
         }
-
         /// <summary>
         /// Move character in specified direction.
         /// </summary>
@@ -782,8 +781,7 @@ namespace RogueGame
             bool canMove, stopMoving = false, turnComplete = false;
             Inventory? invFound = null; Monster? monster = null;
             Dictionary<MapLevel.Direction, MapSpace> adjacent =
-                CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
-            
+                CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);            
 
             // If player is confused, there's a chance of reversed movement.
             if (player.Confused > 0 && rand.Next(100) > COIN_FLIP)
@@ -1049,11 +1047,13 @@ namespace RogueGame
                         CurrentPlayer.Location! == space.Value).ToDictionary();
 
                 // Determine if player is in one of the adjacent spaces.
-                playerAdjacent = (adjacent.ContainsValue(CurrentPlayer.Location!));
+                // If the player has any stealth activated, don't see them.
+                playerAdjacent = (adjacent.ContainsValue(CurrentPlayer.Location!) && CurrentPlayer.Stealth() == 0);
 
                 // Get the current distance of the player from the monster.
+                // Use whatever stealth increment the player has to fudge the distance.
                 playerDistance = playerAdjacent ? 1 :
-                    CurrentMap.GetDistance(CurrentPlayer.Location!, monster.Location);
+                    CurrentMap.GetDistance(CurrentPlayer.Location!, monster.Location) + CurrentPlayer.Stealth();
 
                 // DECIDE ON A MOVE
                 if(adjacent.Count > 0)  // If there are available spaces to move to.
