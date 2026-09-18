@@ -41,7 +41,20 @@ namespace RogueGame
         /// <summary>
         /// Current strength modifier
         /// </summary>
-        public int StrengthMod { get; set; }
+        private int _strengthMod;
+        public int StrengthMod
+        {
+            get => _strengthMod;
+            // If the player has a Ring of Sustain Strength,
+            // prevent reductions of strength.
+            set {
+                if (this.SustainStrength() == 0 || value > _strengthMod)
+                {
+                    _strengthMod = value; 
+                }
+            }
+        }
+
         /// <summary>
         /// Current Strength
         /// </summary>
@@ -472,17 +485,45 @@ namespace RogueGame
                 this.LeftHand.PriorityId == RingOfStealth)
             {
                 retValue += this.LeftHand.Increment;
+                this.HungerTurn -= this.LeftHand.Increment;
             }
 
             if (this.RightHand != null &&
                 this.RightHand.PriorityId == RingOfStealth)
             {
                 retValue += this.RightHand.Increment;
+                this.HungerTurn -= this.RightHand.Increment;
             }
 
             return retValue;
         }
 
+        /// <summary>
+        /// The Ring of Sustain Strength keeps the player's strength from
+        /// being sapped by rattlesnakes, etc.
+        /// </summary>
+        /// <returns></returns>
+        public int SustainStrength()
+        {
+            int retValue = 0;
+
+            // Look for the Ring of Sustain Strength on both hands.
+            if (this.LeftHand != null &&
+                this.LeftHand.PriorityId == RingOfSustainStrength)
+            {
+                retValue += this.LeftHand.Increment;
+                this.HungerTurn -= this.LeftHand.Increment;
+            }
+
+            if (this.RightHand != null &&
+                this.RightHand.PriorityId == RingOfSustainStrength)
+            {
+                retValue += this.RightHand.Increment;
+                this.HungerTurn -= this.RightHand.Increment;
+            }
+
+            return retValue;
+        }
         #endregion
 
     }
