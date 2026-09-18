@@ -1475,6 +1475,8 @@ namespace RogueGame
                     character.Blind = 0;
                     UpdateStatus("You can see again.", false);
                 }
+                else
+                    UpdateStatus("You see odd movements you can't quite explain out of the corner of your eye.", false);
             }
             else
             {

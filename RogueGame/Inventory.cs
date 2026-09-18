@@ -532,7 +532,7 @@ namespace RogueGame
                 new Inventory(InvCategory.Potion, InvTemplateID.PotionOfLevitation, "", "Levitation", "Levitation", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Potion, InvTemplateID.PotionOfMagicDetection, "", "Magic Detection", "Magic Detection", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Potion, InvTemplateID.PotionOfMonsterDetection, "", "Monster Detection", "Monster Detection", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfSeeInvisible, "", "See Invisible", "See Invisible", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Potion, InvTemplateID.PotionOfSeeInvisible, "", "See Invisible", "See Invisible", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 2000, 0, new MapGlyph('¡', Color.HotPink, Color.Black), "", ""),
                 new Inventory(InvCategory.Potion, InvTemplateID.PotionOfExtraHealing, "", "Extra Healing", "Extra Healing", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Potion, InvTemplateID.PotionOfHasteSelf, "", "Haste Self", "Haste Self", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Potion, InvTemplateID.PotionOfRaiseLevel, "", "Raise Level", "Raise Level", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('¡', Color.Blue, Color.Black), "", ""),
@@ -660,8 +660,8 @@ namespace RogueGame
                         retValue = Number == 1 ? "a " + Item.Increment.ToString() + " " + Item.ItemCategory.ToString().ToLower() + " of " + Item.RealName
                             : Number.ToString() + " " + Item.Increment.ToString() + " " + Item.ItemCategory.ToString().ToLower() + "s of " + Item.RealName;
                     else
-                        retValue = Number == 1 ? "a " + GameTools.AddEnglishArticle(Item.CodeName!) + " " + Item.ItemCategory.ToString().ToLower()
-                            : Number.ToString() + " " + GameTools.AddEnglishArticle(Item.CodeName!) + " " + Item.ItemCategory.ToString().ToLower() + "s";
+                        retValue = Number == 1 ? GameTools.AddEnglishArticle(Item.CodeName!) + " " + Item.ItemCategory.ToString().ToLower()
+                            : Number.ToString() + " " + Item.CodeName! + " " + Item.ItemCategory.ToString().ToLower() + "s";
                     break;
                 case InvCategory.Potion:
                 case InvCategory.Wand:
@@ -670,8 +670,8 @@ namespace RogueGame
                         retValue = Number == 1 ? "a " + Item.ItemCategory.ToString().ToLower() + " of " + Item.RealName
                             : Number.ToString() + " " + Item.ItemCategory.ToString().ToLower() + "s of " + Item.RealName;
                     else
-                        retValue = Number == 1 ? "a " + GameTools.AddEnglishArticle(Item.CodeName!) + " " + Item.ItemCategory.ToString().ToLower()
-                            : Number.ToString() + " " + GameTools.AddEnglishArticle(Item.CodeName!) + " " + Item.ItemCategory.ToString().ToLower() + "s";
+                        retValue = Number == 1 ? GameTools.AddEnglishArticle(Item.CodeName!) + " " + Item.ItemCategory.ToString().ToLower()
+                            : Number.ToString() + " " + Item.CodeName! + " " + Item.ItemCategory.ToString().ToLower() + "s";
                     break;
                 case InvCategory.Scroll:
                     if (Item.IsIdentified)
