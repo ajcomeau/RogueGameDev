@@ -779,6 +779,7 @@ namespace RogueGame
         {
             char visibleCharacter;
             bool canMove, stopMoving = false, turnComplete = false;
+            int teleport = CurrentPlayer.Teleportation() * 10;
             Inventory? invFound = null; Monster? monster = null;
             Dictionary<MapLevel.Direction, MapSpace> adjacent =
                 CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);            
@@ -788,78 +789,90 @@ namespace RogueGame
                 direct = CurrentMap.GetDirection180(direct);
 
             // Move character if possible.
-            do
+            // If player is currently teleporting around the map, they have
+            // a 10% chance of teleporting on this move multipled by the teleportation
+            // increment returned.
+            if (teleport > 0 && rand.Next(1, 101) < teleport)
             {
-                // Inspect target character
-                if (adjacent.ContainsKey(direct))
+                CurrentPlayer.Location = CurrentMap.GetOpenSpace(true);
+                UpdateStatus("You feel a tug on your finger and the room changes around you.", false);
+            }
+            else
+            {
+                do
                 {
-                    visibleCharacter = CurrentMap.PriorityChar(adjacent[direct], false).DisplayChar;
-                    invFound = CurrentMap.DetectInventory(adjacent[direct]);
-                    monster = CurrentMap.DetectMonster(adjacent[direct]);
-                }
-                else
-                {
-                    visibleCharacter = EMPTY.DisplayChar;
-                    invFound = null;
-                    monster = null;
-                }
-
-                // The player can move if the visible character is within a room or a hallway and there's no monster there.
-                canMove = MapLevel.InhabitableSpacesGlyphList.Contains(visibleCharacter) ||
-                    (invFound != null && monster == null);
-
-                if (canMove)
-                {
-                    // Move the character.
-                    player.Location = adjacent[direct];
-
-                    // If the player has an automatic search activated ...
-                    for (int i = 1; i <= player.AutoSearch(); i++)
-                        SearchForHidden();
-
-                    // If this is a doorway, determine if the room is lighted.
-                    if (player.Location.MapCharacter.DisplayChar == ROOM_DOOR.DisplayChar && player.Blind == 0)
-                        CurrentMap.DiscoverRoom(player.Location.X, player.Location.Y);                    
-
-                    // Show the surrounding spaces if the player can see.
-                    if (CurrentPlayer.Blind == 0)
-                        CurrentMap.ShowSurrounding(player.Location.X, player.Location.Y);
-
-                    // Discover the spaces surrounding the player and note if something is found.
-                    stopMoving = CurrentMap.DetectObstruction(player.Location.X, player.Location.Y);
-
-                    // If the player has just stepped on a trap ...
-                    // 8/16/2026 - Levitation avoids traps and inventory.
-                    if (adjacent[direct].MapCharacter.DisplayChar == TRAP.DisplayChar)
-                        if (player.Floating == 0) { SpringTrap(CurrentPlayer, adjacent[direct]); }
-
-                    // Respond to items on map.
-                    if (invFound != null) {
-                        if (player.Floating == 0)
-                            UpdateStatus(AddInventory(), false);
-                        else
-                            UpdateStatus("You are not able to grab the object while levitating.", false);
+                    // Inspect target character
+                    if (adjacent.ContainsKey(direct))
+                    {
+                        visibleCharacter = CurrentMap.PriorityChar(adjacent[direct], false).DisplayChar;
+                        invFound = CurrentMap.DetectInventory(adjacent[direct]);
+                        monster = CurrentMap.DetectMonster(adjacent[direct]);
+                    }
+                    else
+                    {
+                        visibleCharacter = EMPTY.DisplayChar;
+                        invFound = null;
+                        monster = null;
                     }
 
-                    // Player turn completed.
-                    turnComplete = true;
-                }
-                else if (monster != null)
-                {                    
-                    Attack(CurrentPlayer, monster);
+                    // The player can move if the visible character is within a room or a hallway and there's no monster there.
+                    canMove = MapLevel.InhabitableSpacesGlyphList.Contains(visibleCharacter) ||
+                        (invFound != null && monster == null);
 
-                    // Player turn completed.
-                    turnComplete = true;
-                }
+                    if (canMove)
+                    {
+                        // Move the character.
+                        player.Location = adjacent[direct];
 
-                // Complete turn if indicated.
-                if (turnComplete) { CompleteTurn(); }
+                        // If the player has an automatic search activated ...
+                        for (int i = 1; i <= player.AutoSearch(); i++)
+                            SearchForHidden();
 
-                // Determine if player can move automatically on FastPlay.  Three or more adjacent
-                // hallway spaces indicate a junction which needs to stop FastPlay.
-                adjacent = CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
+                        // If this is a doorway, determine if the room is lighted.
+                        if (player.Location.MapCharacter.DisplayChar == ROOM_DOOR.DisplayChar && player.Blind == 0)
+                            CurrentMap.DiscoverRoom(player.Location.X, player.Location.Y);
 
-            } while (!stopMoving && invFound == null && CanAutoMove(player.Location, adjacent[direct]));
+                        // Show the surrounding spaces if the player can see.
+                        if (CurrentPlayer.Blind == 0)
+                            CurrentMap.ShowSurrounding(player.Location.X, player.Location.Y);
+
+                        // Discover the spaces surrounding the player and note if something is found.
+                        stopMoving = CurrentMap.DetectObstruction(player.Location.X, player.Location.Y);
+
+                        // If the player has just stepped on a trap ...
+                        // 8/16/2026 - Levitation avoids traps and inventory.
+                        if (adjacent[direct].MapCharacter.DisplayChar == TRAP.DisplayChar)
+                            if (player.Floating == 0) { SpringTrap(CurrentPlayer, adjacent[direct]); }
+
+                        // Respond to items on map.
+                        if (invFound != null)
+                        {
+                            if (player.Floating == 0)
+                                UpdateStatus(AddInventory(), false);
+                            else
+                                UpdateStatus("You are not able to grab the object while levitating.", false);
+                        }
+
+                        // Player turn completed.
+                        turnComplete = true;
+                    }
+                    else if (monster != null)
+                    {
+                        Attack(CurrentPlayer, monster);
+
+                        // Player turn completed.
+                        turnComplete = true;
+                    }
+
+                    // Complete turn if indicated.
+                    if (turnComplete) { CompleteTurn(); }
+
+                    // Determine if player can move automatically on FastPlay.  Three or more adjacent
+                    // hallway spaces indicate a junction which needs to stop FastPlay.
+                    adjacent = CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
+
+                } while (!stopMoving && invFound == null && CanAutoMove(player.Location, adjacent[direct]));
+            }
         }
 
         /// <summary>

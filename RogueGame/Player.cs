@@ -524,6 +524,32 @@ namespace RogueGame
 
             return retValue;
         }
+
+        /// <summary>
+        /// The Ring of Teleporation randomly teleports the player.
+        /// </summary>
+        /// <returns></returns>
+        public int Teleportation()
+        {
+            int retValue = 0;
+
+            // Look for the Ring of Teleportation on both hands.
+            if (this.LeftHand != null &&
+                this.LeftHand.PriorityId == RingOfTeleportation)
+            {
+                retValue += this.LeftHand.Increment;
+                this.HungerTurn -= this.LeftHand.Increment;
+            }
+
+            if (this.RightHand != null &&
+                this.RightHand.PriorityId == RingOfTeleportation)
+            {
+                retValue += this.RightHand.Increment;
+                this.HungerTurn -= this.RightHand.Increment;
+            }
+
+            return retValue;
+        }
         #endregion
 
     }
