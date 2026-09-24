@@ -177,7 +177,7 @@ namespace RogueGame
         public static string AddEnglishArticle(string Text)
         {
             // Add appropriate article - "a" or "an".
-            if ("AEIOU".Contains(Text.Substring(0, 1)))
+            if ("AEIOUaeiou".Contains(Text.Substring(0, 1)))
                 return $"an {Text}";
             else
                 return $"a {Text}";

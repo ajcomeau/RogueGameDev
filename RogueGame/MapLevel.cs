@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.Text;
 using static RogueGame.GameTools;
+using static RogueGame.MapLevel;
+using static System.Windows.Forms.AxHost;
 
 namespace RogueGame{
 
@@ -61,10 +63,11 @@ namespace RogueGame{
         public enum Direction
         {
             None = 0,
-            North = 1,            
-            East = 2,
-            South = -1,
-            West = -2
+            West = 37,
+            North = 38,            
+            East = 39,
+            South = 40,
+            
         }
         /// <summary>
         /// Width of region holding single room.
@@ -417,7 +420,7 @@ namespace RogueGame{
             Inventory invItem;
 
             if (Clone)
-                invItem = GameInventory.GetInventoryItem(Item.RealName)!;
+                invItem = GameInventory.GetInventoryItem(Item.PriorityId)!;
             else
                 invItem = Item;
 
@@ -425,6 +428,25 @@ namespace RogueGame{
 
             MapInventory.Add(invItem);
         }
+        /// <summary>
+        /// Accepts an inventory item and adds it to a free space in the same room
+        /// as the coordinates provided.
+        /// </summary>
+        /// <param name="Item"></param>
+        /// <param name="Location"></param>
+        public void AddInventoryToRoom(Inventory Item, MapSpace Location)
+        {
+            (MapSpace TopLeft, MapSpace BottomRight) corners = GetRegionLimits(Location.X, Location.Y);
+            List<MapSpace> spaces = (from MapSpace space in levelMap
+                                     where space.X >= corners.TopLeft.X && space.X <= corners.BottomRight.X
+                                     && space.Y >= corners.TopLeft.Y && space.Y <= corners.BottomRight.Y
+                                     && space.MapCharacter.DisplayChar == ROOM_INT.DisplayChar
+                                     select space).ToList();
+            
+            Item.Location = GetOpenSpace(false, spaces)!;
+            MapInventory.Add(Item);
+        }
+
         /// <summary>
         /// Create room on map based on inputs
         /// </summary>
@@ -672,7 +694,24 @@ namespace RogueGame{
         /// <returns></returns>
         public Direction GetDirection90(Direction startingDirection)
         {
-            Direction retValue = (Math.Abs((int)startingDirection) == 1) ? (Direction)2 : (Direction)1;
+            Direction retValue = startingDirection;
+
+            switch (startingDirection) 
+            {
+                case Direction.West:
+                    retValue = Direction.North;
+                    break;
+                case Direction.North:
+                    retValue = Direction.East;
+                    break;
+                case Direction.East:
+                    retValue = Direction.South;
+                    break;
+                case Direction.South:
+                    retValue = Direction.West;
+                    break;
+            }
+            
             return retValue;
         }
         /// <summary>
@@ -682,8 +721,24 @@ namespace RogueGame{
         /// <returns></returns>
         public Direction GetDirection270(Direction startingDirection)
         {
-            Direction retValue = (Math.Abs((int)startingDirection) == 1) ? (Direction)2 : (Direction)1;
-            retValue = (Direction)((int)retValue * -1);
+            Direction retValue = startingDirection;
+
+            switch (startingDirection)
+            {
+                case Direction.West:
+                    retValue = Direction.South;
+                    break;
+                case Direction.North:
+                    retValue = Direction.West;
+                    break;
+                case Direction.East:
+                    retValue = Direction.North;
+                    break;
+                case Direction.South:
+                    retValue = Direction.East;
+                    break;
+            }
+
             return retValue;
         }
         /// <summary>
@@ -693,7 +748,25 @@ namespace RogueGame{
         /// <returns></returns>
         public Direction GetDirection180(Direction startingDirection)
         {
-            return (Direction)((int)startingDirection * -1); 
+            Direction retValue = startingDirection;
+
+            switch (startingDirection)
+            {
+                case Direction.West:
+                    retValue = Direction.East;
+                    break;
+                case Direction.North:
+                    retValue = Direction.South;
+                    break;
+                case Direction.East:
+                    retValue = Direction.West;
+                    break;
+                case Direction.South:
+                    retValue = Direction.North;
+                    break;
+            }
+
+            return retValue;
         }
         /// <summary>
         /// Search for specific character in four directions around point for a specific character. 
@@ -837,6 +910,54 @@ namespace RogueGame{
                                     select monster).FirstOrDefault();
             
             return foundMonster;
+        }
+        /// <summary>
+        /// Detects a monster in a specific direction within the current room.
+        /// </summary>
+        /// <param name="Start"></param>
+        /// <param name="UserDirection"></param>
+        /// <returns></returns>
+        public Monster? DetectMonster(MapSpace Start, Direction UserDirection)
+        {
+            int currentX = Start.X, currentY = Start.Y;            
+
+            /*
+            currentY = (currentY > MAP_HT) ? MAP_HT : currentY;
+            currentY = (currentY < 0) ? 0 : currentY;
+            currentX = (currentX > MAP_WD) ? MAP_WD : currentX;
+            currentX = (currentX < 0) ? 0 : currentX;
+            */
+
+            // Helper function to get current space display character.
+            char currChar() => levelMap[currentX, currentY].MapCharacter.DisplayChar;
+            // Helper function to detect monster.
+            bool foundMonster() => (DetectMonster(levelMap[currentX, currentY]) != null
+                && CurrentPlayer!.Location != levelMap[currentX, currentY]);
+            bool inBounds() => InhabitableSpacesGlyphList.Contains(currChar());
+
+            switch (UserDirection)
+            {
+                // Move a space at a time. Retain one space before current.
+                case Direction.North:
+                    while (!foundMonster() && inBounds())
+                        currentY--;
+                    break;
+                case Direction.East:
+                    while (!foundMonster() && inBounds())
+                        currentX++;
+                    break;
+                case Direction.South:
+                    while (!foundMonster() && inBounds())
+                        currentY++;
+                    break;
+                case Direction.West:
+                    while (!foundMonster() && inBounds())
+                        currentX--;
+                    break;                    
+            }
+
+            return DetectMonster(levelMap[currentX, currentY]);
+            
         }
         /// <summary>
         /// Show all monsters on the map.

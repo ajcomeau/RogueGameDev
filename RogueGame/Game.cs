@@ -1,10 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
-using System.Net.NetworkInformation;
-using System.Reflection;
 using static RogueGame.GameTools;
 using static RogueGame.Inventory;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace RogueGame
 {    
@@ -49,9 +46,8 @@ namespace RogueGame
             Help = 4,
             GameOver = 5,
             Victory = 6,
-            Scoreboard = 7,        
+            Scoreboard = 7
         }
-
         public enum RingHand
         {
             Left = 0,
@@ -101,9 +97,9 @@ namespace RogueGame
         /// </summary>
         public string? CauseOfDeath { get; set; }
         /// <summary>
-        /// Delgate used to return to function that enables an inventory item to be used.
+        /// Tuple used to store user key input and return functions.
         /// </summary>
-        public Action<char?>? ReturnFunction { get; set; }
+        private (Action? ReturnFunction, char? UserKey, MapLevel.Direction? UserDirect) UserInput;
         /// <summary>
         /// Status message for top of screen.
         /// </summary>
@@ -406,7 +402,7 @@ namespace RogueGame
         /// <param name="character"></param>
         private void TrapArrow(Character character)
         {
-            Inventory? arrow = GameInventory.GetInventoryItem("arrow");
+            Inventory? arrow = GameInventory.GetInventoryItem(InvTemplateID.Arrow);
             MapSpace? landing;
             bool arrowHit = rand.Next(100) > GameTools.COIN_FLIP;
 
@@ -859,7 +855,7 @@ namespace RogueGame
                     }
                     else if (monster != null)
                     {
-                        Attack(CurrentPlayer, monster);
+                        Attack(CurrentPlayer, monster, null, false);
 
                         // Player turn completed.
                         turnComplete = true;
@@ -886,13 +882,14 @@ namespace RogueGame
         /// </summary>
         /// <param name="Attacker">Player object as attacker</param>
         /// <param name="Defender">Monster object as defender</param>
-        private void Attack(Player Attacker, Monster Defender)
+        private void Attack(Player Attacker, Monster Defender, Inventory? Item, bool Charged = false)
         {
             int hitChance;
             bool hitSuccess;
             int damage = 0;
             (int Min, int Max) damagePotential = Attacker.DamagePotential();
-            Inventory? weapon = CurrentPlayer.Wielding;
+            Inventory? weapon = (Item == null ? CurrentPlayer.Wielding : Item);
+            bool inRoom;
 
             // Set the monster as the current opponent.
             CurrentPlayer.Opponent = Defender;
@@ -914,18 +911,18 @@ namespace RogueGame
             if (hitSuccess)
             {
                 UpdateStatus($"You hit the {Defender.CharacterName.ToLower()}.", false);
-                
+
                 //Identify item if necessary.
                 if (weapon != null && !weapon.IsIdentified)
-                    SetInventoryAsIdentified(weapon.PriorityId);                    
-                
+                    SetInventoryAsIdentified(weapon.PriorityId);
+
                 // Find and invoke the delegate if there is one.
                 if (weapon != null && InventoryActions.TryGetValue(weapon.PriorityId, out var taskInfo))
                 {
                     // Remove scrolls and potions from the player's inventory and invoke delegate.
                     if (weapon.ItemCategory == InvCategory.Potion || weapon.ItemCategory == InvCategory.Scroll)
                         CurrentPlayer.CharacterInventory.Remove(weapon);
-                    
+
                     if (weapon.ItemCategory == InvCategory.Potion)
                         UpdateStatus("The sound of the flask shattering echoes strangely and its contents spill over your opponent.", false);
                     else if (weapon.ItemCategory == InvCategory.Scroll)
@@ -940,10 +937,23 @@ namespace RogueGame
 
                 // Invoke any inventory effects the player has right now.
                 if (CurrentPlayer.InventoryEffect != null)
-                     CurrentPlayer.InventoryEffect?.TargetFunction.Invoke();
+                    CurrentPlayer.InventoryEffect?.TargetFunction.Invoke();
             }
-            else UpdateStatus($"You missed the {Defender.CharacterName.ToLower()}.", false);
+            else
+            {
+                // If an item was thrown, drop it on the map somewhere near the monster.
+                if (Item != null && !Charged)
+                {
+                    inRoom = (CurrentPlayer.Location!.MapCharacter.DisplayChar == ROOM_INT.DisplayChar);
+                    // Find a place for the item to land.
+                    Item.Location = CurrentMap.GetOpenSpace(!inRoom, CurrentMap
+                        .GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 2))!;
 
+                    // Add the item to the map.
+                    CurrentMap.AddInventory(Item, Item.Location, false);
+                }
+                UpdateStatus($"You missed the {Defender.CharacterName.ToLower()}.", false);
+            }
             Defender.HPDamage += damage;
 
             // If the monster has been defeated, remove it from the map and spawn another one.
@@ -1168,40 +1178,51 @@ namespace RogueGame
             // Process whatever key is sent by the form.
             // Putting a break point in this function to test causes it to lose keystrokes
             // following CTRL and SHIFT so they're not being sent here on their own anymore.
+            // Transfer retained user input to local tuple for editing.
 
             keyHandled = false;
-            char lowerCase = char.ToLower((char)KeyVal);
+            char lowerCase = char.ToLower((char)KeyVal);            
 
             if (KeyVal == KEY_ESC)
             {
-                ReturnFunction = null;
+                // The ESC key cancels inventory operations in process.
+                UserInput = (null, null, null);
                 GameMode = DisplayMode.Primary;
                 keyHandled = true;
             }
 
             if (!keyHandled)
             {
-                switch (GameMode)
+                if (UserInput.ReturnFunction != null)
                 {
-                    case DisplayMode.Inventory:
-                        // For letters, call the current return function.
-                        if (lowerCase >= 'a' && lowerCase <= 'z')
+                    // For letters, call the current return function.
+                    if (lowerCase >= 'a' && lowerCase <= 'z')
+                    {
+                        if (UserInput.ReturnFunction != null)
                         {
-                            if (ReturnFunction != null)
-                                ReturnFunction(lowerCase);
+                            UserInput.UserKey = lowerCase;
+                            UserInput.ReturnFunction!();
+                        }
+                    }
+                    else if (KeyVal >= (int)MapLevel.Direction.West &&
+                        KeyVal <= (int)MapLevel.Direction.South)
+                    {
+                        if (UserInput.ReturnFunction != null)
+                        {
+                            UserInput.UserDirect = (MapLevel.Direction)KeyVal;
+                            UserInput.ReturnFunction!();
                         }
                         keyHandled = true;
-                        break;
-                    case DisplayMode.Primary:
-                        // Shift, Ctrl and Basic combinations
-                        if (KeyActions.TryGetValue(new recKeyChord(KeyVal, Control, Shift), out var taskInfo))
-                            taskInfo.method.Invoke();
-
-                        keyHandled = true;
-                        break;
-                    default:
-                        break;
+                    }                    
                 }
+                else
+                {
+                    if (KeyActions.TryGetValue(new recKeyChord(KeyVal, Control, Shift), out var taskInfo))
+                        taskInfo.method.Invoke();
+
+                    keyHandled = true;
+                }
+
             }
 
             // Complete turn if one was started.
@@ -1228,7 +1249,7 @@ namespace RogueGame
                     break;
                 default:
                     break;
-            } 
+            }
         }
 
         /// <summary>
@@ -1242,22 +1263,23 @@ namespace RogueGame
                 {new recKeyChord(KEY_DOWNLEVEL, false, true), (DownStairsProc, "> - Go downstairs")},
                 {new recKeyChord(KEY_UPLEVEL, false, true), (UpstairsProc, "< - Go upstairs (requires amulet)")},
                 {new recKeyChord(KEY_F, false, true), (FastPlayProc, "F - Fast Play ON / OFF")},
-                {new recKeyChord(KEY_P, false, true), (WearRingProc, "P - Put on ring")},
+                {new recKeyChord(KEY_P, false, true), (PutOnRing, "P - Put on ring")},
                 {new recKeyChord(KEY_LBRACE, false, true), (RemoveLeftRing, "{ - Remove ring from left hand")},
                 {new recKeyChord(KEY_RBRACE, false, true), (RemoveRightRing, "} - Remove ring from right hand")},
-                {new recKeyChord(KEY_W, false, true), (WearArmorProc, "W - Wear armor")},
+                {new recKeyChord(KEY_W, false, true), (WearArmor, "W - Wear armor")},
                 {new recKeyChord(KEY_T, false, true), (RemoveArmorProc, "T - Remove armor")},
                 {new recKeyChord(KEY_SOUTH, false, false), (SouthProc, "Down arrow - Move south")},
                 {new recKeyChord(KEY_WEST, false, false), (WestProc, "Left arrow - Move west")},
                 {new recKeyChord(KEY_NORTH, false, false), (NorthProc, "Up arrow - Move north")},
                 {new recKeyChord(KEY_EAST, false, false), (EastProc, "Right arrow - Move east")},
-                {new recKeyChord(KEY_Q, false, false), (QuaffProc, "q - Quaff potion")},
-                {new recKeyChord(KEY_R, false, false), (ReadProc, "r - Read scroll")},
+                {new recKeyChord(KEY_Q, false, false), (QuaffPotion, "q - Quaff potion")},
+                {new recKeyChord(KEY_R, false, false), (ReadScroll, "r - Read scroll")},
                 {new recKeyChord(KEY_S, false, false), (SearchProc, "s - Search for item")},
-                {new recKeyChord(KEY_E, false, false), (EatProc, "e - Eat food")},
+                {new recKeyChord(KEY_E, false, false), (Eat, "e - Eat food")},
                 {new recKeyChord(KEY_I, false, false), (InventoryProc, "i - Show inventory")},
-                {new recKeyChord(KEY_D, false, false), (DropProc, "d - Drop item")},
-                {new recKeyChord(KEY_W, false, false), (WieldProc, "w - Wield a weapon")},
+                {new recKeyChord(KEY_D, false, false), (DropInventory, "d - Drop item")},
+                {new recKeyChord(KEY_W, false, false), (Wield, "w - Wield a weapon")},
+                {new recKeyChord(KEY_T, false, false), (ThrowItem, "t - Throw item")},
                 {new recKeyChord(KEY_HELP, false, true), (HelpProc, "? - Show help screen")},
                 {new recKeyChord(KEY_D, true, false), (DevModeProc, "CTRL-D - Dev Mode ON / OFF")},
                 {new recKeyChord(KEY_N, true, false), (NewMapProc, "CTRL-N - Draw new map (Dev mode)")},
@@ -1300,7 +1322,20 @@ namespace RogueGame
                 {InvTemplateID.PotionOfHallucination, PotionOfHallucination},
                 {InvTemplateID.PotionOfParalysis, PotionOfParalysis},
                 {InvTemplateID.PotionOfPoison, PotionOfPoison},
-                {InvTemplateID.PotionOfThirstQuenching, PotionOfThirstQuenching}
+                {InvTemplateID.PotionOfThirstQuenching, PotionOfThirstQuenching},
+                {InvTemplateID.StaffOfLight, StaffOfLight},
+                {InvTemplateID.StaffOfStriking, StaffOfStriking},
+                {InvTemplateID.StaffOfMagicMissile, StaffOfMagicMissile},
+                {InvTemplateID.StaffOfDrainLife, StaffOfDrainLife},
+                {InvTemplateID.StaffOfCancellation, StaffOfCancellation},
+                {InvTemplateID.StaffOfNothing, StaffOfNothing},
+                {InvTemplateID.WandOfFire, WandOfFire},
+                {InvTemplateID.WandOfCold, WandOfCold},
+                {InvTemplateID.WandOfHasteMonster, WandOfHasteMonster},
+                {InvTemplateID.WandOfPolymorph, WandOfPolymorph},
+                {InvTemplateID.WandOfHoldMonster, WandOfHoldMonster},
+                {InvTemplateID.WandOfTeleportAway, WandOfTeleportAway},
+                {InvTemplateID.WandOfNothing, WandOfNothing},
             };
 
             // Trap delegates and probability of occurrence.
@@ -1314,6 +1349,177 @@ namespace RogueGame
                 {TrapRust, 100 },
                 {TrapTeleport, 100 }
             };
+        }
+
+        private void WandOfNothing(Character character)
+        {
+            UpdateStatus($"The wand sparks fitfully and then ... nothing.", false);
+        }
+
+        private void WandOfTeleportAway(Character character)
+        {
+            if (character is Player)
+            {
+                UpdateStatus($"There is nothing there to teleport.", false);
+            }
+            else
+            {
+                ((Monster)character).Location = CurrentMap.GetOpenSpace(true);
+                UpdateStatus($"Won't be seeing him for a little while ...", false);
+            }
+        }
+
+        private void WandOfHoldMonster(Character character)
+        {
+            if (character is Player)
+            {
+                UpdateStatus($"The air becomes very still.", false);
+            }
+            else
+            {
+                ((Monster)character).Immobile = CurrentTurn + 100;
+                UpdateStatus($"A blast of energy shooots out from the wand and envelopes the monster, holding it in place.", false);
+            }
+        }
+
+        private void WandOfPolymorph(Character character)
+        {
+            MapSpace location;
+
+            if (character is Player)
+            {
+                UpdateStatus($"You sense endless possibilities, none of them really great.", false);
+            }
+            else
+            {
+                // Remove monster from ActiveMonsters list and create another one in its place.
+                location = ((Monster)character).Location!;
+                CurrentPlayer.Opponent = null;
+                CurrentMap.ActiveMonsters.Remove((Monster)character);
+                CurrentMap.AddMonsters(1, [location]);
+            }
+        }
+
+        private void WandOfHasteMonster(Character character)
+        {
+            if (character is Player)
+            {
+                UpdateStatus($"You feel a strange quickening sensation from the wand but nothing happens.", false);
+            }
+            else
+            {
+                ((Monster)character).RelativeSpeed = (2, CurrentTurn + 999);
+                UpdateStatus($"The monster starts moving much faster.", false);
+            }
+        }
+
+        private void WandOfCold(Character character)
+        {
+            if (character is Player)
+            {
+                UpdateStatus($"A blast of ice jumps from the wand and hits the far wall.", false);
+            }
+            else
+            {
+                UpdateStatus($"A blast of shoots from the wand and hits the {((Monster)character).CharacterName}.", false);
+                ((Monster)character).HPDamage += rand.Next(6, 37);
+            }
+        }
+
+        private void WandOfFire(Character character)
+        {
+            if (character is Player)
+            {
+                UpdateStatus($"Fire jumps from the wand and hits the far wall.", false);
+            }
+            else
+            {
+                UpdateStatus($"Fire jumps from the wand and hits the {((Monster)character).CharacterName}.", false);
+                ((Monster)character).HPDamage += rand.Next(6, 37);
+            }
+        }
+
+        private void StaffOfNothing(Character character)
+        {
+            UpdateStatus($"The staff sparks briefly and then ... nothing.", false);
+        }
+
+        private void StaffOfCancellation(Character character)
+        {
+            if (character is Player)
+            {
+                UpdateStatus($"The charge from the staff fades into the distance.", false);
+            }
+            else
+            {
+                ((Monster)character).SpecialAttack = null;
+                UpdateStatus($"The {((Monster)character).CharacterName} is surrounded by a glow which flickers to nothing. It looks unsettled.", false);
+            }
+        }
+
+        private void StaffOfDrainLife(Character character)
+        {
+            int hpCost;
+
+            if (((Player)character).CurrentHP < 2)
+                hpCost = 0;
+            else 
+                hpCost = (int)(((Player)character).CurrentHP / 2);
+
+            if(hpCost > 0)
+            {
+                // Substract half of player's remaining hit points.
+                ((Player)character).HPDamage += hpCost;
+                UpdateStatus("You feel some of the life drain out of you.", false);
+
+                if (character is Monster)
+                {
+                    ((Monster)character).HPDamage += hpCost;
+                    UpdateStatus("The monster looks weaker now..", false);
+                }
+            }
+            else
+            {
+                UpdateStatus("You are too weak to use this staff.", false);
+            }
+        }
+
+        private void StaffOfMagicMissile(Character character)
+        {
+            if (character is Player)
+                UpdateStatus($"The {((Player)character).Opponent!.CharacterName} dodges the missile.", false);
+            else
+            {
+                ((Monster)character).HPDamage += rand.Next(1, 5);
+                UpdateStatus("The monster dodges the missile.", false);
+            }
+                
+        }
+
+        private void StaffOfStriking(Character character)
+        {
+            bool damageBonus = rand.Next(1, 101) <= 20;
+
+            if (character is Player)
+                UpdateStatus("The monster dodges the blow with ease.", false);
+            else
+            {
+                if (damageBonus)
+                    ((Monster)character).HPDamage += rand.Next(3, 25) + 9;
+                else
+                    ((Monster)character).HPDamage += rand.Next(1, 9) + 3;
+            }
+        }
+
+        private void StaffOfLight(Character character)
+        {
+            if (CurrentPlayer.Location != null)
+                CurrentMap.LightUpRoom(CurrentPlayer.Location.X, CurrentPlayer.Location.Y);
+
+            if (character is Player)
+                UpdateStatus("The entire room is lit with an unearthly glow.", false);
+            else
+                UpdateStatus("The monster seems dazzled for a moment.", false);
         }
 
         #endregion
@@ -1420,7 +1626,7 @@ namespace RogueGame
                 UpdateStatus("You feel a warm surge of energy flow through you.", false);
             }
             else
-                UpdateStatus("That must be a real buzz for you but it doesn't do anything for me.", false);
+                UpdateStatus("'That must be a real buzz for you but it doesn't do anything for me.'", false);
         }
         /// <summary>
         /// Raise the player to the next experience level by increasing
@@ -1593,22 +1799,6 @@ namespace RogueGame
 
         #region KeyProcs
 
-        private void WieldProc()
-        {
-            // Wield a weapon
-            Wield(null);
-        }
-        private void DropProc()
-        {
-            // Drop an inventory item
-            DropInventory(null);
-        }
-        private void EatProc()
-        {
-            // Eat something
-            TurnInProgress = true;
-            Eat(null);
-        }
         private void InventoryProc()
         {
             //Show the inventory.
@@ -1619,18 +1809,6 @@ namespace RogueGame
             // Search for hidden items
             TurnInProgress = true;
             SearchForHidden();
-        }
-        private void ReadProc()
-        {
-            // Read scroll
-            TurnInProgress = true;
-            ReadScroll(null);
-        }
-        private void QuaffProc()
-        {
-            // Quaff potion
-            TurnInProgress = true;
-            QuaffPotion(null);
         }
         private void WestProc()
         {
@@ -1681,24 +1859,13 @@ namespace RogueGame
             DevMode = !DevMode;
             UpdateStatus(DevMode ? "Developer Mode ON" : "Developer Mode OFF", false);
         }
-        private void WearArmorProc()
-        {
-            // Wear armor
-            TurnInProgress = true;
-            WearArmor(null);
-        }
         private void RemoveArmorProc()
         {
             // Take off armor
             TurnInProgress = true;
             RemoveArmor();
         }
-        private void WearRingProc()
-        {
-            // Wear ring
-            TurnInProgress = true;
-            PutOnRing(null);
-        }
+
         private void RemoveLeftRing()
         {
             // Take off ring
@@ -1756,9 +1923,12 @@ namespace RogueGame
         /// </summary>
         /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns></returns>
-        private void Wield(char? ListItem)
+        private void Wield()
         {
             List<Inventory> items;
+
+            if (UserInput.UserKey == null)
+                TurnInProgress = true;
 
             if (GameMode != DisplayMode.Inventory)
             {
@@ -1773,7 +1943,7 @@ namespace RogueGame
                     // and let the player select it.  Set to return and exit.
                     GameMode = DisplayMode.Inventory;
                     UpdateStatus(" Please select an item to wield.", false);
-                    ReturnFunction = Wield;
+                    UserInput = (Wield, null, null);
                 }
                 else
                     // Otherwise, their hand-to-hand skills better be good.
@@ -1783,7 +1953,7 @@ namespace RogueGame
             {
                 // Get the selected item.
                 items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
-                         where InventoryLine.ID == ListItem
+                         where InventoryLine.ID == UserInput.UserKey
                          select InventoryLine.InvItem).ToList();
 
                 if (items.Count > 0)
@@ -1814,7 +1984,7 @@ namespace RogueGame
                     UpdateStatus(" Please select something to wield.", false);
                 }
 
-                ReturnFunction = null;
+                UserInput = (null, null, null);
                 GameMode = DisplayMode.Primary;
             }
         }
@@ -1823,10 +1993,13 @@ namespace RogueGame
         /// </summary>
         /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns>True / False indicating if item was sucessfuly worn</returns>
-        private void PutOnRing(char? ListItem)
+        private void PutOnRing()
         {
             string hand = "";
             List<Inventory> items;
+
+            if (UserInput.UserKey == null)
+                TurnInProgress = true;
 
             if (GameMode != DisplayMode.Inventory)
             {
@@ -1845,7 +2018,7 @@ namespace RogueGame
                         // and let the player select it.  Set to return and exit.
                         GameMode = DisplayMode.Inventory;
                         UpdateStatus(" Please select a ring to wear.", false);
-                        ReturnFunction = PutOnRing;
+                        UserInput = (PutOnRing, null, null);
                     }
                     else
                         // Otherwise, they're stuck with whatever they have.
@@ -1856,7 +2029,7 @@ namespace RogueGame
             {
                 // Get the selected item.
                 items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
-                         where InventoryLine.ID == ListItem
+                         where InventoryLine.ID == UserInput.UserKey
                          select InventoryLine.InvItem).ToList();
 
                 if (items.Count > 0)
@@ -1903,10 +2076,10 @@ namespace RogueGame
                     UpdateStatus(" Please select a ring to wear.", false);
                 }
 
-                ReturnFunction = null;
+                UserInput = (null, null, null);
             }
 
-            if (ReturnFunction == null) GameMode = DisplayMode.Primary;
+            if (UserInput.ReturnFunction == null) GameMode = DisplayMode.Primary;
 
         }
         /// <summary>
@@ -1929,7 +2102,7 @@ namespace RogueGame
                     CurrentPlayer.RightHand = null;
                 
                 status = $"You removed {GameInventory.ListingDescription(1, ring)}. ";
-
+                
                 // Show the deactivation message if there is one.
                 if (ring.DeactivateMessage.Length > 0)
                     status += ring.DeactivateMessage;
@@ -1946,9 +2119,12 @@ namespace RogueGame
         /// </summary>
         /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns>True / False indicating if item was sucessfuly worn</returns>
-        private void WearArmor(char? ListItem)
+        private void WearArmor()
         {
             List<Inventory> items;
+
+            if (UserInput.UserKey == null)
+                TurnInProgress = true;
 
             if (GameMode != DisplayMode.Inventory)
             {
@@ -1967,7 +2143,7 @@ namespace RogueGame
                         // and let the player select it.  Set to return and exit.
                         GameMode = DisplayMode.Inventory;
                         UpdateStatus(" Please select an armor to wear.", false);
-                        ReturnFunction = WearArmor;
+                        UserInput = (WearArmor, null, null);
                     }
                     else
                         // Otherwise, they're stuck with whatever they have.
@@ -1978,7 +2154,7 @@ namespace RogueGame
             {
                 // Get the selected item.
                 items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
-                         where InventoryLine.ID == ListItem
+                         where InventoryLine.ID == UserInput.UserKey
                          select InventoryLine.InvItem).ToList();
 
                 if (items.Count > 0)
@@ -2002,10 +2178,10 @@ namespace RogueGame
                     UpdateStatus(" Please select some armor to wear.", false);
                 }
 
-                ReturnFunction = null;
+                UserInput  = (null, null, null);
             }
 
-            if (ReturnFunction == null) GameMode = DisplayMode.Primary;
+            if (UserInput.ReturnFunction == null) GameMode = DisplayMode.Primary;
 
         }
         /// <summary>
@@ -2033,10 +2209,13 @@ namespace RogueGame
         /// </summary>
         /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns>True / False indicating if item was eaten</returns>
-        private void Eat(char? ListItem)
+        private void Eat()
         {
             List<Inventory> items;
             int foodValue = 0;
+
+            if (UserInput.UserKey == null)
+                TurnInProgress = true;
 
             if (GameMode != DisplayMode.Inventory)
             {
@@ -2051,7 +2230,7 @@ namespace RogueGame
                     // and let the player select it.  Set to return and exit.
                     GameMode = DisplayMode.Inventory;
                     UpdateStatus(" Please select something to eat.", false);
-                    ReturnFunction = Eat;
+                    UserInput = (Eat, null, null);
                 }
                 else
                     // Otherwise, they'll be hungry for awhile.
@@ -2061,7 +2240,7 @@ namespace RogueGame
             {
                 // Get the selected item.
                 items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
-                         where InventoryLine.ID == ListItem
+                         where InventoryLine.ID == UserInput.UserKey
                          select InventoryLine.InvItem).ToList();
 
                 if (items.Count > 0)
@@ -2094,17 +2273,17 @@ namespace RogueGame
                     UpdateStatus(" Please select something to eat.", false);
                 }
 
-                ReturnFunction = null;
+                UserInput = (null, null, null);
             }
 
-            if (ReturnFunction == null) GameMode = DisplayMode.Primary;
+            if (UserInput.ReturnFunction == null) GameMode = DisplayMode.Primary;
         }
         /// <summary>
         /// Drop specified inventory on map.
         /// </summary>
         /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns>True / False indicating success</returns>
-        private void DropInventory(char? ListItem)
+        private void DropInventory()
         {
             List<InventoryLine> items;
 
@@ -2112,12 +2291,12 @@ namespace RogueGame
             {
                 GameMode = DisplayMode.Inventory;
                 UpdateStatus(" Please select an item to drop.", false);
-                ReturnFunction = DropInventory;
+                UserInput = (DropInventory, null, null);
             }
             else
             {
                 items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
-                         where InventoryLine.ID == ListItem
+                         where InventoryLine.ID == UserInput.UserKey
                          select InventoryLine).ToList();
 
                 if (items.Count > 0)
@@ -2156,10 +2335,10 @@ namespace RogueGame
                     UpdateStatus(" Please select an inventory item to drop.", false);
                 }
 
-                ReturnFunction = null;
+                UserInput = (null, null, null);
             }
 
-            if (ReturnFunction == null) GameMode = DisplayMode.Primary;
+            if (UserInput.ReturnFunction == null) GameMode = DisplayMode.Primary;
 
         }
         /// <summary>
@@ -2204,7 +2383,7 @@ namespace RogueGame
                         foundItem.Amount = 1;
                         // Move the item to the player's inventory.
                         for (int i = 1; i <= itemAmount; i++)
-                            CurrentPlayer.CharacterInventory.Add(GameInventory.GetInventoryItem(foundItem.RealName)!);
+                            CurrentPlayer.CharacterInventory.Add(GameInventory.GetInventoryItem(foundItem.PriorityId)!);
 
                         retValue = $"You picked up {GameInventory.ListingDescription(itemAmount, foundItem)}.";
                         
@@ -2233,9 +2412,12 @@ namespace RogueGame
         /// </summary>
         /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns></returns>
-        private void ReadScroll(char? ListItem)
+        private void ReadScroll()
         {
             List<Inventory> items;
+
+            if (UserInput.UserKey == null)
+                TurnInProgress = true;
 
             try
             {
@@ -2252,7 +2434,7 @@ namespace RogueGame
                         // and let the player select it.  Set to return and exit.
                         GameMode = DisplayMode.Inventory;
                         UpdateStatus(" Please select an item to read.", false);
-                        ReturnFunction = ReadScroll;
+                        UserInput = (ReadScroll, null, null);
                     }
                     else
                         // Otherwise, notify the player.
@@ -2262,7 +2444,7 @@ namespace RogueGame
                 {
                     // Get the selected item.
                     items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
-                             where InventoryLine.ID == ListItem
+                             where InventoryLine.ID == UserInput.UserKey
                              select InventoryLine.InvItem).ToList();
 
                     if (items.Count > 0)
@@ -2283,8 +2465,8 @@ namespace RogueGame
                             // Find and invoke the delegate
                             if (InventoryActions.TryGetValue(items[0].PriorityId, out var taskInfo))
                             {
-                                // Remove the item from the player's inventory and invoke delegate.                            
-                                ReturnFunction = null;
+                                // Remove the item from the player's inventory and invoke delegate.
+                                UserInput = (null, null, null);
                                 CurrentPlayer.CharacterInventory.Remove(items[0]);
                                 taskInfo.Invoke(CurrentPlayer);                                
                             }                                                    
@@ -2293,11 +2475,12 @@ namespace RogueGame
                     else
                     {
                         // Process non-existent option.
-                        UpdateStatus(" Please select something to read.", false);
-
-                        ReturnFunction = null;
-                    }
+                        UpdateStatus(" Please select something to read.", false);                        
+                    }                    
                 }
+
+                if (UserInput.ReturnFunction == null) GameMode = DisplayMode.Primary;
+
             }
             catch (NotImplementedException)
             {
@@ -2305,16 +2488,89 @@ namespace RogueGame
                 UpdateStatus("Watch for side effects like headache, itchiness, sudden metamorphosis, etc.", false);
             }
 
-            if (ReturnFunction == null) GameMode = DisplayMode.Primary;
+            if (UserInput.ReturnFunction == null) GameMode = DisplayMode.Primary;
         }
+
+        /// <summary>
+        /// Throw a specific item
+        /// </summary>
+        /// <param name="ListItem">Menu character of chosen item</param>
+        /// <returns></returns>
+        private void ThrowItem()
+        {
+            List<InventoryLine> items;
+            Monster? target;
+            MapSpace? landing;
+            Inventory thrownItem;
+
+            if (UserInput.UserKey == null)
+            {
+                TurnInProgress = true;
+                GameMode = DisplayMode.Inventory;
+                UpdateStatus(" Please select an item to throw.", false);
+                UserInput.ReturnFunction = ThrowItem;
+            }
+            else if (UserInput.UserKey != null && UserInput.UserDirect == null)
+            {
+                GameMode = DisplayMode.Primary;
+                UpdateStatus(" Which direction?", false);
+                UserInput.ReturnFunction = ThrowItem;
+            }
+            else if (UserInput.UserDirect != null)
+            {
+                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
+                         where InventoryLine.ID == UserInput.UserKey
+                         select InventoryLine).ToList();
+
+                if (items.Count > 0)
+                {
+                    if (items[0].InvItem.IsGroupable && items[0].Count > 1)
+                        CurrentPlayer.CharacterInventory.Remove(CurrentPlayer.CharacterInventory.First(x => x.PriorityId == items[0].InvItem.PriorityId));
+                    else
+                        CurrentPlayer.CharacterInventory.Remove(items[0].InvItem);
+
+                    thrownItem = GameInventory.GetInventoryItem(items[0].InvItem.PriorityId)!;
+
+                    // Look for a monster in the direction chosen.
+                    target = CurrentMap.DetectMonster(CurrentPlayer.Location!, (MapLevel.Direction)UserInput.UserDirect);
+
+                    // If there's a monster in the path of the throw treat this as an attack.
+                    // Otherwise, just pick a surrounding spot and drop the inventory.
+                    if (target != null)
+                        Attack(CurrentPlayer, target, thrownItem, false);
+                    else
+                    {
+                        // Find a place for the item to land.
+                        landing = CurrentMap.GetOpenSpace(false, CurrentMap
+                            .GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 2));
+
+                        // Add the item to the map.
+                        if (landing != null)
+                            CurrentMap.AddInventory(thrownItem, landing, false);
+                    }
+                }
+                else
+                {
+                    UpdateStatus(" Please select an item to throw.", false);
+                }
+
+                UserInput = (null, null, null);
+            }
+
+            if (UserInput.ReturnFunction == null) GameMode = DisplayMode.Primary;
+        }
+
         /// <summary>
         /// Quaff the selected potion.
         /// </summary>
         /// <param name="ListItem">Menu character of chosen item</param>
         /// <returns></returns>
-        private void QuaffPotion(char? ListItem)
+        private void QuaffPotion()
         {
             List<Inventory> items;
+
+            if (UserInput.UserKey == null)
+                TurnInProgress = true;
 
             try
             {
@@ -2331,7 +2587,7 @@ namespace RogueGame
                         // and let the player select it.  Set to return and exit.
                         GameMode = DisplayMode.Inventory;
                         UpdateStatus(" Please select a potion to drink.", false);
-                        ReturnFunction = QuaffPotion;
+                        UserInput = (QuaffPotion, null, null);
                     }
                     else
                         // Otherwise, notify the player.
@@ -2341,7 +2597,7 @@ namespace RogueGame
                 {
                     // Get the selected item.
                     items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
-                             where InventoryLine.ID == ListItem
+                             where InventoryLine.ID == UserInput.UserKey
                              select InventoryLine.InvItem).ToList();
 
                     if (items.Count > 0)
@@ -2361,7 +2617,7 @@ namespace RogueGame
                             if (InventoryActions.TryGetValue(items[0].PriorityId, out var taskInfo))
                             {
                                 // Remove the item from the player's inventory and invoke delegate.
-                                ReturnFunction = null;
+                                UserInput = (null, null, null);
                                 CurrentPlayer.CharacterInventory.Remove(items[0]);
                                 taskInfo.Invoke(CurrentPlayer);                                                                
                             }                                                        
@@ -2379,10 +2635,9 @@ namespace RogueGame
                     else
                     {
                         // Process non-existent option.
-                        UpdateStatus(" Please select something to drink.", false);
-                        ReturnFunction = null;
-                    }                    
-                }
+                        UpdateStatus(" Please select something to drink.", false);                        
+                    }                   
+                }                
             }
             catch (NotImplementedException)
             {
@@ -2390,7 +2645,7 @@ namespace RogueGame
                 UpdateStatus("Watch for side effects like headache, itchiness, sudden metamorphosis, etc.", false);
             }
 
-            if (ReturnFunction == null) GameMode = DisplayMode.Primary;
+            if (UserInput.ReturnFunction == null) GameMode = DisplayMode.Primary;
         }
 
         #endregion
@@ -2402,24 +2657,27 @@ namespace RogueGame
         /// <returns></returns>
         public void ScrollOfIdentifyBegin(Character character)
         {
+            if (UserInput.UserKey == null)
+                TurnInProgress = true;
+
             UpdateStatus(" This is a Scroll of Identify. Please select an item to identify.", false);
             GameMode = DisplayMode.Inventory;
             // Set return function to respond to next key command.
-            ReturnFunction = ScrollOfIdentifyEnd;
+            UserInput = (ScrollOfIdentifyEnd, null, null);
         }
         /// <summary>
         /// Process user choice for inventory item to identify.
         /// </summary>
         /// <param name="ListItem"></param>
         /// <returns></returns>
-        private void ScrollOfIdentifyEnd(char? ListItem)
+        private void ScrollOfIdentifyEnd()
         {
             List<InventoryLine> lines;
             string description = "";
 
             // Get the selected item.
             lines = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
-                     where InventoryLine.ID == ListItem
+                     where InventoryLine.ID == UserInput.UserKey
                      select InventoryLine).ToList();
 
             if (lines.Count > 0)
@@ -2437,7 +2695,7 @@ namespace RogueGame
                 UpdateStatus(" That item doesn't exist.", false);
             }
 
-            ReturnFunction = null;
+            UserInput = (null, null, null);
             GameMode = DisplayMode.Primary;
         }
         /// <summary>
@@ -2763,7 +3021,7 @@ namespace RogueGame
 
                 foreach(Inventory item in monster.CharacterInventory)
                 {
-                    invItem = GameInventory.GetInventoryItem(item.RealName)!;
+                    invItem = GameInventory.GetInventoryItem(item.PriorityId)!;
                     CurrentMap.AddInventory(item, CurrentMap.GetOpenSpace(true)!, true);
                 }                    
             }

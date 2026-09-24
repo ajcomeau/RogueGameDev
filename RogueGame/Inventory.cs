@@ -70,6 +70,7 @@ namespace RogueGame
         public bool IsAssigned { get; set;  }
         /// <summary>
         /// How many items are there in the batch?
+        /// TODO: Can this be calculated instead?
         /// </summary>
         public int Amount { get; set; } = 1;
         /// <summary>
@@ -476,25 +477,40 @@ namespace RogueGame
             BandedMail = 54,
             PlateMail = 55,
 
+            // Staves
+            StaffOfLight = 56,
+            StaffOfStriking = 57,
+            StaffOfMagicMissile = 58,
+            StaffOfDrainLife = 59,
+            StaffOfCancellation = 60,
+            StaffOfNothing = 61,
+
+            // Wands
+            WandOfFire = 62,
+            WandOfCold = 63,
+            WandOfHasteMonster = 64,
+            WandOfPolymorph = 65,
+            WandOfHoldMonster = 66,
+            WandOfTeleportAway = 67,
+            WandOfNothing = 68,
+            
             // Weapons
-            Mace = 56,
-            ShortBow = 57,
-            Crossbow = 58,
-            Dagger = 59,
-            LongSword = 60,
-            Spear = 61,
-            TwoHandedSword = 62,
-
+            Mace = 69,
+            ShortBow = 70,
+            Crossbow = 71,
+            Dagger = 72,
+            LongSword = 73,
+            Spear = 74,
+            TwoHandedSword = 75,
+            
             // Ammunition
-            Arrow = 63,
-            CrossbowBolt = 64,
-            Dart = 65,
-
+            Arrow = 76,
+            CrossbowBolt = 77,
+            Dart = 78,
+            
             // Gold
-            Gold = 67
+            Gold = 79
         }
-
-
         /// <summary>
         /// Load inventory items into this instance of the class. PriorityID and names values MUST BE UNIQUE.
         /// New property ID members can be added to the InvTempalate ID enuemration above.
@@ -510,7 +526,7 @@ namespace RogueGame
                 new Inventory(InvCategory.Amulet, InvTemplateID.TheAmulet, "The Amulet", "The Amulet", "The Amulets", true, false, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, new MapGlyph(AMULET.DisplayChar, Color.Yellow, Color.Black), "", ""),
                 new Inventory(InvCategory.Food, InvTemplateID.SomeFood, "some food", "some food", "rations of food", new MapGlyph('♣', Color.Red, Color.Black), 50, true),
                 new Inventory(InvCategory.Food, InvTemplateID.Mango, "a mango", "a mango", "mangoes", new MapGlyph('♣', Color.Red, Color.Black), 50, false),
-                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfIdentify, "", "Identify", "Identify", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfIdentify, "", "Identify", "Identify", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 2000, 0, new MapGlyph('♪', Color.HotPink, Color.Black), "", ""),
                 new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfMagicMapping, "", "Magic Mapping", "Magic Mapping", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfEnchantArmor, "", "Enchant Armor", "Enchant Armor", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Scroll, InvTemplateID.ScrollOfEnchantWeapon, "", "Enchant Weapon", "Enchant Weapon", false, true, false, true, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('♪', Color.Blue, Color.Black), "", ""),
@@ -555,14 +571,27 @@ namespace RogueGame
                 new Inventory(InvCategory.Ring, InvTemplateID.RingOfTeleportation, "", "Teleportation", "Teleportation", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('ö', Color.Orange, Color.Black), "", ""),
                 new Inventory(InvCategory.Ring, InvTemplateID.RingOfAggravateMonster, "", "Aggravate Monster", "Aggravate Monster", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('ö', Color.Orange, Color.Black), "", ""),
                 new Inventory(InvCategory.Ring, InvTemplateID.RingOfAdornment, "", "Adornment", "Adornment", false, true, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('ö', Color.Orange, Color.Black), "Such a stylish ring ... it reflects the torchlight nicely.", "It really was kind of useless."),
-                new Inventory(InvCategory.Armor, InvTemplateID.StuddedLeatherArmor, "studded leather armor", "studded leather armor", "studded leather armor", false, false, true, true, false, false,3, 1, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.LeatherArmor, "leather armor", "leather armor", "leather armor", false, false, false, true, false,  false, 2, 1, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.RingMail, "ring mail", "ring mail", "ring mail", false, false, false, true, false, false,3, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.ScaleMail, "scale mail", "scale mail", "scale mail", false, false, false, true, false, false,4, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.ChainMail, "chain mail", "chain mail", "chain mail", false, false, false, true, false, false,5, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.SplintMail, "splint mail", "splint mail", "splint mail", false, false, false, true, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0,new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.BandedMail, "banded mail", "banded mail", "banded mail", false, false, false, true, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.PlateMail, "plate mail", "plate mail", "plate mail", false, false, false, true, false,  false,7, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.StuddedLeatherArmor, "Studded leather armor", "Studded leather armor", "Studded leather armor", false, false, true, true, false, false,3, 1, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.LeatherArmor, "Leather armor", "Leather armor", "Leather armor", false, false, false, true, false,  false, 2, 1, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.RingMail, "Ring mail", "Ring mail", "Ring mail", false, false, false, true, false, false,3, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.ScaleMail, "Scale mail", "Scale mail", "Scale mail", false, false, false, true, false, false,4, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.ChainMail, "Chain mail", "Chain mail", "Chain mail", false, false, false, true, false, false,5, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.SplintMail, "Splint mail", "Splint mail", "Splint mail", false, false, false, true, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0,new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.BandedMail, "Banded mail", "Banded mail", "Banded mail", false, false, false, true, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.PlateMail, "Plate mail", "Plate mail", "Plate mail", false, false, false, true, false,  false,7, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfLight, "Light", "Light", "Light", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfStriking, "Striking", "Striking", "Striking", false, false, false, true, false, false, 0, 1, 3, 10, 1, 8, 0, 25, 0, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfMagicMissile, "Magic Missile", "Magic Missile", "Magic Missile", false, false, false, true, false, false, 0, 1, 1, 1, 1, 4, 0, 25, 0, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfDrainLife, "Drain Life", "Drain Life", "Drain Life", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfCancellation, "Cancellation", "Cancellation", "Cancellation", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfNothing, "Hiking", "Hiking", "Hiking", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Wand, InvTemplateID.WandOfFire, "Fire", "Fire", "Fire", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Wand, InvTemplateID.WandOfCold, "Cold", "Cold", "Cold", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Wand, InvTemplateID.WandOfHasteMonster, "Haste Monster", "Haste Monster", "Haste Monster", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Wand, InvTemplateID.WandOfPolymorph, "Polymorph", "Polymorph", "Polymorph", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Wand, InvTemplateID.WandOfHoldMonster, "Hold Monster", "Hold Monster", "Hold Monster", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Wand, InvTemplateID.WandOfTeleportAway, "Teleport", "Teleport", "Teleport", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Wand, InvTemplateID.WandOfNothing, "Ornamentation", "Ornamentation", "Ornamentation", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Weapon, InvTemplateID.Mace, "mace", "mace", "maces", false, false, true, true, false,  false,0, 0, 1, 1, 2, 8, -3, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Weapon, InvTemplateID.ShortBow, "short bow", "short bow", "short bows", false, false, true, true, false, false, 0, 0, 0, 1, 1, 1, 0, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Weapon, InvTemplateID.Crossbow, "crossbow", "crossbow", "crossbows", false, false, false, true, false, false, 0, 0, 0, 1, 1, 1, 0, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black), "", ""),
@@ -657,26 +686,26 @@ namespace RogueGame
                     break;
                 case InvCategory.Ring:
                     if (Item.IsIdentified)
-                        retValue = Number == 1 ? "a " + Item.Increment.ToString() + " " + Item.ItemCategory.ToString().ToLower() + " of " + Item.RealName
-                            : Number.ToString() + " " + Item.Increment.ToString() + " " + Item.ItemCategory.ToString().ToLower() + "s of " + Item.RealName;
+                        retValue = Number == 1 ? "a " + Item.Increment.ToString() + " " + Item.ItemCategory.ToString() + " of " + Item.RealName
+                            : Number.ToString() + " " + Item.Increment.ToString() + " " + Item.ItemCategory.ToString() + "s of " + Item.RealName;
                     else
                         retValue = Number == 1 ? GameTools.AddEnglishArticle(Item.CodeName!) + " " + Item.ItemCategory.ToString().ToLower()
-                            : Number.ToString() + " " + Item.CodeName! + " " + Item.ItemCategory.ToString().ToLower() + "s";
+                            : Number.ToString() + " " + Item.CodeName! + " " + Item.ItemCategory.ToString() + "s";
                     break;
                 case InvCategory.Potion:
                 case InvCategory.Wand:
                 case InvCategory.Staff:
                     if (Item.IsIdentified)
-                        retValue = Number == 1 ? "a " + Item.ItemCategory.ToString().ToLower() + " of " + Item.RealName
-                            : Number.ToString() + " " + Item.ItemCategory.ToString().ToLower() + "s of " + Item.RealName;
+                        retValue = Number == 1 ? "a " + Item.ItemCategory.ToString() + " of " + Item.RealName
+                            : Number.ToString() + " " + Item.ItemCategory.ToString() + "s of " + Item.RealName;
                     else
                         retValue = Number == 1 ? GameTools.AddEnglishArticle(Item.CodeName!) + " " + Item.ItemCategory.ToString().ToLower()
                             : Number.ToString() + " " + Item.CodeName! + " " + Item.ItemCategory.ToString().ToLower() + "s";
                     break;
                 case InvCategory.Scroll:
                     if (Item.IsIdentified)
-                        retValue = Number == 1 ? "a " + Item.ItemCategory.ToString().ToLower() + " of " + Item.RealName 
-                            : Number.ToString() + " " + Item.ItemCategory.ToString().ToLower() + "s of " + Item.RealName;
+                        retValue = Number == 1 ? "a " + Item.ItemCategory.ToString() + " of " + Item.RealName 
+                            : Number.ToString() + " " + Item.ItemCategory.ToString() + "s of " + Item.RealName;
                     else
                         retValue = Number == 1 ? "a " + Item.ItemCategory.ToString().ToLower() + " called \"" + Item.CodeName + "\""
                             : Number.ToString() + " " + Item.ItemCategory.ToString().ToLower() + "s called \"" + Item.CodeName + "\"";
@@ -724,14 +753,14 @@ namespace RogueGame
         /// <summary>
         /// Get a specific inventory item by name from the list of templates.
         /// </summary>
-        /// <param name="ItemName">Real name of item.</param>
+        /// <param name="Item"></param>
         /// <returns></returns>
-        public Inventory? GetInventoryItem(string ItemName)
+        public Inventory? GetInventoryItem(Inventory.InvTemplateID Item)
         {
             Inventory? retInv = null;
 
             List<Inventory> retList = (from Inventory item in InventoryItems
-                        where item.RealName == ItemName
+                        where item.PriorityId == Item
                         select item).ToList();
 
             // Clone a new object from template and make some adjustments.
