@@ -921,7 +921,10 @@ namespace RogueGame
                 {
                     // Remove scrolls and potions from the player's inventory and invoke delegate.
                     if (weapon.ItemCategory == InvCategory.Potion || weapon.ItemCategory == InvCategory.Scroll)
+                    {
                         CurrentPlayer.CharacterInventory.Remove(weapon);
+                        CurrentPlayer.Wielding = null;
+                    }
 
                     if (weapon.ItemCategory == InvCategory.Potion)
                         UpdateStatus("The sound of the flask shattering echoes strangely and its contents spill over your opponent.", false);
