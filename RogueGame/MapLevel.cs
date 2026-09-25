@@ -1237,7 +1237,7 @@ namespace RogueGame{
 
             mapInventory.ForEach(inv => {inv.Location.RemoteSight = true;});
 
-            return (mapInventory.Count >= 0);
+            return (mapInventory.Count > 0);
         }
         /// <summary>
         /// Return region number 1 through 9 based on map point.
