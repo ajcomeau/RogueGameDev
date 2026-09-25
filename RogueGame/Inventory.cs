@@ -780,9 +780,10 @@ namespace RogueGame
             item.IsCursed = (!item.IsProtected && rand.Next(1, 101) < ITEM_CURSE_PROB);
 
             switch (item.ItemCategory)
-            {                
-                case InvCategory.Ring:                    
-                    item.Increment = item.IsCursed ? rand.Next(1, 6) : rand.Next(-5, 0);
+            {
+                case InvCategory.Armor:
+                case InvCategory.Ring:
+                    item.Increment = item.IsCursed ? rand.Next(-5, 0) : rand.Next(1, 6);
                     break;
             }
         }

@@ -1865,7 +1865,6 @@ namespace RogueGame
             TurnInProgress = true;
             RemoveArmor();
         }
-
         private void RemoveLeftRing()
         {
             // Take off ring
@@ -2868,18 +2867,37 @@ namespace RogueGame
             
         }
         /// <summary>
-        /// Remove any curses on weapons and armor in use.
+        /// Remove any curses on weapons, armor and rings in use.
         /// </summary>
         /// <returns></returns>
         private void ScrollOfRemoveCurse(Character character)
         {
+            
             if (character is Player)
             {
                 if (CurrentPlayer.Armor != null)
+                {
                     CurrentPlayer.Armor.IsCursed = false;
+                    CurrentPlayer.Armor.Increment *= -1;
+                }                    
 
                 if (CurrentPlayer.Wielding != null)
+                {
                     CurrentPlayer.Wielding.IsCursed = false;
+                    CurrentPlayer.Wielding.Increment *= -1;
+                }
+
+                if (CurrentPlayer.RightHand != null)
+                {
+                    CurrentPlayer.RightHand.IsCursed = false;
+                    CurrentPlayer.RightHand.Increment *= -1;
+                }
+
+                if (CurrentPlayer.LeftHand != null)
+                {
+                    CurrentPlayer.LeftHand.IsCursed = false;
+                    CurrentPlayer.LeftHand.Increment *= -1;
+                }
 
                 UpdateStatus("You suddenly feel someone watching over you.", false);
             }
