@@ -941,6 +941,8 @@ namespace RogueGame
                 // Invoke any inventory effects the player has right now.
                 if (CurrentPlayer.InventoryEffect != null)
                     CurrentPlayer.InventoryEffect?.TargetFunction.Invoke();
+
+                Defender.HPDamage += damage;
             }
             else
             {
@@ -957,7 +959,6 @@ namespace RogueGame
                 }
                 UpdateStatus($"You missed the {Defender.CharacterName.ToLower()}.", false);
             }
-            Defender.HPDamage += damage;
 
             // If the monster has been defeated, remove it from the map and spawn another one.
             if (Defender.CurrentHP < 1)
@@ -984,7 +985,7 @@ namespace RogueGame
             // Set the attacker as the player's current opponent.
             Defender.Opponent = Attacker;
 
-            // Chance of landing a punch: 50% + (5% * monster min hit points)  - (5% * total protecton)        
+            // Chance of landing a punch: 50% + (5% * attacker min hit points)  - (5% * defender's total protecton)        
 
             hitChance = 50 + (Attacker.MinStartingHP * 5) - (Defender.TotalProtection() * 5);
             
@@ -1015,14 +1016,14 @@ namespace RogueGame
                     Attacker.Location = CurrentMap.GetOpenSpace(true);
                     Attacker.Teleport = false;
                 }
+
+                Defender.HPDamage += damage;
             }
             else
             {
                 UpdateStatus($"The {Attacker.CharacterName.ToLower()} missed you.", false);
                 Debug.Print($"The {Attacker.CharacterName} missed you with a {hitChance.ToString()} chance of hitting.");
             }
-
-                Defender.HPDamage += damage;
 
             // If the player has been defeated, end the game.
             if (Defender.CurrentHP < 1)
