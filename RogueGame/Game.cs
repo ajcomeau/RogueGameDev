@@ -2546,6 +2546,8 @@ namespace RogueGame
                         // Add the item to the map.
                         if (landing != null)
                             CurrentMap.AddInventory(thrownItem, landing, false);
+
+                        UpdateStatus($"You threw away {thrownItem.ListingDescription}.", false);
                     }
                 }
                 else
