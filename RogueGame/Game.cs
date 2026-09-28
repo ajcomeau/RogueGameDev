@@ -1202,31 +1202,22 @@ namespace RogueGame
                     // For letters, call the current return function.
                     if (lowerCase >= 'a' && lowerCase <= 'z')
                     {
-                        if (UserInput.ReturnFunction != null)
-                        {
-                            UserInput.UserKey = lowerCase;
-                            UserInput.ReturnFunction!();
-                        }
+                        UserInput.UserKey = lowerCase;
+                        UserInput.ReturnFunction!();
                     }
                     else if (KeyVal >= (int)MapLevel.Direction.West &&
                         KeyVal <= (int)MapLevel.Direction.South)
                     {
-                        if (UserInput.ReturnFunction != null)
-                        {
-                            UserInput.UserDirect = (MapLevel.Direction)KeyVal;
-                            UserInput.ReturnFunction!();
-                        }
-                        keyHandled = true;
-                    }                    
+                        UserInput.UserDirect = (MapLevel.Direction)KeyVal;
+                        UserInput.ReturnFunction!();
+                    }
                 }
                 else
                 {
                     if (KeyActions.TryGetValue(new recKeyChord(KeyVal, Control, Shift), out var taskInfo))
                         taskInfo.method.Invoke();
-
-                    keyHandled = true;
                 }
-
+                keyHandled = true;
             }
 
             // Complete turn if one was started.
@@ -1465,15 +1456,15 @@ namespace RogueGame
         {
             int hpCost;
 
-            if (((Player)character).CurrentHP < 2)
+            if (CurrentPlayer.CurrentHP < 2)
                 hpCost = 0;
-            else 
-                hpCost = (int)(((Player)character).CurrentHP / 2);
+            else
+                hpCost = (int)(CurrentPlayer.CurrentHP / 2);
 
-            if(hpCost > 0)
+            if (hpCost > 0)
             {
                 // Substract half of player's remaining hit points.
-                ((Player)character).HPDamage += hpCost;
+                CurrentPlayer.HPDamage += hpCost;
                 UpdateStatus("You feel some of the life drain out of you.", false);
 
                 if (character is Monster)
@@ -1491,7 +1482,7 @@ namespace RogueGame
         private void StaffOfMagicMissile(Character character)
         {
             if (character is Player)
-                UpdateStatus($"The {((Player)character).Opponent!.CharacterName} dodges the missile.", false);
+                UpdateStatus($"The {CurrentPlayer.Opponent!.CharacterName} dodges the missile.", false);
             else
             {
                 ((Monster)character).HPDamage += rand.Next(1, 5);
