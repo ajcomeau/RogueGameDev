@@ -136,19 +136,22 @@ namespace RogueGame
                     if (item.ItemCategory == Inventory.InvCategory.Ammunition)
                     {
                         for (int i = 1; i <= rand.Next(1, MAX_AMMO_BATCH + 1); i++)
-                            this.CharacterInventory.Add(item);
+                            this.CharacterInventory.Add(new Inventory(item));
                     }
                     else
+                    {
+                        dInv = new Inventory(item);
                         // For everything else, just add the item.
-                        this.CharacterInventory.Add(item);
+                        
+                        this.CharacterInventory.Add(new Inventory(item));
 
-                    // Set the first armor added to the worn armor.
-                    if (item.ItemCategory == Inventory.InvCategory.Armor && this.Armor == null) 
-                        this.Armor = item; 
-                    
-                    // Set the first weapon to be wielded.
-                    if (item.ItemCategory == Inventory.InvCategory.Weapon && this.Wielding == null) 
-                        this.Wielding = item; 
+                        // Set the first armor added to the worn armor.
+                        if (dInv.ItemCategory == Inventory.InvCategory.Armor && this.Armor == null)
+                            this.Armor = dInv;
+                        // Set the first weapon to be wielded.
+                        else if (dInv.ItemCategory == Inventory.InvCategory.Weapon && this.Wielding == null)
+                            this.Wielding = dInv;
+                    }
                 }
             }
         }

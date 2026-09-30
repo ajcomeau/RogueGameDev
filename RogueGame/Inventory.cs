@@ -147,6 +147,11 @@ namespace RogueGame
         /// Read-only collection of inventory templates.
         /// </summary>
         public ReadOnlyCollection<Inventory> InventoryItems => invItems.AsReadOnly();
+        /// <summary>
+        /// Item ID 
+        /// </summary>
+        private static int objID = 0;
+        public int InstanceID = objID++;
         #endregion
 
         #region Procedures
@@ -514,8 +519,6 @@ namespace RogueGame
         /// <summary>
         /// Load inventory items into this instance of the class. PriorityID and names values MUST BE UNIQUE.
         /// New property ID members can be added to the InvTempalate ID enuemration above.
-        /// 8/15/2026 - There must be at least one template with a 100 Probability value or there's the risk of the
-        /// GetInventory() function returning a null item.
         /// These will be used to identify the item elsewhere and to order the items in the inventory listing.
         /// </summary>
         private void LoadInventory()
@@ -622,7 +625,7 @@ namespace RogueGame
             var groupedInventory =
                 (from invEntry in PlayerInventory
                     where invEntry.IsGroupable && invEntry.ItemCategory !=  InvCategory.Gold
-                    group invEntry by invEntry.PriorityId into itemGroup
+                    group invEntry by new { invEntry.PriorityId, invEntry.Increment } into itemGroup
                     select itemGroup).ToList();
 
             // Get non-groupable inventory.
@@ -858,7 +861,7 @@ namespace RogueGame
                                        where item.IsAssigned
                                        select item).ToList();
 
-            // Clone a new object from template.
+            // Return the list of templates.
             if (retList.Count > 0) return retList; else return null;
         }
     }

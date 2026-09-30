@@ -420,31 +420,41 @@ namespace RogueGame{
             Inventory invItem;
 
             if (Clone)
-                invItem = GameInventory.GetInventoryItem(Item.PriorityId)!;
+                invItem = new Inventory(Item);
             else
                 invItem = Item;
 
-            invItem.Location = new MapSpace(Location.MapCharacter, Location);
+            invItem.Location = Location;
+
+            //invItem.Location = new MapSpace(Location.MapCharacter, Location);            
 
             MapInventory.Add(invItem);
         }
         /// <summary>
-        /// Accepts an inventory item and adds it to a free space in the same room
-        /// as the coordinates provided.
+        /// Accepts an inventory item and adds it to a free space near
+        /// the coordinates provided.
         /// </summary>
         /// <param name="Item"></param>
         /// <param name="Location"></param>
-        public void AddInventoryToRoom(Inventory Item, MapSpace Location)
+        public void AddInventoryNearby(Inventory Item, MapSpace Location, int Spaces)
         {
-            (MapSpace TopLeft, MapSpace BottomRight) corners = GetRegionLimits(Location.X, Location.Y);
+            // Is the specified location in a room?
+            bool inRoom = (Location.MapCharacter.DisplayChar == ROOM_INT.DisplayChar);
+            // Get region limits
+            (MapSpace TopLeft, MapSpace BottomRight) corners = GetRegionLimits(Location.X, Location.Y);            
+            // Find a place for the item to land.
+            Item.Location = GetOpenSpace(!inRoom, GetSurrounding(Location.X, Location.Y, Spaces))!;
+
+            MapInventory.Add(Item);
+
+            /*
             List<MapSpace> spaces = (from MapSpace space in levelMap
                                      where space.X >= corners.TopLeft.X && space.X <= corners.BottomRight.X
                                      && space.Y >= corners.TopLeft.Y && space.Y <= corners.BottomRight.Y
                                      && space.MapCharacter.DisplayChar == ROOM_INT.DisplayChar
                                      select space).ToList();
-            
-            Item.Location = GetOpenSpace(false, spaces)!;
-            MapInventory.Add(Item);
+            */            
+
         }
 
         /// <summary>
@@ -920,19 +930,13 @@ namespace RogueGame{
         public Monster? DetectMonster(MapSpace Start, Direction UserDirection)
         {
             int currentX = Start.X, currentY = Start.Y;            
-
-            /*
-            currentY = (currentY > MAP_HT) ? MAP_HT : currentY;
-            currentY = (currentY < 0) ? 0 : currentY;
-            currentX = (currentX > MAP_WD) ? MAP_WD : currentX;
-            currentX = (currentX < 0) ? 0 : currentX;
-            */
-
+                        
             // Helper function to get current space display character.
             char currChar() => levelMap[currentX, currentY].MapCharacter.DisplayChar;
             // Helper function to detect monster.
             bool foundMonster() => (DetectMonster(levelMap[currentX, currentY]) != null
                 && CurrentPlayer!.Location != levelMap[currentX, currentY]);
+            // Helper function for chracters that tell us we're still in the room.
             bool inBounds() => InhabitableSpacesGlyphList.Contains(currChar());
 
             switch (UserDirection)

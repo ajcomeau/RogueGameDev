@@ -894,8 +894,9 @@ namespace RogueGame
             // Set the monster as the current opponent.
             CurrentPlayer.Opponent = Defender;
 
-            // Chance of landing a punch - 30% + (5% * XP level) - (5% * monster armor class).
+            // Chance of hitting - 30% + (5% * XP level) - (5% * monster armor class).
             // Hulk mode can be used for "testing" - certain punch with immediate kill.
+            // TODO: This needs to be updated for spells from staves and wands
             hitChance = 50 + (5 * CurrentPlayer.ExperienceLevel()) - (5 * Defender.ArmorClass);
 
             // If the player is confused, decrease the chance to 25%.
@@ -925,7 +926,13 @@ namespace RogueGame
                         CurrentPlayer.CharacterInventory.Remove(weapon);
                         CurrentPlayer.Wielding = null;
                     }
-
+                    else if (weapon.ItemCategory == InvCategory.Wand || weapon.ItemCategory == InvCategory.Staff)
+                    {
+                        // If the player is wielding the item don't invoke the delegate.                        
+                        if (!Charged)
+                            taskInfo = null;
+                    }
+                    
                     if (weapon.ItemCategory == InvCategory.Potion)
                         UpdateStatus("The sound of the flask shattering echoes strangely and its contents spill over your opponent.", false);
                     else if (weapon.ItemCategory == InvCategory.Scroll)
@@ -948,15 +955,8 @@ namespace RogueGame
             {
                 // If an item was thrown, drop it on the map somewhere near the monster.
                 if (Item != null && !Charged)
-                {
-                    inRoom = (CurrentPlayer.Location!.MapCharacter.DisplayChar == ROOM_INT.DisplayChar);
-                    // Find a place for the item to land.
-                    Item.Location = CurrentMap.GetOpenSpace(!inRoom, CurrentMap
-                        .GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 2))!;
+                    CurrentMap.AddInventoryNearby(Item, Defender.Location!, 3);
 
-                    // Add the item to the map.
-                    CurrentMap.AddInventory(Item, Item.Location, false);
-                }
                 UpdateStatus($"You missed the {Defender.CharacterName.ToLower()}.", false);
             }
 
@@ -1967,7 +1967,8 @@ namespace RogueGame
                             UpdateStatus(" That's not an effective weapon. Pick something else.", false);
                     }
                     else
-                    {                       
+                    {
+                        items[0].IsGroupable = false;
                         CurrentPlayer.Wielding = items[0];
                         UpdateStatus($"You are now wielding {GameInventory.ListingDescription(1, items[0])}.", false);
                     }
@@ -2377,7 +2378,8 @@ namespace RogueGame
                         foundItem.Amount = 1;
                         // Move the item to the player's inventory.
                         for (int i = 1; i <= itemAmount; i++)
-                            CurrentPlayer.CharacterInventory.Add(GameInventory.GetInventoryItem(foundItem.PriorityId)!);
+                            //CurrentPlayer.CharacterInventory.Add(GameInventory.GetInventoryItem(foundItem.PriorityId)!);
+                            CurrentPlayer.CharacterInventory.Add(foundItem);
 
                         retValue = $"You picked up {GameInventory.ListingDescription(itemAmount, foundItem)}.";
                         
@@ -2494,7 +2496,6 @@ namespace RogueGame
         {
             List<InventoryLine> items;
             Monster? target;
-            MapSpace? landing;
             Inventory thrownItem;
 
             if (UserInput.UserKey == null)
@@ -2510,7 +2511,7 @@ namespace RogueGame
                 UpdateStatus(" Which direction?", false);
                 UserInput.ReturnFunction = ThrowItem;
             }
-            else if (UserInput.UserDirect != null)
+            else if (UserInput.UserKey != null && UserInput.UserDirect != null)
             {
                 items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
                          where InventoryLine.ID == UserInput.UserKey
@@ -2518,15 +2519,19 @@ namespace RogueGame
 
                 if (items.Count > 0)
                 {
-                    if (items[0].InvItem.IsGroupable && items[0].Count > 1)
-                        CurrentPlayer.CharacterInventory.Remove(CurrentPlayer.CharacterInventory.First(x => x.PriorityId == items[0].InvItem.PriorityId));
+                    if (items[0].InvItem.IsGroupable && items[0].Count > 1) 
+                    { 
+                        thrownItem = CurrentPlayer.CharacterInventory.First(x => x.PriorityId == items[0].InvItem.PriorityId 
+                            && x.Increment == items[0].InvItem.Increment);
+                    }
                     else
-                        CurrentPlayer.CharacterInventory.Remove(items[0].InvItem);
-
-                    thrownItem = GameInventory.GetInventoryItem(items[0].InvItem.PriorityId)!;
+                        thrownItem = items[0].InvItem;                    
 
                     // Look for a monster in the direction chosen.
                     target = CurrentMap.DetectMonster(CurrentPlayer.Location!, (MapLevel.Direction)UserInput.UserDirect);
+                    
+                    // Remove item from player's inventory.
+                    CurrentPlayer.CharacterInventory.Remove(thrownItem);
 
                     // If there's a monster in the path of the throw treat this as an attack.
                     // Otherwise, just pick a surrounding spot and drop the inventory.
@@ -2534,21 +2539,12 @@ namespace RogueGame
                         Attack(CurrentPlayer, target, thrownItem, false);
                     else
                     {
-                        // Find a place for the item to land.
-                        landing = CurrentMap.GetOpenSpace(false, CurrentMap
-                            .GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 2));
-
-                        // Add the item to the map.
-                        if (landing != null)
-                            CurrentMap.AddInventory(thrownItem, landing, false);
-
-                        UpdateStatus($"You threw away {thrownItem.ListingDescription}.", false);
+                        CurrentMap.AddInventoryNearby(thrownItem, CurrentPlayer.Location!, 3);
+                        UpdateStatus($"You threw away {GameInventory.ListingDescription(1, thrownItem)}.", false);
                     }
                 }
                 else
-                {
                     UpdateStatus(" Please select an item to throw.", false);
-                }
 
                 UserInput = (null, null, null);
             }
