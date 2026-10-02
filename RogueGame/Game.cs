@@ -912,11 +912,7 @@ namespace RogueGame
             // Random HP damage within weapon potential.
             if (hitSuccess)
             {
-                UpdateStatus($"You hit the {Defender.CharacterName.ToLower()}.", false);
-
-                //Identify item if necessary.
-                if (weapon != null && !weapon.IsIdentified)
-                    SetInventoryAsIdentified(weapon.PriorityId);
+                UpdateStatus($"You hit the {Defender.CharacterName.ToLower()}.", false);                
 
                 // Find and invoke the delegate if there is one.
                 if (weapon != null && InventoryActions.TryGetValue(weapon.PriorityId, out var taskInfo))
@@ -2576,7 +2572,7 @@ namespace RogueGame
             {
                 TurnInProgress = true;
                 GameMode = DisplayMode.Inventory;
-                UpdateStatus(" Please select an wand or staff to zap with.", false);
+                UpdateStatus("Please select an wand or staff to zap with.", false);
                 UserInput.ReturnFunction = Zap;
             }
             else if (UserInput.UserKey != null && UserInput.UserDirect == null)
@@ -2617,6 +2613,10 @@ namespace RogueGame
                                 if (InventoryActions.TryGetValue(zappingItem.PriorityId, out var taskInfo))
                                     taskInfo.Invoke(CurrentPlayer);
                             }
+
+                            //Identify item if necessary.
+                            if (zappingItem != null && !zappingItem.IsIdentified)
+                                SetInventoryAsIdentified(zappingItem.PriorityId);
                         }
                     }
                 }
