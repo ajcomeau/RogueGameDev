@@ -32,6 +32,7 @@ namespace RogueGame
         private const int KEY_F = 70;
         private const int KEY_T = 84;
         private const int KEY_W = 87;
+        private const int KEY_Z = 90;
         private const int KEY_LBRACE = 219;
         private const int KEY_RBRACE = 221;
         private const int KEY_ESC = 27;
@@ -886,10 +887,10 @@ namespace RogueGame
         {
             int hitChance;
             bool hitSuccess;
+            bool complete = false;
             int damage = 0;
             (int Min, int Max) damagePotential = Attacker.DamagePotential();
             Inventory? weapon = (Item == null ? CurrentPlayer.Wielding : Item);
-            bool inRoom;
 
             // Set the monster as the current opponent.
             CurrentPlayer.Opponent = Defender;
@@ -938,18 +939,24 @@ namespace RogueGame
                     else if (weapon.ItemCategory == InvCategory.Scroll)
                         UpdateStatus("The scroll gives off a quick flash of octarine light and disappears from your hand.", false);
 
-                    if (taskInfo != null)
+                    // Delegates deal out any damage so the attack should be
+                    // considered complete.
+                    if (taskInfo != null) { 
                         taskInfo.Invoke(Defender);
+                        complete = true;
+                    }
                 }
 
-                // Hulk Mode cheat code for (*ahem*) testing.
-                damage = HulkMode ? Defender.MaxHP : rand.Next(damagePotential.Min, damagePotential.Max + 1);
+                if (!complete)
+                {
+                    // Hulk Mode cheat code for (*ahem*) testing.
+                    damage = HulkMode ? Defender.MaxHP : rand.Next(damagePotential.Min, damagePotential.Max + 1);
+                    Defender.HPDamage += damage;
+                }
 
-                // Invoke any inventory effects the player has right now.
+                // Invoke any inventory effects (e.g. Scroll of Confuse Monster) the player has right now.
                 if (CurrentPlayer.InventoryEffect != null)
                     CurrentPlayer.InventoryEffect?.TargetFunction.Invoke();
-
-                Defender.HPDamage += damage;
             }
             else
             {
@@ -1275,6 +1282,7 @@ namespace RogueGame
                 {new recKeyChord(KEY_D, false, false), (DropInventory, "d - Drop item")},
                 {new recKeyChord(KEY_W, false, false), (Wield, "w - Wield a weapon")},
                 {new recKeyChord(KEY_T, false, false), (ThrowItem, "t - Throw item")},
+                {new recKeyChord(KEY_Z, false, false), (Zap, "z - Zap with wand / staff")},
                 {new recKeyChord(KEY_HELP, false, true), (HelpProc, "? - Show help screen")},
                 {new recKeyChord(KEY_D, true, false), (DevModeProc, "CTRL-D - Dev Mode ON / OFF")},
                 {new recKeyChord(KEY_N, true, false), (NewMapProc, "CTRL-N - Draw new map (Dev mode)")},
@@ -2545,6 +2553,75 @@ namespace RogueGame
                 }
                 else
                     UpdateStatus(" Please select an item to throw.", false);
+
+                UserInput = (null, null, null);
+            }
+
+            if (UserInput.ReturnFunction == null) GameMode = DisplayMode.Primary;
+        }
+
+
+        /// <summary>
+        /// Zap with a wand or stave
+        /// </summary>
+        /// <param name="ListItem">Menu character of chosen item</param>
+        /// <returns></returns>
+        private void Zap()
+        {
+            List<InventoryLine> items;
+            Monster? target;
+            Inventory? zappingItem = null;
+
+            if (UserInput.UserKey == null)
+            {
+                TurnInProgress = true;
+                GameMode = DisplayMode.Inventory;
+                UpdateStatus(" Please select an wand or staff to zap with.", false);
+                UserInput.ReturnFunction = Zap;
+            }
+            else if (UserInput.UserKey != null && UserInput.UserDirect == null)
+            {
+                GameMode = DisplayMode.Primary;
+                UpdateStatus(" Which direction?", false);
+                UserInput.ReturnFunction = Zap;
+            }
+            else if (UserInput.UserKey != null && UserInput.UserDirect != null)
+            {
+                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
+                         where InventoryLine.ID == UserInput.UserKey
+                         select InventoryLine).ToList();
+
+                if (items.Count > 0)
+                {
+                    if (items[0].InvItem.ItemCategory == InvCategory.Wand || items[0].InvItem.ItemCategory == InvCategory.Staff)
+                        zappingItem = items[0].InvItem;
+                    else
+                        UpdateStatus(" You can't zap with that.", false);
+
+                    if (zappingItem != null)
+                    {
+                        if (zappingItem.SaleValue <= ZAP_CHARGE_COST)
+                            UpdateStatus(" Nothing happens.", false);
+                        else
+                        {
+                            zappingItem.SaleValue -= ZAP_CHARGE_COST;
+                            // Look for a monster in the direction chosen.
+                            target = CurrentMap.DetectMonster(CurrentPlayer.Location!, (MapLevel.Direction)UserInput.UserDirect);
+
+                            // If there's a monster in the path of the throw treat this as an attack.
+                            // Otherwise, just call the associated delegate and pass the player.
+                            if (target != null)
+                                Attack(CurrentPlayer, target, zappingItem, true);
+                            else
+                            {
+                                if (InventoryActions.TryGetValue(zappingItem.PriorityId, out var taskInfo))
+                                    taskInfo.Invoke(CurrentPlayer);
+                            }
+                        }
+                    }
+                }
+                else
+                    UpdateStatus(" Please select an item to zap with.", false);
 
                 UserInput = (null, null, null);
             }

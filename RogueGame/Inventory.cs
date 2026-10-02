@@ -27,7 +27,7 @@ namespace RogueGame
             Amulet = 9,
             Gold = 10
         }
-
+        public const int ZAP_CHARGE_COST = 50;
         /// <summary>
         /// Random number generator
         /// </summary>
@@ -582,19 +582,19 @@ namespace RogueGame
                 new Inventory(InvCategory.Armor, InvTemplateID.SplintMail, "Splint mail", "Splint mail", "Splint mail", false, false, false, true, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0,new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Armor, InvTemplateID.BandedMail, "Banded mail", "Banded mail", "Banded mail", false, false, false, true, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Armor, InvTemplateID.PlateMail, "Plate mail", "Plate mail", "Plate mail", false, false, false, true, false,  false,7, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfLight, "Light", "Light", "Light", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfStriking, "Striking", "Striking", "Striking", false, false, false, true, false, false, 0, 1, 3, 10, 1, 8, 0, 25, 0, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfMagicMissile, "Magic Missile", "Magic Missile", "Magic Missile", false, false, false, true, false, false, 0, 1, 1, 1, 1, 4, 0, 25, 0, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfDrainLife, "Drain Life", "Drain Life", "Drain Life", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfCancellation, "Cancellation", "Cancellation", "Cancellation", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfNothing, "Hiking", "Hiking", "Hiking", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Wand, InvTemplateID.WandOfFire, "Fire", "Fire", "Fire", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Wand, InvTemplateID.WandOfCold, "Cold", "Cold", "Cold", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Wand, InvTemplateID.WandOfHasteMonster, "Haste Monster", "Haste Monster", "Haste Monster", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Wand, InvTemplateID.WandOfPolymorph, "Polymorph", "Polymorph", "Polymorph", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Wand, InvTemplateID.WandOfHoldMonster, "Hold Monster", "Hold Monster", "Hold Monster", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Wand, InvTemplateID.WandOfTeleportAway, "Teleport", "Teleport", "Teleport", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Wand, InvTemplateID.WandOfNothing, "Ornamentation", "Ornamentation", "Ornamentation", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 0, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfLight, "Light", "Light", "Light", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 300, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfStriking, "Striking", "Striking", "Striking", false, false, false, true, false, false, 0, 1, 3, 10, 1, 8, 0, 25, 300, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfMagicMissile, "Magic Missile", "Magic Missile", "Magic Missile", false, false, false, true, false, false, 0, 1, 1, 1, 1, 4, 0, 25, 300, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfDrainLife, "Drain Life", "Drain Life", "Drain Life", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 300, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfCancellation, "Cancellation", "Cancellation", "Cancellation", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 300, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Staff, InvTemplateID.StaffOfNothing, "Hiking", "Hiking", "Hiking", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 300, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Wand, InvTemplateID.WandOfFire, "Fire", "Fire", "Fire", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 300, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Wand, InvTemplateID.WandOfCold, "Cold", "Cold", "Cold", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 300, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Wand, InvTemplateID.WandOfHasteMonster, "Haste Monster", "Haste Monster", "Haste Monster", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 300, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Wand, InvTemplateID.WandOfPolymorph, "Polymorph", "Polymorph", "Polymorph", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 300, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Wand, InvTemplateID.WandOfHoldMonster, "Hold Monster", "Hold Monster", "Hold Monster", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 300, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Wand, InvTemplateID.WandOfTeleportAway, "Teleport", "Teleport", "Teleport", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 300, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Wand, InvTemplateID.WandOfNothing, "Ornamentation", "Ornamentation", "Ornamentation", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 300, new MapGlyph('/', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Weapon, InvTemplateID.Mace, "mace", "mace", "maces", false, false, true, true, false,  false,0, 0, 1, 1, 2, 8, -3, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Weapon, InvTemplateID.ShortBow, "short bow", "short bow", "short bows", false, false, true, true, false, false, 0, 0, 0, 1, 1, 1, 0, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Weapon, InvTemplateID.Crossbow, "crossbow", "crossbow", "crossbows", false, false, false, true, false, false, 0, 0, 0, 1, 1, 1, 0, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black), "", ""),
@@ -787,6 +787,11 @@ namespace RogueGame
                 case InvCategory.Armor:
                 case InvCategory.Ring:
                     item.Increment = item.IsCursed ? rand.Next(-5, 0) : rand.Next(1, 6);
+                    break;
+                case InvCategory.Wand:
+                case InvCategory.Staff:
+                    // Sale value based on number of charges * 50.
+                    item.SaleValue = ZAP_CHARGE_COST * rand.Next(2, 11); 
                     break;
             }
         }
