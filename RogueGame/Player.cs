@@ -198,6 +198,7 @@ namespace RogueGame
 
             return retValue;
         }
+        
         /// <summary>
         /// If the player has any searching assists, 
         /// return the degree of assistance.

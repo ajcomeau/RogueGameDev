@@ -898,11 +898,7 @@ namespace RogueGame
             // Chance of hitting - 30% + (5% * XP level) - (5% * monster armor class).
             // Hulk mode can be used for "testing" - certain punch with immediate kill.
             // TODO: This needs to be updated for spells from staves and wands
-            hitChance = 50 + (5 * CurrentPlayer.ExperienceLevel()) - (5 * Defender.ArmorClass);
-
-            // If the player is confused, decrease the chance to 25%.
-            if (Attacker.Confused > 0)
-                hitChance = (int)(hitChance * 0.25);
+            hitChance = Attacker.Accuracy(Attacker, Defender);
 
             hitSuccess = HulkMode ? true : rand.Next(1, 101) <= hitChance;
 
@@ -990,11 +986,7 @@ namespace RogueGame
 
             // Chance of landing a punch: 50% + (5% * attacker min hit points)  - (5% * defender's total protecton)        
 
-            hitChance = 50 + (Attacker.MinStartingHP * 5) - (Defender.TotalProtection() * 5);
-            
-            // If the monster is confused, decrease the chance 25%.
-            if (Attacker.Confused > 0)
-                hitChance = (int)(hitChance * 0.25);
+            hitChance = Attacker.Accuracy(Attacker, Defender);
 
             hitSuccess = rand.Next(1, 101) <= hitChance;
 
@@ -1420,7 +1412,7 @@ namespace RogueGame
             }
             else
             {
-                UpdateStatus($"A blast of shoots from the wand and hits the {((Monster)character).CharacterName}.", false);
+                UpdateStatus($"A blast of ice shoots from the wand and hits the {((Monster)character).CharacterName}.", false);
                 ((Monster)character).HPDamage += rand.Next(6, 37);
             }
         }
@@ -2400,7 +2392,7 @@ namespace RogueGame
                     else
                     {
                         CurrentPlayer.CharacterInventory.Remove(foundItem);
-                        retValue = "The item won't fit in your inventory.";
+                        retValue = " The item won't fit in your inventory.";
                     }
                 }
             }
@@ -2438,7 +2430,7 @@ namespace RogueGame
                     }
                     else
                         // Otherwise, notify the player.
-                        UpdateStatus("You don't have any scrolls.", false);
+                        UpdateStatus(" You don't have any scrolls.", false);
                 }
                 else
                 {
@@ -3036,7 +3028,7 @@ namespace RogueGame
         /// <returns></returns>
         private void ScrollOfCreateMonster(Character character)
         {
-            List<MapSpace> spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 2);
+            List<MapSpace> spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 1);
 
             CurrentMap.AddMonsters(1, spaces);
             UpdateStatus("The room suddenly got a bit more crowded.", false);

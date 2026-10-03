@@ -76,6 +76,37 @@
                     where item.ItemCategory == Category
                     select item).FirstOrDefault();
         }
+        /// <summary>
+        /// Get the characters's chance of hitting during an attack.
+        /// </summary>
+        /// <returns></returns>
+        public int Accuracy(Character Attacker, Character Defender)
+        {
+            int hitChance = 0;
+
+            if (Attacker is Player)
+            {
+                Player attack = (Player)Attacker;
+                Monster defend = (Monster)Defender;
+                // Chance of landing a punch: 50% + (5% * attacker min hit points)  - (5% * defender's total protecton)     
+                hitChance = 50 + (5 * attack.ExperienceLevel()) - (5 * defend.ArmorClass);
+            }
+            else
+            {
+                Player defend = (Player)Defender;
+                Monster attack = (Monster)Attacker;
+                // Chance of landing a punch: 50% + (5% * attacker min hit points)  - (5% * defender's total protecton)
+                hitChance = 50 + (attack.MinStartingHP * 5) - (defend.TotalProtection() * 5);
+            }
+
+            // If the attacker is confused, decrease the chance to 25%.
+            if (Attacker.Confused > 0)
+                hitChance = (int)(hitChance * 0.25);
+
+            return hitChance;
+
+        }
+
         #endregion
     }
 }
