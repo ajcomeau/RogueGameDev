@@ -143,7 +143,7 @@ namespace RogueGame
                         dInv = new Inventory(item);
                         // For everything else, just add the item.
                         
-                        this.CharacterInventory.Add(new Inventory(item));
+                        this.CharacterInventory.Add(dInv);
 
                         // Set the first armor added to the worn armor.
                         if (dInv.ItemCategory == Inventory.InvCategory.Armor && this.Armor == null)

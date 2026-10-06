@@ -1209,8 +1209,10 @@ namespace RogueGame
                 }
                 else
                 {
-                    if (KeyActions.TryGetValue(new recKeyChord(KeyVal, Control, Shift), out var taskInfo))
-                        taskInfo.method.Invoke();
+                    // If the map is showing, evaluate key presses by dictionary.
+                    if (GameMode == DisplayMode.Primary)
+                        if (KeyActions.TryGetValue(new recKeyChord(KeyVal, Control, Shift), out var taskInfo))
+                            taskInfo.method.Invoke();
                 }
                 keyHandled = true;
             }
