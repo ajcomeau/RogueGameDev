@@ -83,7 +83,7 @@
         /// <summary>
         /// Probability of fainting at any given point when FAINT
         /// </summary>
-        public const int FAINT_PCT = 33;
+        public const int FAINT_PCT = 5;
         /// <summary>
         /// Maximum turns to lose when fainting, etc..
         /// </summary>

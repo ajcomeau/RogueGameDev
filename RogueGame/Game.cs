@@ -591,7 +591,7 @@ namespace RogueGame
                 // If the player is FAINT, decide if they should faint on this move.
                 if (CurrentPlayer.HungerState == Player.HungerLevel.Faint && CurrentPlayer.Immobile == 0)
                 {
-                    if (rand.Next(1, 101) < FAINT_PCT)
+                    if (rand.Next(1, 101) <= FAINT_PCT)
                     {
                         CurrentPlayer.Immobile = CurrentTurn + rand.Next(1, MAX_TURN_LOSS + 1);
                         UpdateStatus("You fainted from lack of food.", true);
