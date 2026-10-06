@@ -898,9 +898,10 @@ namespace RogueGame
             // Chance of hitting - 30% + (5% * XP level) - (5% * monster armor class).
             // Hulk mode can be used for "testing" - certain punch with immediate kill.
             // TODO: This needs to be updated for spells from staves and wands
+            
             hitChance = Attacker.Accuracy(Attacker, Defender);
 
-            hitSuccess = HulkMode ? true : rand.Next(1, 101) <= hitChance;
+            hitSuccess = (HulkMode || Charged) ? true : rand.Next(1, 101) <= hitChance;
 
             // Either way, if the monster wasn't angry before, it sure is now.
             Defender.Aggressive = true;

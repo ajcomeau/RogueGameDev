@@ -88,8 +88,7 @@
             if (Attacker is Player)
             {
                 Player attack = (Player)Attacker;
-                Monster defend = (Monster)Defender;
-                
+                Monster defend = (Monster)Defender;               
                     
                 // Chance of landing a punch: 50% + (5% * attacker min hit points)  - (5% * defender's total protecton)
                 // + (5% * weapon increment)
