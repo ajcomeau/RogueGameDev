@@ -384,6 +384,7 @@ namespace RogueGame{
             Inventory invItem;
             MapSpace? itemSpace;
             int startingCount = MapInventory.Count;
+            int itemCount = 1;
             int maxAttempts = 100;
 
             // Add up to the number of specified inventory items.
@@ -402,10 +403,21 @@ namespace RogueGame{
                     // For ammunition that's groupable, decide how many items are in the batch.
                     if (invItem.ItemCategory == Inventory.InvCategory.Ammunition
                         && invItem.IsGroupable)
-                        invItem.Amount = rand.Next(1, MAX_AMMO_BATCH + 1);
+                    {
+                        itemCount = rand.Next(1, MAX_AMMO_BATCH + 1);
 
-                    // Update the space and increment the count.
-                    MapInventory.Add(invItem);
+                        for (int x = 0; x <= itemCount; x++)
+                        {
+                            Inventory newItem = new Inventory(invItem);
+                            newItem.Location = itemSpace;
+                            MapInventory.Add(newItem);
+                        }                            
+                    }
+                    else
+                    {
+                        MapInventory.Add(invItem);
+                    }
+
                 }
             }
         }
@@ -897,12 +909,12 @@ namespace RogueGame{
         /// </summary>
         /// <param name="Location">MapSpace object to search</param>
         /// <returns></returns>
-        public Inventory? DetectInventory(MapSpace Location)
+        public List<Inventory> DetectInventory(MapSpace Location)
         {
-            Inventory? foundItem = (from Inventory inv in MapInventory
+            List<Inventory> foundItem = (from Inventory inv in MapInventory
                                      where inv.Location!.X == Location.X
                                      && inv.Location.Y == Location.Y
-                                     select inv).FirstOrDefault();
+                                     select inv).ToList();
 
             return foundItem;
         }
@@ -997,7 +1009,7 @@ namespace RogueGame{
         public MapGlyph PriorityChar(MapSpace Space, bool ShowHidden)
         {
             Monster? monster = DetectMonster(Space);
-            Inventory? invItem = DetectInventory(Space);
+            List<Inventory> invItem = DetectInventory(Space);
             
             MapGlyph retValue;
 
@@ -1006,8 +1018,8 @@ namespace RogueGame{
             else if (Space == CurrentPlayer.Location) // Player is next highest.
                 retValue = Player.CHARACTER;
             // Inventory comes third as player and monsters can sit  on top.
-            else if (invItem != null)
-                retValue = invItem.DisplayCharacter;
+            else if (invItem.Count > 0)
+                retValue = invItem[0].DisplayCharacter;
             // Finally show the alternate char if the current space is hidden.
             else if (Space.AltMapCharacter != null && !ShowHidden)
                 retValue = (MapGlyph)Space.AltMapCharacter;
@@ -1057,7 +1069,7 @@ namespace RogueGame{
             // Get qualifying open spaces with no inventory or monsters or the current player.
             List<MapSpace> spaces = (from MapSpace space in levelMap
                                      where charList.Contains(space.MapCharacter.DisplayChar)
-                                     && DetectInventory(space) == null
+                                     && DetectInventory(space).Count == 0
                                      && DetectMonster(space) == null
                                      && space != CurrentPlayer.Location
                                      select space).ToList();

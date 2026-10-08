@@ -59,10 +59,10 @@
         /// </summary>
         /// <param name="ItemName">Real name of item.</param>
         /// <returns></returns>
-        public Inventory? SearchInventory(string ItemName)
+        public Inventory? SearchInventory(Inventory.InvTemplateID ItemID)
         {
             return (from Inventory item in CharacterInventory
-                    where item.RealName == ItemName
+                    where item.PriorityId == ItemID
                     select item).FirstOrDefault();
         }
         /// <summary>

@@ -613,7 +613,7 @@ namespace RogueGame
         /// </summary>
         /// <param name="PlayerInventory"></param>
         /// <returns></returns>
-        public List<InventoryLine> InventoryDisplay(List<Inventory> PlayerInventory)
+        public static List<InventoryLine> InventoryDisplay(List<Inventory> PlayerInventory)
         {
             char charID = 'a';
 
@@ -662,7 +662,7 @@ namespace RogueGame
         /// <param name="Number">Number of items in inventory slot</param>
         /// <param name="Item">Actual item</param>
         /// <returns></returns>
-        public string ListingDescription(int Number, Inventory Item)
+        public static string ListingDescription(int Number, Inventory Item)
         {
             // Single function to create inventory listing description for item and 
             // handle all the grammatical adjustments.

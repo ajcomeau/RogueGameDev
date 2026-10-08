@@ -2,6 +2,7 @@
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices.Marshalling;
 using static RogueGame.GameTools;
+using static RogueGame.Inventory;
 using static RogueGame.Inventory.InvTemplateID;
 
 namespace RogueGame
@@ -528,7 +529,6 @@ namespace RogueGame
 
             return retValue;
         }
-
         /// <summary>
         /// The Ring of Teleporation randomly teleports the player.
         /// </summary>
@@ -578,6 +578,57 @@ namespace RogueGame
                 retValue += this.RightHand.Increment;
                 this.HungerTurn -= this.RightHand.Increment;
             }
+
+            return retValue;
+        }
+        /// <summary>
+        /// Add found items to player's inventory.
+        /// </summary>
+        /// <returns>Display string with description of item.</returns>
+        public (bool Added, string Message) AddInventory(List<Inventory> Items)
+        {
+            // Inventory management.
+            bool addToInventory = false;
+            (bool Added, string Message) retValue = (false, "");
+
+            foreach (Inventory item in Items)
+            {
+                if (item.ItemCategory == InvCategory.Gold)
+                {
+                    // Add the gold at the current location to the player's purse and remove
+                    // it from the map.
+                    int goldAmt = rand.Next(MIN_GOLD_AMT, MAX_GOLD_AMT + 1);
+                    this.Gold += goldAmt;
+
+                    retValue = (true, $"You picked up {goldAmt} pieces of gold.");
+                }
+                else
+                {
+                    // Determine if there's room in inventory for the item.
+                    // If it's groupable and the player already has it in a slot, add it.
+                    // Otherwise, if there's an extra slot available, add it.
+                    addToInventory = (item.IsGroupable && this.SearchInventory(item.PriorityId) != null);
+                    if (!addToInventory) addToInventory =
+                            InventoryDisplay(this.CharacterInventory).Count + 1 <= Player.INVENTORY_LIMIT;
+
+                    // If the additional inventory fits within the limit, keep the item.
+                    // Otherwise, remove it.                
+                    if (addToInventory)
+                    {
+                        this.CharacterInventory.Add(new Inventory(item));
+
+                        retValue = (true, $"You picked up {ListingDescription(Items.Count, item)}.");
+
+                        if (item.ItemCategory == InvCategory.Amulet)
+                        {
+                            this.HasAmulet = true;
+                            retValue = (true, "You found the Amulet of Yendor!  It has been added to your inventory.");
+                        }
+                    }
+                    else
+                        retValue = (false, $"There is no space for this item in your inventory.");
+                }
+            }            
 
             return retValue;
         }

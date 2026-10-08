@@ -302,7 +302,7 @@ namespace RogueGame
             string screenText = "Inventory List\n\n";
             
             // Build list of player's inventory and display.
-            foreach (InventoryLine line in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory))
+            foreach (InventoryLine line in InventoryDisplay(CurrentPlayer.CharacterInventory))
                 if (line.InvItem == CurrentPlayer.Armor)
                     screenText += line.Description + " (being worn)\n";  // current armor
                 else if (CurrentPlayer.Wielding != null && line.InvItem == CurrentPlayer.Wielding)
@@ -778,7 +778,8 @@ namespace RogueGame
             bool canMove, stopMoving = false, turnComplete = false;
             int teleport = CurrentPlayer.Teleportation() * 10;
             int aggravate = CurrentPlayer.AggravationFactor() * 10;
-            Inventory? invFound = null; Monster? monster = null;
+            (bool Added, string Message) addInventory;
+            List<Inventory> invFound = new List<Inventory>(); Monster? monster = null;
             Dictionary<MapLevel.Direction, MapSpace> adjacent =
                 CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);            
 
@@ -809,13 +810,13 @@ namespace RogueGame
                     else
                     {
                         visibleCharacter = EMPTY.DisplayChar;
-                        invFound = null;
+                        invFound!.Clear();
                         monster = null;
                     }
 
                     // The player can move if the visible character is within a room or a hallway and there's no monster there.
                     canMove = MapLevel.InhabitableSpacesGlyphList.Contains(visibleCharacter) ||
-                        (invFound != null && monster == null);
+                        ((invFound.Count > 0) && monster == null);
 
                     if (canMove)
                     {
@@ -843,10 +844,20 @@ namespace RogueGame
                             if (player.Floating == 0) { SpringTrap(CurrentPlayer, adjacent[direct]); }
 
                         // Respond to items on map.
-                        if (invFound != null)
+                        if (invFound.Count > 0)
                         {
                             if (player.Floating == 0)
-                                UpdateStatus(AddInventory(), false);
+                            {
+                                addInventory = CurrentPlayer.AddInventory(invFound);
+
+                                if (addInventory.Added)
+                                {
+                                    foreach (Inventory item in invFound)
+                                        CurrentMap.MapInventory.Remove(item);
+                                }
+
+                                UpdateStatus(addInventory.Message, false);
+                            }
                             else
                                 UpdateStatus("You are not able to grab the object while levitating.", false);
                         }
@@ -869,7 +880,7 @@ namespace RogueGame
                     // hallway spaces indicate a junction which needs to stop FastPlay.
                     adjacent = CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
-                } while (!stopMoving && invFound == null && CanAutoMove(player.Location, adjacent[direct]));
+                } while (!stopMoving && invFound.Count == 0 && CanAutoMove(player.Location, adjacent[direct]));
             }
 
             // Check for the Ring of Aggravate Monsters or other irritating qualities.
@@ -897,7 +908,6 @@ namespace RogueGame
 
             // Chance of hitting - 30% + (5% * XP level) - (5% * monster armor class).
             // Hulk mode can be used for "testing" - certain punch with immediate kill.
-            // TODO: This needs to be updated for spells from staves and wands
             
             hitChance = Attacker.Accuracy(Attacker, Defender);
 
@@ -960,14 +970,16 @@ namespace RogueGame
                 UpdateStatus($"You missed the {Defender.CharacterName.ToLower()}.", false);
             }
 
-            // If the monster has been defeated, remove it from the map and spawn another one.
+            // If the monster has been defeated, remove it from the map.
             if (Defender.CurrentHP < 1)
             {
                 CurrentPlayer.Opponent = null;
                 CurrentMap.ActiveMonsters.Remove(Defender);
                 UpdateStatus($"You defeated the {Defender.CharacterName.ToLower()}.", false);
                 CurrentPlayer.Experience += Defender.ExpReward + (int)(Defender.MaxHP / 6);
-                CurrentMap.AddMonsters(1);
+                // Limit respawning of monsters.
+                //if(rand.Next(1,101) > COIN_FLIP) 
+                //    CurrentMap.AddMonsters(1);
             }
         }
         /// <summary>
@@ -1072,7 +1084,7 @@ namespace RogueGame
                         .Where(space =>
                         MapLevel.InhabitableSpacesGlyphList
                         .Contains(CurrentMap.PriorityChar(space.Value, false).DisplayChar) ||
-                        CurrentMap.DetectInventory(space.Value) != null ||
+                        CurrentMap.DetectInventory(space.Value).Count > 0 ||
                         CurrentPlayer.Location! == space.Value).ToDictionary();
 
                 // Determine if player is in one of the adjacent spaces.
@@ -1158,7 +1170,7 @@ namespace RogueGame
             // If the player is in a hallway, they must stop at any junctions.
             return FastPlay
                 & CurrentMap.DetectMonster(Target) == null // No monster
-                & CurrentMap.DetectInventory(Target) == null // No mnventory  
+                & CurrentMap.DetectInventory(Target).Count == 0 // No inventory  
                 & Target.MapCharacter.DisplayChar == Origin.MapCharacter.DisplayChar
                 & MapLevel.InhabitableSpacesGlyphList.Contains(CurrentMap.PriorityChar(Target, false).DisplayChar)
                 & CurrentMap.SearchAdjacent(HALLWAY.DisplayChar, Origin.X, Origin.Y).Count < 3;
@@ -1918,6 +1930,7 @@ namespace RogueGame
         /// <returns></returns>
         private void Wield()
         {
+            bool slotsAvail = InventoryDisplay(CurrentPlayer.CharacterInventory).Count + 1 <= Player.INVENTORY_LIMIT;
             List<Inventory> items;
 
             if (UserInput.UserKey == null)
@@ -1945,7 +1958,7 @@ namespace RogueGame
             else
             {
                 // Get the selected item.
-                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
+                items = (from InventoryLine in InventoryDisplay(CurrentPlayer.CharacterInventory)
                          where InventoryLine.ID == UserInput.UserKey
                          select InventoryLine.InvItem).ToList();
 
@@ -1967,9 +1980,16 @@ namespace RogueGame
                     }
                     else
                     {
-                        items[0].IsGroupable = false;
-                        CurrentPlayer.Wielding = items[0];
-                        UpdateStatus($"You are now wielding {GameInventory.ListingDescription(1, items[0])}.", false);
+                        if ((items[0].IsGroupable && slotsAvail) || !items[0].IsGroupable)
+                        {
+                            items[0].IsGroupable = false;
+                            CurrentPlayer.Wielding = items[0];
+                            UpdateStatus($"You are now wielding {ListingDescription(1, items[0])}.", false);
+                        }
+                        else
+                        {
+                            UpdateStatus($"You're carrying too much to wield that right now.", false);
+                        }
                     }
                 }
                 else
@@ -2022,7 +2042,7 @@ namespace RogueGame
             else
             {
                 // Get the selected item.
-                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
+                items = (from InventoryLine in InventoryDisplay(CurrentPlayer.CharacterInventory)
                          where InventoryLine.ID == UserInput.UserKey
                          select InventoryLine.InvItem).ToList();
 
@@ -2060,7 +2080,7 @@ namespace RogueGame
                                     UpdateStatus(items[0].ActivateMessage, false);
                             }
 
-                            UpdateStatus($"You are now wearing {GameInventory.ListingDescription(1, items[0])} on your {hand} hand.", false);
+                            UpdateStatus($"You are now wearing {ListingDescription(1, items[0])} on your {hand} hand.", false);
                         }
                     }
                 }
@@ -2095,7 +2115,7 @@ namespace RogueGame
                 else
                     CurrentPlayer.RightHand = null;
                 
-                status = $"You removed {GameInventory.ListingDescription(1, ring)}. ";
+                status = $"You removed {ListingDescription(1, ring)}. ";
                 
                 // Show the deactivation message if there is one.
                 if (ring.DeactivateMessage.Length > 0)
@@ -2147,7 +2167,7 @@ namespace RogueGame
             else
             {
                 // Get the selected item.
-                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
+                items = (from InventoryLine in InventoryDisplay(CurrentPlayer.CharacterInventory)
                          where InventoryLine.ID == UserInput.UserKey
                          select InventoryLine.InvItem).ToList();
 
@@ -2163,7 +2183,7 @@ namespace RogueGame
                         // If the player selects a valid item, add it as their armor.
                         CurrentPlayer.Armor = items[0];
 
-                        UpdateStatus($"You are now wearing {GameInventory.ListingDescription(1, items[0])}.", false);
+                        UpdateStatus($"You are now wearing {ListingDescription(1, items[0])}.", false);
                     }
                 }
                 else
@@ -2233,7 +2253,7 @@ namespace RogueGame
             else
             {
                 // Get the selected item.
-                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
+                items = (from InventoryLine in InventoryDisplay(CurrentPlayer.CharacterInventory)
                          where InventoryLine.ID == UserInput.UserKey
                          select InventoryLine.InvItem).ToList();
 
@@ -2280,6 +2300,7 @@ namespace RogueGame
         private void DropInventory()
         {
             List<InventoryLine> items;
+            List<Inventory> playerItems;
 
             if (GameMode != DisplayMode.Inventory)
             {
@@ -2289,34 +2310,44 @@ namespace RogueGame
             }
             else
             {
-                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
+                items = (from InventoryLine in InventoryDisplay(CurrentPlayer.CharacterInventory)
                          where InventoryLine.ID == UserInput.UserKey
                          select InventoryLine).ToList();
 
                 if (items.Count > 0)
                 {
-                    if (CurrentMap.DetectInventory(CurrentPlayer.Location!) == null)
+                    if (CurrentMap.DetectInventory(CurrentPlayer.Location!).Count == 0)
                     {
                         if (items[0].InvItem.ItemCategory == InvCategory.Ammunition
                             && items[0].InvItem.IsGroupable)
                         {
-                            // We're dropping the entire batch so update the amount.
-                            items[0].InvItem.Amount = items[0].Count;
-                            // For ammunition, remove all items from the slot.
-                            CurrentPlayer.CharacterInventory =
-                                CurrentPlayer.CharacterInventory.Where(x => x.RealName != items[0].InvItem.RealName).ToList();
+                            // We're dropping the entire batch so get all the items
+                            playerItems = (from item in CurrentPlayer.CharacterInventory
+                                           where item.PriorityId == items[0].InvItem.PriorityId &&
+                                           item.Increment == items[0].InvItem.Increment && item.IsGroupable
+                                           select item).ToList();
+                            
+                            foreach (Inventory item in playerItems)
+                            {
+                                item.Location = CurrentPlayer.Location!;
+                                CurrentMap.MapInventory.Add(item);
+                                CurrentPlayer.CharacterInventory.Remove(item);
+                            }
 
-                            UpdateStatus($"You dropped {GameInventory.ListingDescription(items[0].Count, items[0].InvItem)}.", false);
+                            // For ammunition, remove all items from the slot.
+                            //CurrentPlayer.CharacterInventory =
+                            //    CurrentPlayer.CharacterInventory.Where(x => x.PriorityId != items[0].InvItem.PriorityId && x.IsGroupable).ToList();
+
+                            UpdateStatus($"You dropped {ListingDescription(items[0].Count, items[0].InvItem)}.", false);
                         }
                         else
                         {
-                            items[0].InvItem.Amount = 1;
                             CurrentPlayer.CharacterInventory.Remove(items[0].InvItem);
-                            UpdateStatus($"You dropped {GameInventory.ListingDescription(1, items[0].InvItem)}.", false);
+                            items[0].InvItem.Location = CurrentPlayer.Location!;
+                            items[0].InvItem.Location.RemoteSight = false;
+                            CurrentMap.MapInventory.Add(items[0].InvItem);
+                            UpdateStatus($"You dropped {ListingDescription(1, items[0].InvItem)}.", false);
                         }
-
-                        items[0].InvItem.Location = CurrentPlayer.Location!;
-                        CurrentMap.MapInventory.Add(items[0].InvItem);
                     }
                     else
                     {
@@ -2335,73 +2366,7 @@ namespace RogueGame
             if (UserInput.ReturnFunction == null) GameMode = DisplayMode.Primary;
 
         }
-        /// <summary>
-        /// Add found items to player's inventory.
-        /// </summary>
-        /// <returns>Display string with description of item.</returns>
-        private string AddInventory()
-        {
-            // Inventory management.
-            int itemAmount = 1;
-            bool addToInventory = false;
-            List<Inventory> tempInventory = CurrentPlayer.CharacterInventory;
-            Inventory? foundItem = CurrentMap.DetectInventory(CurrentPlayer.Location!);
-            string retValue = "";
-
-            if (foundItem != null)
-            {
-                if (foundItem.ItemCategory == InvCategory.Gold)
-                {
-                    // Add the gold at the current location to the player's purse and remove
-                    // it from the map.
-                    int goldAmt = rand.Next(MIN_GOLD_AMT, MAX_GOLD_AMT + 1);
-                    CurrentPlayer.Gold += goldAmt;
-                    CurrentMap.MapInventory.Remove(foundItem);
-                    retValue = $"You picked up {goldAmt} pieces of gold.";
-                }
-                else
-                {
-                    // Determine if there's room in inventory for the item.
-                    // If it's groupable and the player already has it in a slot, add it.
-                    // Otherwise, if there's an extra slot available, add it.
-                    addToInventory = (foundItem.IsGroupable && CurrentPlayer.SearchInventory(foundItem.RealName) != null);
-                    if (!addToInventory) addToInventory =
-                            GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory).Count + 1 <= Player.INVENTORY_LIMIT;
-
-                    // If the additional inventory fits within the limit, keep the item.
-                    // Otherwise, remove it.                
-                    if (addToInventory)
-                    {
-                        // When the item is actually added, it needs to be a single item.
-                        itemAmount = foundItem.Amount;
-                        foundItem.Amount = 1;
-                        // Move the item to the player's inventory.
-                        for (int i = 1; i <= itemAmount; i++)
-                            //CurrentPlayer.CharacterInventory.Add(GameInventory.GetInventoryItem(foundItem.PriorityId)!);
-                            CurrentPlayer.CharacterInventory.Add(foundItem);
-
-                        retValue = $"You picked up {GameInventory.ListingDescription(itemAmount, foundItem)}.";
-                        
-                        // Remove inventory from map and turn off RemoteSight if it's activated.
-                        CurrentMap.MapInventory.Remove(foundItem);
-                        foundItem.Location.RemoteSight = false;
-
-                        if (foundItem.ItemCategory == InvCategory.Amulet)
-                        {
-                            CurrentPlayer.HasAmulet = true;
-                            retValue = "You found the Amulet of Yendor!  It has been added to your inventory.";
-                        }
-                    }
-                    else
-                    {
-                        CurrentPlayer.CharacterInventory.Remove(foundItem);
-                        retValue = " The item won't fit in your inventory.";
-                    }
-                }
-            }
-
-            return retValue;
-        }
+        
         /// <summary>
         /// Read a selected scroll item.
         /// </summary>
@@ -2438,7 +2403,7 @@ namespace RogueGame
                 else
                 {
                     // Get the selected item.
-                    items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
+                    items = (from InventoryLine in InventoryDisplay(CurrentPlayer.CharacterInventory)
                              where InventoryLine.ID == UserInput.UserKey
                              select InventoryLine.InvItem).ToList();
 
@@ -2512,7 +2477,7 @@ namespace RogueGame
             }
             else if (UserInput.UserKey != null && UserInput.UserDirect != null)
             {
-                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
+                items = (from InventoryLine in InventoryDisplay(CurrentPlayer.CharacterInventory)
                          where InventoryLine.ID == UserInput.UserKey
                          select InventoryLine).ToList();
 
@@ -2539,7 +2504,7 @@ namespace RogueGame
                     else
                     {
                         CurrentMap.AddInventoryNearby(thrownItem, CurrentPlayer.Location!, 3);
-                        UpdateStatus($"You threw away {GameInventory.ListingDescription(1, thrownItem)}.", false);
+                        UpdateStatus($"You threw away {ListingDescription(1, thrownItem)}.", false);
                     }
                 }
                 else
@@ -2578,7 +2543,7 @@ namespace RogueGame
             }
             else if (UserInput.UserKey != null && UserInput.UserDirect != null)
             {
-                items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
+                items = (from InventoryLine in InventoryDisplay(CurrentPlayer.CharacterInventory)
                          where InventoryLine.ID == UserInput.UserKey
                          select InventoryLine).ToList();
 
@@ -2660,7 +2625,7 @@ namespace RogueGame
                 else
                 {
                     // Get the selected item.
-                    items = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
+                    items = (from InventoryLine in InventoryDisplay(CurrentPlayer.CharacterInventory)
                              where InventoryLine.ID == UserInput.UserKey
                              select InventoryLine.InvItem).ToList();
 
@@ -2740,7 +2705,7 @@ namespace RogueGame
             string description = "";
 
             // Get the selected item.
-            lines = (from InventoryLine in GameInventory.InventoryDisplay(CurrentPlayer.CharacterInventory)
+            lines = (from InventoryLine in InventoryDisplay(CurrentPlayer.CharacterInventory)
                      where InventoryLine.ID == UserInput.UserKey
                      select InventoryLine).ToList();
 
@@ -2749,7 +2714,7 @@ namespace RogueGame
                 // Update inventory template to Identified and then update player's inventory.
                 SetInventoryAsIdentified(lines[0].InvItem.PriorityId);
 
-                description = GameInventory.ListingDescription(lines[0].Count, lines[0].InvItem);
+                description = ListingDescription(lines[0].Count, lines[0].InvItem);
                 description = " " + char.ToUpper(description[0]) + description.Substring(1);
                 UpdateStatus(description, false);
             }
