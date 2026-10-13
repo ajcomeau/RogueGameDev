@@ -3027,7 +3027,7 @@ namespace RogueGame
 
             List<Monster> monsters = 
                 CurrentMap.ActiveMonsters.Where(monster => surrounding
-                .Any(space => space.X == monster.Location!.X && space.Y == monster.Location.Y))
+                .Any(space => space == monster.Location))
                 .ToList();
 
             foreach (Monster monster in monsters)

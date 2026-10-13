@@ -912,8 +912,7 @@ namespace RogueGame{
         public List<Inventory> DetectInventory(MapSpace Location)
         {
             List<Inventory> foundItem = (from Inventory inv in MapInventory
-                                     where inv.Location!.X == Location.X
-                                     && inv.Location.Y == Location.Y
+                                     where inv.Location == Location
                                      select inv).ToList();
 
             return foundItem;
@@ -927,8 +926,7 @@ namespace RogueGame{
         public Monster? DetectMonster(MapSpace Location)
         {
             Monster? foundMonster = (from Monster monster in ActiveMonsters
-                                    where monster.Location!.X == Location.X
-                                    && monster.Location.Y == Location.Y
+                                    where monster.Location == Location
                                     select monster).FirstOrDefault();
             
             return foundMonster;
