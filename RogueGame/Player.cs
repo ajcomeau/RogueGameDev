@@ -585,11 +585,12 @@ namespace RogueGame
         /// Add found items to player's inventory.
         /// </summary>
         /// <returns>Display string with description of item.</returns>
-        public (bool Added, string Message) AddInventory(List<Inventory> Items)
+        public List<(bool Added, string Message, Inventory item)> AddInventory(List<Inventory> Items)
         {
             // Inventory management.
             bool addToInventory = false;
-            (bool Added, string Message) retValue = (false, "");
+            List<(bool Added, string Message, Inventory item)> retValue = 
+                new List<(bool Added, string Message, Inventory item)>();
 
             foreach (Inventory item in Items)
             {
@@ -600,7 +601,7 @@ namespace RogueGame
                     int goldAmt = rand.Next(MIN_GOLD_AMT, MAX_GOLD_AMT + 1);
                     this.Gold += goldAmt;
 
-                    retValue = (true, $"You picked up {goldAmt} pieces of gold.");
+                    retValue.Add((true, $"You picked up {goldAmt} pieces of gold.", item));
                 }
                 else
                 {
@@ -617,16 +618,16 @@ namespace RogueGame
                     {
                         this.CharacterInventory.Add(new Inventory(item));
 
-                        retValue = (true, $"You picked up {ListingDescription(Items.Count, item)}.");
+                        retValue.Add((true, $"You picked up {ListingDescription(1, item)}.", item));
 
                         if (item.ItemCategory == InvCategory.Amulet)
                         {
                             this.HasAmulet = true;
-                            retValue = (true, "You found the Amulet of Yendor!  It has been added to your inventory.");
+                            retValue.Add((true, "You found the Amulet of Yendor!  It has been added to your inventory.", item));
                         }
                     }
                     else
-                        retValue = (false, $"There is no space for this item in your inventory.");
+                        retValue.Add((false, $"There is no space for {ListingDescription(1, item)} in your inventory.", item));
                 }
             }            
 

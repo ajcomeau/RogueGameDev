@@ -305,7 +305,7 @@ namespace RogueGame{
             // Add a random number of inventory items.
             AddInventory(rand.Next(5, MAX_INVENTORY));
 
-            // Add stairway
+            // Add stairway 
             stairway = GetOpenSpace(false);
 
             if(stairway != null)

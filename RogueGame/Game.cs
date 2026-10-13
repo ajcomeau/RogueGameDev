@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using static RogueGame.GameTools;
 using static RogueGame.Inventory;
 
@@ -778,7 +779,7 @@ namespace RogueGame
             bool canMove, stopMoving = false, turnComplete = false;
             int teleport = CurrentPlayer.Teleportation() * 10;
             int aggravate = CurrentPlayer.AggravationFactor() * 10;
-            (bool Added, string Message) addInventory;
+            List<(bool Added, string Message, Inventory item)> addInventory;
             List<Inventory> invFound = new List<Inventory>(); Monster? monster = null;
             Dictionary<MapLevel.Direction, MapSpace> adjacent =
                 CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);            
@@ -850,13 +851,25 @@ namespace RogueGame
                             {
                                 addInventory = CurrentPlayer.AddInventory(invFound);
 
-                                if (addInventory.Added)
+                                // In this case, either everything will be added or nothing.
+                                // Iterating to test for add is simple enough here ...
+                                foreach (var (added, _, item) in addInventory)
                                 {
-                                    foreach (Inventory item in invFound)
+                                    if (added)
                                         CurrentMap.MapInventory.Remove(item);
-                                }
+                                }                                
 
-                                UpdateStatus(addInventory.Message, false);
+                                // ... but just look at the first item for the messages.
+                                if (addInventory[0].Added)
+                                {
+                                    if (addInventory.Count > 1)
+                                        UpdateStatus($"You picked up {ListingDescription(addInventory.Count, addInventory[0].item)}.", false);
+                                    else
+                                        UpdateStatus(addInventory[0].Message, false);
+                                }
+                                else
+                                    UpdateStatus("You don't have room in your inventory for this item.", false);
+
                             }
                             else
                                 UpdateStatus("You are not able to grab the object while levitating.", false);
@@ -3040,8 +3053,9 @@ namespace RogueGame
                 {
                     CurrentPlayer.Armor.IsProtected = true;
                     CurrentPlayer.Armor.IsCursed = false;
-                    UpdateStatus($"Great news! Your {CurrentPlayer.Armor.RealName} is protected against damage, theft and arcane curses up to 1,000,000 gold.", false);
                     UpdateStatus($"At Dungeon Insurance, your safety is our first concern!", false);
+                    UpdateStatus($"and arcane curses up to 1,000,000 gold.", false);
+                    UpdateStatus($"Great news! Your {CurrentPlayer.Armor.RealName} is protected against damage, theft", false);
                 }
                 else
                     UpdateStatus($"Hello, {CurrentPlayer.CharacterName}. We've been trying to reach you about your extended armor insurance.", false);
