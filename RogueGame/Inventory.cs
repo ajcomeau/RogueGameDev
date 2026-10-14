@@ -69,11 +69,6 @@ namespace RogueGame
         /// </summary>
         public bool IsAssigned { get; set;  }
         /// <summary>
-        /// How many items are there in the batch?
-        /// TODO: Can this be calculated instead?
-        /// </summary>
-        public int Amount { get; set; } = 1;
-        /// <summary>
         /// Can the item be wielded as a weapon?
         /// </summary>
         public bool IsWieldable { get; set; }

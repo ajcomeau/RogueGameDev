@@ -1944,7 +1944,7 @@ namespace RogueGame
         private void Wield()
         {
             bool slotsAvail = InventoryDisplay(CurrentPlayer.CharacterInventory).Count + 1 <= Player.INVENTORY_LIMIT;
-            List<Inventory> items;
+            List<Inventory> items;            
 
             if (UserInput.UserKey == null)
                 TurnInProgress = true;
@@ -1995,6 +1995,15 @@ namespace RogueGame
                     {
                         if ((items[0].IsGroupable && slotsAvail) || !items[0].IsGroupable)
                         {
+                            // If the player is wielding something already, set it's groupable setting 
+                            // back to default.
+                            if(CurrentPlayer.Wielding != null)
+                            {
+                                CurrentPlayer.Wielding.IsGroupable = 
+                                    GameInventory.GetInventoryItem(CurrentPlayer.Wielding.PriorityId)!.IsGroupable;                                
+                            }
+                            
+                            // Ungroup selected item and set it as wielded.
                             items[0].IsGroupable = false;
                             CurrentPlayer.Wielding = items[0];
                             UpdateStatus($"You are now wielding {ListingDescription(1, items[0])}.", false);
