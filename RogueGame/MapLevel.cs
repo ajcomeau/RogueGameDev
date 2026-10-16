@@ -455,7 +455,7 @@ namespace RogueGame{
             // Get region limits
             (MapSpace TopLeft, MapSpace BottomRight) corners = GetRegionLimits(Location.X, Location.Y);            
             // Find a place for the item to land.
-            Item.Location = GetOpenSpace(!inRoom, GetSurrounding(Location.X, Location.Y, Spaces))!;
+            Item.Location = GetOpenSpace(!inRoom, GetSurrounding(Location, Spaces))!;
 
             MapInventory.Add(Item);
 
@@ -1043,11 +1043,11 @@ namespace RogueGame{
         /// <param name="y">Starting Y point</param>
         /// <param name="spaces">Number of spaces outward to search</param>
         /// <returns></returns>
-        public List<MapSpace> GetSurrounding(int x, int y, int spaces)
+        public List<MapSpace> GetSurrounding(MapSpace Location, int Spaces)
         {
             List<MapSpace> surrounding = (from MapSpace space in levelMap
-                                        where Math.Abs(space.X - x) <= spaces
-                                        && Math.Abs(space.Y - y) <= spaces
+                                        where Math.Abs(space.X - Location.X) <= Spaces
+                                        && Math.Abs(space.Y - Location.Y) <= Spaces
                                         select space).ToList();
 
             return surrounding;
@@ -1161,9 +1161,9 @@ namespace RogueGame{
         /// </summary>
         /// <param name="xPos">Starting X point</param>
         /// <param name="yPos">Starting Y point</param>
-        public void ShowSurrounding(int xPos, int yPos)
+        public void ShowSurrounding(MapSpace Location)
         {
-            foreach (MapSpace space in GetSurrounding(xPos, yPos, 1))
+            foreach (MapSpace space in GetSurrounding(Location, 1))
             {
                 // Mark the space as discovered.
                 if (!space.Discovered)
@@ -1184,17 +1184,16 @@ namespace RogueGame{
         /// <param name="xPos"></param>
         /// <param name="yPos"></param>
         /// <returns></returns>
-        public bool DetectObstruction(int xPos, int yPos)
+        public bool DetectObstruction(MapSpace Location)
         {
-            // TODO: This might need to be adjusted to allow more gliding.
             bool retValue = false;
 
-            foreach (MapSpace space in GetSurrounding(xPos, yPos, 1))
+            foreach (MapSpace space in GetSurrounding(Location, 1))
             {
                 // If there's something one of the spaces, return True.
                 // Ignore player's space.
                 if (!retValue) 
-                    if (space.X != xPos || space.Y != yPos)
+                    if (space.X != Location.X || space.Y != Location.Y)
                         retValue = (!PassableSpacesGlyphList.Contains(PriorityChar(space, false).DisplayChar));
             }
 
@@ -1337,8 +1336,8 @@ namespace RogueGame{
         public void MapText()
         {
             StringBuilder sbReturn = new StringBuilder();
-            List<MapSpace> surroundingSpaces = GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 1);
-            int playerRegion = GetRegionNumber(CurrentPlayer.Location.X, CurrentPlayer.Location.Y); 
+            List<MapSpace> surroundingSpaces = GetSurrounding(CurrentPlayer.Location!, 1);
+            int playerRegion = GetRegionNumber(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y); 
             MapGlyph? appendChar;
             MapGlyph priorityChar;
             bool playerInRoom = false;

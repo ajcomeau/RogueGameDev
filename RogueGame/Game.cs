@@ -269,6 +269,8 @@ namespace RogueGame
                 
                 if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied)
                     retValue += $"  {CurrentPlayer.HungerState}     ";
+
+                retValue += "   Press ? for help.";
             }
             else
                 retValue = "";
@@ -423,7 +425,7 @@ namespace RogueGame
             {
                 // Find a place for the arrow to land.
                 landing = CurrentMap.GetOpenSpace(false, CurrentMap
-                    .GetSurrounding(character.Location!.X, character.Location.Y, 2));
+                    .GetSurrounding(character.Location!, 2));
                 
                 // Add the arrow to the map.
                 if(arrow != null && landing  != null)
@@ -671,9 +673,9 @@ namespace RogueGame
                 }
 
                 if (CurrentPlayer.Hallucinating > 0 && CurrentPlayer.Hallucinating <= CurrentTurn)
-                {                    
-                    UpdateStatus("The potion wears off and things start to look normal again.", false);
+                {
                     UpdateStatus("Anything you still can't deal with is here to stay.", false);
+                    UpdateStatus("The potion wears off and things start to look normal again.", false);                    
                     CurrentPlayer.Hallucinating = 0;
                 }                
             }
@@ -756,7 +758,7 @@ namespace RogueGame
             if (rand.Next(1, 101) <= SEARCH_PCT)
             {
                 UpdateStatus(" Searching ...", false);
-                spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 1);
+                spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location!, 1);
 
                 foreach (MapSpace space in spaces)
                 {
@@ -834,10 +836,10 @@ namespace RogueGame
 
                         // Show the surrounding spaces if the player can see.
                         if (CurrentPlayer.Blind == 0)
-                            CurrentMap.ShowSurrounding(player.Location.X, player.Location.Y);
+                            CurrentMap.ShowSurrounding(player.Location);
 
                         // Discover the spaces surrounding the player and note if something is found.
-                        stopMoving = CurrentMap.DetectObstruction(player.Location.X, player.Location.Y);
+                        stopMoving = CurrentMap.DetectObstruction(player.Location);
 
                         // If the player has just stepped on a trap ...
                         // 8/16/2026 - Levitation avoids traps and inventory.
@@ -3018,7 +3020,7 @@ namespace RogueGame
         /// <returns></returns>
         private void ScrollOfCreateMonster(Character character)
         {
-            List<MapSpace> spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 1);
+            List<MapSpace> spaces = CurrentMap.GetSurrounding(CurrentPlayer.Location!, 1);
 
             CurrentMap.AddMonsters(1, spaces);
             UpdateStatus("The room suddenly got a bit more crowded.", false);
@@ -3032,7 +3034,7 @@ namespace RogueGame
         /// <returns></returns>
         private void ScrollofHoldMonsters(Character character)
         {
-            List<MapSpace> surrounding = CurrentMap.GetSurrounding(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y, 2);
+            List<MapSpace> surrounding = CurrentMap.GetSurrounding(CurrentPlayer.Location!, 2);
 
             List<Monster> monsters = 
                 CurrentMap.ActiveMonsters.Where(monster => surrounding

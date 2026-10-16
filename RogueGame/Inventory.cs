@@ -571,12 +571,12 @@ namespace RogueGame
                 new Inventory(InvCategory.Ring, InvTemplateID.RingOfAdornment, "", "Adornment", "Adornment", false, false, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('ö', Color.Orange, Color.Black), "Such a stylish ring ... it reflects the torchlight nicely.", "It really was kind of useless."),
                 new Inventory(InvCategory.Armor, InvTemplateID.StuddedLeatherArmor, "Studded leather armor", "Studded leather armor", "Studded leather armor", false, false, true, true, false, false,3, 1, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Armor, InvTemplateID.LeatherArmor, "Leather armor", "Leather armor", "Leather armor", false, false, false, true, false,  false, 2, 1, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.RingMail, "Ring mail", "Ring mail", "Ring mail", false, false, false, true, false, false,3, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.ScaleMail, "Scale mail", "Scale mail", "Scale mail", false, false, false, true, false, false,4, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.ChainMail, "Chain mail", "Chain mail", "Chain mail", false, false, false, true, false, false,5, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.SplintMail, "Splint mail", "Splint mail", "Splint mail", false, false, false, true, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0,new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.BandedMail, "Banded mail", "Banded mail", "Banded mail", false, false, false, true, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.PlateMail, "Plate mail", "Plate mail", "Plate mail", false, false, false, true, false,  false,7, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.RingMail, "ring mail", "ring mail", "ring mail", false, false, false, true, false, false,3, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.ScaleMail, "scale mail", "scale mail", "scale mail", false, false, false, true, false, false,4, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.ChainMail, "chain mail", "chain mail", "chain mail", false, false, false, true, false, false,5, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.SplintMail, "splint mail", "splint mail", "splint mail", false, false, false, true, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0,new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.BandedMail, "banded mail", "banded mail", "banded mail", false, false, false, true, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.PlateMail, "plate mail", "plate mail", "plate mail", false, false, false, true, false,  false,7, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Staff, InvTemplateID.StaffOfLight, "Light", "Light", "Light", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 300, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Staff, InvTemplateID.StaffOfStriking, "Striking", "Striking", "Striking", false, false, false, true, false, false, 0, 1, 3, 10, 1, 8, 0, 25, 300, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Staff, InvTemplateID.StaffOfMagicMissile, "Magic Missile", "Magic Missile", "Magic Missile", false, false, false, true, false, false, 0, 1, 1, 1, 1, 4, 0, 25, 300, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
@@ -662,10 +662,14 @@ namespace RogueGame
             // Single function to create inventory listing description for item and 
             // handle all the grammatical adjustments.
 
-            // TODO:  This really needs to be cleaned up.
 
             string increments = "";
             string retValue = "";
+            string categoryName() => Number == 1 ? AddEnglishArticle(Item.ItemCategory.ToString().ToLower()) : Number.ToString() + Item.ItemCategory.ToString() + "s";
+            string unIdentified() => Number == 1 ? AddEnglishArticle(Item.CodeName!.ToLower()) + " " + Item.ItemCategory.ToString().ToLower()
+                            : Number.ToString() + " " + Item.CodeName!.ToLower() + " " + Item.ItemCategory.ToString().ToLower() + "s";
+            string Identified() => Number == 1 ? "a " + Item.ItemCategory.ToString().ToLower() + " of " + Item.RealName
+                            : Number.ToString() + " " + Item.ItemCategory.ToString().ToLower() + "s of " + Item.RealName;
 
             switch (Item.ItemCategory)
             {
@@ -677,36 +681,26 @@ namespace RogueGame
                         retValue = Number.ToString() + " " + Item.PluralName;
                     break;
                 case InvCategory.Ammunition:
-                    retValue = Number == 1 ? GameTools.AddEnglishArticle(Item.RealName) : Number.ToString() + " " + Item.PluralName;
+                    retValue = Number == 1 ? AddEnglishArticle(Item.RealName) : Number.ToString() + " " + Item.PluralName;
                     break;
                 case InvCategory.Weapon:
-                    retValue = GameTools.AddEnglishArticle(Item.RealName);
+                    retValue = AddEnglishArticle(Item.RealName);
                     break;
-                case InvCategory.Ring:
-                    if (Item.IsIdentified)
-                        retValue = Number == 1 ? "a " + Item.Increment.ToString() + " " + Item.ItemCategory.ToString() + " of " + Item.RealName
-                            : Number.ToString() + " " + Item.Increment.ToString() + " " + Item.ItemCategory.ToString() + "s of " + Item.RealName;
-                    else
-                        retValue = Number == 1 ? GameTools.AddEnglishArticle(Item.CodeName!) + " " + Item.ItemCategory.ToString().ToLower()
-                            : Number.ToString() + " " + Item.CodeName! + " " + Item.ItemCategory.ToString() + "s";
-                    break;
-                case InvCategory.Potion:
+                case InvCategory.Ring:                
                 case InvCategory.Wand:
+                case InvCategory.Potion:
                 case InvCategory.Staff:
                     if (Item.IsIdentified)
-                        retValue = Number == 1 ? "a " + Item.ItemCategory.ToString() + " of " + Item.RealName
-                            : Number.ToString() + " " + Item.ItemCategory.ToString() + "s of " + Item.RealName;
+                        retValue = Identified();
                     else
-                        retValue = Number == 1 ? GameTools.AddEnglishArticle(Item.CodeName!) + " " + Item.ItemCategory.ToString().ToLower()
-                            : Number.ToString() + " " + Item.CodeName! + " " + Item.ItemCategory.ToString().ToLower() + "s";
-                    break;
+                        retValue = unIdentified();
+                    break;                
                 case InvCategory.Scroll:
                     if (Item.IsIdentified)
-                        retValue = Number == 1 ? "a " + Item.ItemCategory.ToString() + " of " + Item.RealName 
-                            : Number.ToString() + " " + Item.ItemCategory.ToString() + "s of " + Item.RealName;
+                        retValue = Identified();
                     else
-                        retValue = Number == 1 ? "a " + Item.ItemCategory.ToString().ToLower() + " called \"" + Item.CodeName + "\""
-                            : Number.ToString() + " " + Item.ItemCategory.ToString().ToLower() + "s called \"" + Item.CodeName + "\"";
+                        retValue = Number == 1 ? categoryName() + " called \"" + Item.CodeName + "\""
+                            : categoryName() + " called \"" + Item.CodeName + "\"";
                     break;
                 default:
                     retValue = Item.RealName;
@@ -730,8 +724,8 @@ namespace RogueGame
                     case InvCategory.Weapon:
                     case InvCategory.Ammunition:
                         if (Item.Increment != 0) increments = Item.Increment.ToString("+0;-#") + " ";
-                        increments += Item.AccIncrement.ToString("+0;-#") + " ";
-                        increments += Item.DmgIncrement.ToString("+0;-#");
+                        increments += " Acc: " + Item.AccIncrement.ToString("+0;-#") + " ";
+                        increments += " Dmg: " + Item.DmgIncrement.ToString("+0;-#");
                         break;
                     default:
                         break;

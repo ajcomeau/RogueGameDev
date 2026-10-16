@@ -27,8 +27,8 @@ namespace RogueGame
                 listStatus.DataSource = currentGame.StatusList;
                 pnlName.Visible = false;
                 pnlName.Enabled = false;
-                this.Invalidate(true);  // Invalidate to draw map.
                 lblStats.Text = currentGame.StatsDisplay();
+                this.Invalidate(true);  // Invalidate to draw map.
             }
             else
                 MessageBox.Show("Please enter a name for your character.");
@@ -41,8 +41,6 @@ namespace RogueGame
             {
                 if (currentGame.GameMode < DisplayMode.GameOver)
                 {
-                    listStatus.Visible = (currentGame.GameMode is DisplayMode.Primary or DisplayMode.Inventory);
-
                     // Don't send keys until the game has been instantiated
                     // and then don't send CTRL / SHIFT / ALT.
                     if (e.KeyValue > 18)
@@ -53,20 +51,20 @@ namespace RogueGame
                         listStatus.SelectedIndex = 0;
                         listStatus.SelectedIndex = -1;
                     }
-                    // Invalidate to redraw map.
-                    this.Invalidate(true);
                 }
 
                 // Evaluate GameMode again. If the game has ended, clear and let player start new game.                
                 if (currentGame.GameMode >= DisplayMode.GameOver)
                 {
-                    listStatus.Visible = false;
                     pnlName.Visible = true;
                     pnlName.Enabled = true;
                     txtName.Text = currentGame.CurrentPlayer.CharacterName;
                     lblStats.Text = "";
                 }
 
+                listStatus.Visible = (currentGame.GameMode is DisplayMode.Primary or DisplayMode.Inventory);
+                // Invalidate to redraw map.
+                this.Invalidate(true);
                 e.Handled = true;
             }           
 
