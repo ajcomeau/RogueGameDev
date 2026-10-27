@@ -1,5 +1,6 @@
 ﻿using System.CodeDom;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using static RogueGame.GameTools;
 using static RogueGame.MapLevel;
@@ -856,7 +857,7 @@ namespace RogueGame{
             retValue.Add(Direction.South, SearchDirection(Direction.South, currentX, currentY + 1)!);
             retValue.Add(Direction.East, SearchDirection(Direction.East, currentX + 1, currentY)!);
             retValue.Add(Direction.West, SearchDirection(Direction.West, currentX - 1, currentY)!);
-
+            
             return retValue;
         }
         /// <summary>
@@ -1276,6 +1277,32 @@ namespace RogueGame{
             return returnVal;
         }
         /// <summary>
+        /// Return region number 1 through 9 based on map point and whether the 
+        /// point is inside a room.
+        /// </summary>
+        /// <param name="xPos"></param>
+        /// <param name="yPos"></param>
+        /// <returns></returns>
+        private (int Region, bool InRoom) GetRegionAndPlacement(int xPos, int yPos)
+        {
+            // The map is divided into a 3 x 3 grid of 9 equal regions.
+            // This function returns 1 to 9 to indicate where the region is on the map.
+
+            (int Region, bool InRoom) returnVal;
+
+            //int regionX = ((int)RoomAnchorX / REGION_WD) + 1;
+            // Using Ceiling works regardless of where in the region the coords are,
+            // even if they're on the edge.
+            int regionX = (int)(Math.Ceiling((decimal)xPos / REGION_WD));
+            int regionY = (int)(Math.Ceiling((decimal)yPos / REGION_HT));
+
+            returnVal.Region = (regionX) + ((regionY - 1) * 3);
+            returnVal.InRoom = (RoomInteriorGlyphList.Contains(levelMap[xPos, yPos].MapCharacter.DisplayChar));
+
+            return returnVal;
+        }
+
+        /// <summary>
         /// Get northwest and south east corners of region based on X,Y coordintes.
         /// </summary>
         /// <param name="xPos">Map X coordinate within region</param>
@@ -1337,10 +1364,9 @@ namespace RogueGame{
         {
             StringBuilder sbReturn = new StringBuilder();
             List<MapSpace> surroundingSpaces = GetSurrounding(CurrentPlayer.Location!, 1);
-            int playerRegion = GetRegionNumber(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y); 
+            (int Region, bool InRoom) playerLocation = GetRegionAndPlacement(CurrentPlayer.Location!.X, CurrentPlayer.Location.Y);
             MapGlyph? appendChar;
             MapGlyph priorityChar;
-            bool playerInRoom = false;
             int regionNo;
 
             // Iterate through the two-dimensional levelMap MapSpace array and use determine which MapGlyph objects 
@@ -1353,10 +1379,6 @@ namespace RogueGame{
                     regionNo = GetRegionNumber(x, y);
                     // Get priority character
                     priorityChar = PriorityChar(levelMap[x, y], false);
-
-                    // Determine if player is actually in the current region's room.
-                    playerInRoom = (regionNo == playerRegion &&
-                                (RoomInteriorGlyphList.Contains(CurrentPlayer.Location.MapCharacter.DisplayChar)));
 
                     // If the space is within one space of the character, show standard 
                     // priority character unless character is currently blind.
@@ -1388,7 +1410,8 @@ namespace RogueGame{
                         }
                         else if (levelMap[x, y].Lighted)
                         {
-                            if (playerInRoom && RoomInteriorGlyphList.Contains(levelMap[x, y].MapCharacter.DisplayChar))
+                            if (playerLocation.InRoom && playerLocation.Region == regionNo &&  
+                                RoomInteriorGlyphList.Contains(levelMap[x, y].MapCharacter.DisplayChar))
                                 appendChar = priorityChar;
                             else
                                 appendChar = (levelMap[x, y].SearchRequired) ?
