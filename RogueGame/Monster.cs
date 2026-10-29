@@ -17,7 +17,7 @@ namespace RogueGame
             new Monster("Aquator"       , 5, 40, 5, 9, 7, 15, 50, 0, 0, new MapGlyph('A', Color.LightGray, Color.Black), 85, Aquator, true, 35, false),
             new Monster("Bat"           , 1, 8, 4, 1, 1, 5, 50, 1, 2, new MapGlyph('B', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Centaur"       , 4, 32, 5, 15, 8, 17, 50, 3, 12, new MapGlyph('C', Color.LightGray, Color.Black), 0, null, true, 95, false),
-            new Monster("Dragon"        , 10, 80, 10, 6800, 22, 26, 50, 5, 46, new MapGlyph('D', Color.LightGray, Color.Black), 0, null, true, 35, false),
+            new Monster("Dragon"        , 10, 80, 10, 6800, 22, 26, 50, 2, 16, new MapGlyph('D', Color.LightGray, Color.Black), 0, Dragon, true, 35, false),
             new Monster("Emu"           , 1, 8, 2, 5, 2, 11, 50, 1, 2, new MapGlyph('E', Color.LightGray, Color.Black), 0, null, true,  35, false),
             new Monster("Flytrap"       , 8, 64, 9, 80, 15, 20, 50, 0, 0, new MapGlyph('F', Color.LightGray, Color.Black), 0, null, true, 35,  false),
             new Monster("Griffin"       , 13, 104, 5, 7, 12, 20, 50, 7, 27, new MapGlyph('G', Color.LightGray, Color.Black), 0, null, true, 35, false),
@@ -247,13 +247,31 @@ namespace RogueGame
         /// <returns></returns>
         private static string IceMonster(Monster attacker, Character defender, int currentTurn) 
         {
-            bool strike = rand.Next(1, 101) < attacker.SpecialAttackPct;
             string returnMsg = "";
 
-            if (strike && defender is Player)
+            if (defender is Player)
             {
                 defender.Immobile = currentTurn + rand.Next(1, 4);
                 returnMsg = "A touch from the Ice Monster freezes your limbs. You can't move ... so cold ...";
+            }
+
+            return returnMsg;
+        }
+
+        /// <summary>
+        /// The dragon breathes fire for a potential loss of 30 hit points.
+        /// </summary>
+        /// <param name="character">Current player or monster</param>
+        /// <param name="currentTurn">Current turn number for lingering effects</param>
+        /// <returns></returns>
+        private static string Dragon(Monster attacker, Character defender, int currentTurn)
+        {
+            string returnMsg = "";
+
+            if (defender is Player)
+            {
+                defender.HPDamage += rand.Next(3, 30);                
+                returnMsg = "The dragon opens its mouth and you feel yourself bathed in fire.";
             }
 
             return returnMsg;
@@ -267,10 +285,9 @@ namespace RogueGame
         /// <returns></returns>
         private static string Rattlesnake(Monster attacker, Character defender, int currentTurn)
         {
-            bool strike = rand.Next(1, 101) < attacker.SpecialAttackPct;
             string returnMsg = "";
 
-            if (strike && defender is Player)
+            if (defender is Player)
             {
                 ((Player)defender).StrengthMod -= 1;
                 returnMsg = "The rattlesnake bites you and you feel a little weaker.";
@@ -288,11 +305,10 @@ namespace RogueGame
         /// <returns></returns>
         private static string Aquator(Monster attacker, Character defender, int currentTurn)
         {
-            bool strike = rand.Next(1, 101) < attacker.SpecialAttackPct;
             string returnMsg = "";
             Player player;
 
-            if (strike && defender is Player)
+            if (defender is Player)
             {
                 player = (Player)defender;
                 // TODO: This will work for now but the protection should be better calculated.
@@ -319,12 +335,11 @@ namespace RogueGame
         /// <returns></returns>
         private static string Leprechaun(Monster attacker, Character defender, int currentTurn)
         {
-            bool strike = rand.Next(1, 101) < attacker.SpecialAttackPct;
             string returnMsg = "";
             int tax = 0;
             Player player;
 
-            if (strike && defender is Player)
+            if (defender is Player)
             {
                 player = (Player)defender;
 

@@ -1006,7 +1006,7 @@ namespace RogueGame
         {
             int hitChance, damage = 0;
             string statusUpdate;
-            bool hitSuccess;
+            bool hitSuccess, strike;
             Inventory? armor = CurrentPlayer.Armor;
 
             // Set the attacker as the player's current opponent.
@@ -1026,9 +1026,15 @@ namespace RogueGame
                 Debug.Print($"The {Attacker.CharacterName} hit you with a {hitChance.ToString()} chance of hitting.");
                 if (Attacker.SpecialAttack != null)
                 {
-                    statusUpdate = Attacker.SpecialAttack.Invoke(Attacker, Defender, CurrentTurn);
-                    if (statusUpdate.Length > 0)
-                        UpdateStatus(statusUpdate, false);
+                    // Roll the dice on whether a special attack should be used.
+                    strike = rand.Next(1, 101) < Attacker.SpecialAttackPct;
+
+                    if (strike)
+                    {
+                        statusUpdate = Attacker.SpecialAttack.Invoke(Attacker, Defender, CurrentTurn);
+                        if (statusUpdate.Length > 0)
+                            UpdateStatus(statusUpdate, false);
+                    }
                 }
 
                 damage = rand.Next(Attacker.MinAttackDmg, Attacker.MaxAttackDmg + 1);
