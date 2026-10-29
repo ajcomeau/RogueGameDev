@@ -17,9 +17,9 @@ namespace RogueGame
             new Monster("Aquator"       , 5, 40, 5, 9, 7, 15, 50, 0, 0, new MapGlyph('A', Color.LightGray, Color.Black), 85, Aquator, true, 35, false),
             new Monster("Bat"           , 1, 8, 4, 1, 1, 5, 50, 1, 2, new MapGlyph('B', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Centaur"       , 4, 32, 5, 15, 8, 17, 50, 3, 12, new MapGlyph('C', Color.LightGray, Color.Black), 0, null, true, 95, false),
-            new Monster("Dragon"        , 10, 80, 10, 6800, 22, 26, 50, 2, 16, new MapGlyph('D', Color.LightGray, Color.Black), 0, Dragon, true, 35, false),
+            new Monster("Dragon"        , 10, 80, 10, 6800, 22, 26, 50, 2, 16, new MapGlyph('D', Color.LightGray, Color.Black), 35, Dragon, true, 35, false),
             new Monster("Emu"           , 1, 8, 2, 5, 2, 11, 50, 1, 2, new MapGlyph('E', Color.LightGray, Color.Black), 0, null, true,  35, false),
-            new Monster("Flytrap"       , 8, 64, 9, 80, 15, 20, 50, 0, 0, new MapGlyph('F', Color.LightGray, Color.Black), 0, Flytrap, true, 35,  false),
+            new Monster("Flytrap"       , 8, 64, 9, 80, 15, 20, 50, 0, 0, new MapGlyph('F', Color.LightGray, Color.Black), 35, Flytrap, true, 35,  false),
             new Monster("Griffin"       , 13, 104, 5, 7, 12, 20, 50, 7, 27, new MapGlyph('G', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Hobgoblin"     , 1, 8, 3, 3, 1, 10, 50, 1, 8, new MapGlyph('H', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Ice Monster"   , 1, 8, 2, 120, 3, 12, 50, 0, 0, new MapGlyph('I', Color.LightGray, Color.Black), 50, IceMonster, true, 35, false),
@@ -27,7 +27,7 @@ namespace RogueGame
             new Monster("Kestral"       , 1, 8, 2, 1, 1, 6, 50, 1, 4, new MapGlyph('K', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Leprechaun"    , 3, 24, 5, 10, 7, 16, 50, 1, 1, new MapGlyph('L', Color.LightGray, Color.Black), 95, Leprechaun, false, 95, false),
             new Monster("Medusa"        , 8, 64, 5, 100, 19, 26, 50, 8, 34, new MapGlyph('M', Color.LightGray, Color.Black), 0, Medusa, true, 35, false),
-            new Monster("Nymph"         , 3, 24, 5, 37, 11, 20, 50, 0, 0, new MapGlyph('N', Color.LightGray, Color.Black), 0, null, true, 35, false),
+            new Monster("Nymph"         , 3, 24, 5, 37, 11, 20, 50, 0, 0, new MapGlyph('N', Color.LightGray, Color.Black), 90, Nymph, true, 35, false),
             new Monster("Orc"           , 1, 8, 3, 5, 4, 13, 50, 1, 8, new MapGlyph('O', Color.LightGray, Color.Black), 0, null, true, 85, false),
             new Monster("Phantom"       , 8, 64, 9, 4000, 20, 26, 50, 4, 16, new MapGlyph('P', Color.Black, Color.Black), 0, null, true, 35, false),
             new Monster("Quagga"        , 3, 24, 9, 32, 10, 19, 50, 2, 10, new MapGlyph('Q', Color.LightGray, Color.Black), 0, null, true, 35, false),
@@ -259,6 +259,31 @@ namespace RogueGame
         }
 
         /// <summary>
+        /// The nymph steals a random object from inventory and teleports away.
+        /// </summary>
+        /// <param name="character">Current player or monster</param>
+        /// <param name="currentTurn">Current turn number for lingering effects</param>
+        /// <returns></returns>
+        private static string Nymph(Monster attacker, Character defender, int currentTurn)
+        {
+            string returnMsg = "";
+            Inventory? item = null;
+            
+
+            if (defender is Player)
+            {
+                item = defender.CharacterInventory[rand.Next(defender.CharacterInventory.Count - 1)];
+                
+                defender.CharacterInventory.Remove(item);
+                attacker.CharacterInventory.Add(item);
+                attacker.Teleport = true;
+                returnMsg = $"The nymph stole {Inventory.ListingDescription(1, item)}!";
+            }
+
+            return returnMsg;
+        }
+
+        /// <summary>
         /// The flytrap grabs and holds the player immobile.
         /// </summary>
         /// <param name="character">Current player or monster</param>
@@ -271,7 +296,7 @@ namespace RogueGame
             if (defender is Player)
             {
                 defender.Immobile = currentTurn + rand.Next(1, 8);
-                returnMsg = "The Flytrap grabs and holds you. You sense great hunger in its grip.";
+                returnMsg = "The flytrap grabs and holds you. You sense great hunger in its grip.";
             }
 
             return returnMsg;
@@ -290,7 +315,7 @@ namespace RogueGame
             if (defender is Player)
             {
                 defender.Confused = currentTurn + rand.Next(1, 10);
-                returnMsg = "The Medusa gazes at you, you look in her eyes and feel your sanity slipping ...";
+                returnMsg = "The medusa gazes at you, you look in her eyes and feel your sanity slipping ...";
             }
 
             return returnMsg;
@@ -389,8 +414,8 @@ namespace RogueGame
                 {
                     tax = rand.Next(1, (int)(player.Gold * .25) + 1);
                     player.Gold -= tax;
-                    player.Opponent.Gold += tax;
-                    player.Opponent.Teleport = true;
+                    attacker.Gold += tax;
+                    attacker.Teleport = true;
                     returnMsg = "Your purse feels lighter.";                    
                 }
             }
