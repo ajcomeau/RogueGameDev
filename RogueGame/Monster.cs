@@ -26,7 +26,7 @@ namespace RogueGame
             new Monster("Jabberwock"    , 15, 120, 9, 2, 20, 26, 50, 4, 32, new MapGlyph('J', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Kestral"       , 1, 8, 2, 1, 1, 6, 50, 1, 4, new MapGlyph('K', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Leprechaun"    , 3, 24, 5, 10, 7, 16, 50, 1, 1, new MapGlyph('L', Color.LightGray, Color.Black), 95, Leprechaun, false, 95, false),
-            new Monster("Medusa"        , 8, 64, 5, 100, 19, 26, 50, 8, 34, new MapGlyph('M', Color.LightGray, Color.Black), 0, Medusa, true, 35, false),
+            new Monster("Medusa"        , 8, 64, 5, 100, 19, 26, 50, 8, 34, new MapGlyph('M', Color.LightGray, Color.Black), 35, Medusa, true, 35, false),
             new Monster("Nymph"         , 3, 24, 5, 37, 11, 20, 50, 0, 0, new MapGlyph('N', Color.LightGray, Color.Black), 90, Nymph, true, 35, false),
             new Monster("Orc"           , 1, 8, 3, 5, 4, 13, 50, 1, 8, new MapGlyph('O', Color.LightGray, Color.Black), 0, null, true, 85, false),
             new Monster("Phantom"       , 8, 64, 9, 4000, 20, 26, 50, 4, 16, new MapGlyph('P', Color.Black, Color.Black), 0, null, true, 35, false),
@@ -35,7 +35,7 @@ namespace RogueGame
             new Monster("Snake"         , 1, 8, 2, 2, 1, 9, 50, 1, 3, new MapGlyph('S', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Troll"         , 6, 48, 9, 120, 13, 22, 50, 4, 28, new MapGlyph('T', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Ur-vile"       , 7, 56, 9, 200, 18, 26, 50, 4, 36, new MapGlyph('U', Color.LightGray, Color.Black), 0, null, true, 35, false),
-            new Monster("Vampire"       , 8, 64, 9, 350, 20, 26, 50, 1, 10, new MapGlyph('V', Color.LightGray, Color.Black), 0, null, true, 35, false),
+            new Monster("Vampire"       , 8, 64, 9, 350, 20, 26, 50, 1, 10, new MapGlyph('V', Color.LightGray, Color.Black), 35, Vampire, true, 35, true),
             new Monster("Wraith"        , 5, 40, 9, 55, 14, 23, 50, 1, 6, new MapGlyph('W', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Xeroc"         , 7, 56, 9, 190, 17, 26, 50, 4, 16, new MapGlyph('X', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Yeti"          , 4, 32, 5, 50, 12, 21, 50, 2, 12, new MapGlyph('Y', Color.LightGray, Color.Black), 0, null, true, 35, false),
@@ -338,6 +338,26 @@ namespace RogueGame
             }
 
             return returnMsg;
+        }
+
+        /// <summary>
+        /// Vampire bites reduce max hit points by up to 5. 
+        /// </summary>
+        /// <param name="character">Current player or monster</param>
+        /// <param name="currentTurn">Current turn number for lingering effects</param>
+        /// <returns></returns>
+        private static string Vampire(Monster attacker, Character defender, int currentTurn)
+        {
+            string returnMsg = "";
+
+            if (defender is Player)
+            {
+                ((Player)defender).MaxHP -= rand.Next(1, 6);
+                returnMsg = "The vampire sinks his teeth into you and you feel your resistance fade.";
+            }
+
+            return returnMsg;
+
         }
 
         /// <summary>
