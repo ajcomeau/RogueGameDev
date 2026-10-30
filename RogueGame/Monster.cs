@@ -36,7 +36,7 @@ namespace RogueGame
             new Monster("Troll"         , 6, 48, 9, 120, 13, 22, 50, 4, 28, new MapGlyph('T', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Ur-vile"       , 7, 56, 9, 200, 18, 26, 50, 4, 36, new MapGlyph('U', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Vampire"       , 8, 64, 9, 350, 20, 26, 50, 1, 10, new MapGlyph('V', Color.LightGray, Color.Black), 35, Vampire, true, 35, true),
-            new Monster("Wraith"        , 5, 40, 9, 55, 14, 23, 50, 1, 6, new MapGlyph('W', Color.LightGray, Color.Black), 0, null, true, 35, false),
+            new Monster("Wraith"        , 5, 40, 9, 55, 2, 23, 50, 1, 6, new MapGlyph('W', Color.LightGray, Color.Black), 75, Wraith, true, 35, false),
             new Monster("Xeroc"         , 7, 56, 9, 190, 17, 26, 50, 4, 16, new MapGlyph('X', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Yeti"          , 4, 32, 5, 50, 12, 21, 50, 2, 12, new MapGlyph('Y', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Zombie"        , 2, 16, 5, 6, 7, 14, 50, 1, 8, new MapGlyph('Z', Color.LightGray, Color.Black), 0, null, true, 50, false),
@@ -374,6 +374,37 @@ namespace RogueGame
             {
                 ((Player)defender).StrengthMod -= 1;
                 returnMsg = "The rattlesnake bites you and you feel a little weaker.";
+            }
+
+            return returnMsg;
+
+        }
+
+        /// <summary>
+        /// The wraith sends the player back to a previous experience level.
+        /// In this case, just take half the experience points and decrease max hit points.
+        /// </summary>
+        /// <param name="character">Current player or monster</param>
+        /// <param name="currentTurn">Current turn number for lingering effects</param>
+        /// <returns></returns>
+        private static string Wraith(Monster attacker, Character defender, int currentTurn)
+        {
+            string returnMsg = "";
+            int expLevelUp = 10;
+            Player player;
+
+            if (defender is Player)
+            {
+                player = (Player)defender;
+                player.Experience = (int)player.Experience / 2;
+                player.MaxHP -= rand.Next(1, GameTools.HP_LEVEL_INCREASE + 1);
+
+                while (expLevelUp < player.Experience)
+                    expLevelUp *= 2;
+
+                player.NextExpLevelUp = expLevelUp;
+
+                returnMsg = "This place suddenly feels a lot less familiar to you.";
             }
 
             return returnMsg;
