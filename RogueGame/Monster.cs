@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Data;
+using static RogueGame.Inventory;
 
 namespace RogueGame
 {
@@ -36,7 +37,7 @@ namespace RogueGame
             new Monster("Troll"         , 6, 48, 9, 120, 13, 22, 50, 4, 28, new MapGlyph('T', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Ur-vile"       , 7, 56, 9, 200, 18, 26, 50, 4, 36, new MapGlyph('U', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Vampire"       , 8, 64, 9, 350, 20, 26, 50, 1, 10, new MapGlyph('V', Color.LightGray, Color.Black), 35, Vampire, true, 35, true),
-            new Monster("Wraith"        , 5, 40, 9, 55, 2, 23, 50, 1, 6, new MapGlyph('W', Color.LightGray, Color.Black), 75, Wraith, true, 35, false),
+            new Monster("Wraith"        , 5, 40, 9, 55, 14, 23, 50, 1, 6, new MapGlyph('W', Color.LightGray, Color.Black), 75, Wraith, true, 35, false),
             new Monster("Xeroc"         , 7, 56, 9, 190, 17, 26, 50, 4, 16, new MapGlyph('X', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Yeti"          , 4, 32, 5, 50, 12, 21, 50, 2, 12, new MapGlyph('Y', Color.LightGray, Color.Black), 0, null, true, 35, false),
             new Monster("Zombie"        , 2, 16, 5, 6, 7, 14, 50, 1, 8, new MapGlyph('Z', Color.LightGray, Color.Black), 0, null, true, 50, false),
@@ -215,29 +216,48 @@ namespace RogueGame
 
             return returnVal;
         }
-
         /// <summary>
-        /// Get a Monster object appropriate to a specific map level.
+        /// Generates random item from inventory template list.
+        /// 8/15/2026 - Changed to accept probability limit and changed probability calculation.
         /// </summary>
-        /// <param name="LevelNumber">Number of current map level</param>
+        /// <param name="Location">MapSpace where items should be placed.</param>
+        /// <param name="Probability">Returns items with probability occurrence below this limit.</param>
         /// <returns></returns>
         public static Monster? SpawnMonster(int LevelNumber)
         {
-            int itemSelect = 0;
+            Monster? returnVal = null;
+            int probabilityTotal;
 
+            // Clone a new object from template. Exclude gold and amulet.
             // Get list of available monsters for specified level.
             List<Monster> retList = (from Monster item in Monsters
-                                        where item.MinLevel <= LevelNumber && item.MaxLevel >= LevelNumber
-                                        select item).ToList();
+                                     where item.MinLevel <= LevelNumber && item.MaxLevel >= LevelNumber
+                                     select item).ToList()
+                                     .OrderBy(x => Random.Shared.Next()).ToList();
 
+            // Get a sum of the probability weights and a random number within that limit.
+            probabilityTotal = rand.Next(retList.Sum(item => item.AppearancePct));
+
+            // Iterate through the list, subtracting weights from
+            // the random number until we get to 0. Return that item.
             if (retList.Count > 0)
             {
-                // Select random monster from list and return.
-                itemSelect = Game.rand.Next(0, retList.Count);
-                return new Monster(retList[itemSelect]);
+                foreach (Monster item in retList)
+                {
+                    probabilityTotal -= item.AppearancePct;
+
+                    if (probabilityTotal < 0)
+                    {
+                        returnVal = new Monster(item);
+                        break;
+                    }
+                }
             }
-            else return null;
+
+            return returnVal;
         }
+
+
         #region MonsterPowers
         /// <summary>
         /// Ice monster has a 50% chance of freezing the opponent for a few turns.
