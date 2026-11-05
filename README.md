@@ -1,5 +1,15 @@
 # Rogue C#
 
+Rogue C# is a re-creation of the original Rogue dungeon-crawler console game that serves as a tutorial project for my article series on AndrewComeau.com. This version is as faithful as possible to the original 1983 version with the same monsters, inventory and mapping style.
+
+Find out more about the project on my site at:
+https://www.andrewcomeau.com/rogue-csharp-main/
+
+### 10/30/2026
+I'm working through a few last bugs before starting on the Rogue SQLite series where I'll be adding a SQLite database to the game to hold game data, a saved game and the scoreboard. Read more in the latest update at:
+https://www.andrewcomeau.com/programming/rogue-latest-update/ .
+
+
 ### 8/27/2026
 Newest writeup online! 
 The Monsters Evolve
