@@ -105,9 +105,9 @@
         /// </summary>
         public const int MAX_GOLD_AMT = 125;
         /// <summary>
-        /// Probability of a monster appearing at any given point.
+        /// Number of turns required to spawn a new monster.
         /// </summary>
-        public const int SPAWN_MONSTER = 90;
+        public const int SPAWN_MONSTER = 75;
         /// <summary>
         /// Probability that a room will have gold.
         /// </summary>

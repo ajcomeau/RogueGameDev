@@ -556,6 +556,11 @@ namespace RogueGame
                 // Increment current turn number
                 CurrentTurn++;
 
+                // Spawn a new monster if needed.
+                if (CurrentTurn % SPAWN_MONSTER == 0)
+                    CurrentMap.AddMonsters(1);
+
+                // Remove any paralysis.
                 if (CurrentPlayer.Immobile > 0)
                 {
                     CurrentPlayer.Immobile = CurrentPlayer.Immobile <= CurrentTurn ? 0 : CurrentPlayer.Immobile;
@@ -992,9 +997,6 @@ namespace RogueGame
                 CurrentMap.ActiveMonsters.Remove(Defender);
                 UpdateStatus($"You defeated the {Defender.CharacterName.ToLower()}.", false);
                 CurrentPlayer.Experience += Defender.ExpReward + (int)(Defender.MaxHP / 6);
-                // Limit respawning of monsters.
-                //if(rand.Next(1,101) > COIN_FLIP) 
-                //    CurrentMap.AddMonsters(1);
             }
         }
         /// <summary>
