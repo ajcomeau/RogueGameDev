@@ -259,12 +259,12 @@ namespace RogueGame
             if (GameMode == DisplayMode.Primary)
             {
                 // Assemble stats display for the bottom of the screen.
-                retValue = $"Level: {CurrentLevel}  ";
-                retValue += $"HP: {CurrentPlayer.CurrentHP}/{CurrentPlayer.MaxHP}  ";
-                retValue += $"Strength: {CurrentPlayer.TotalStrength()}/{CurrentPlayer.MaxStrength}  ";
-                retValue += $"Gold: {CurrentPlayer.Gold}  ";
-                retValue += $"Armor: {(CurrentPlayer.TotalProtection())}  ";
-                retValue += $"Turn: {CurrentTurn}  ";
+                retValue = $"Lvl: {CurrentLevel} ";
+                retValue += $"HP: {CurrentPlayer.CurrentHP}/{CurrentPlayer.MaxHP} ";
+                retValue += $"Str: {CurrentPlayer.TotalStrength()}/{CurrentPlayer.MaxStrength} ";
+                retValue += $"AU: {CurrentPlayer.Gold} ";
+                retValue += $"Armor: {(CurrentPlayer.TotalProtection())} ";
+                retValue += $"Turn: {CurrentTurn} ";
                 retValue += $"Exp: {CurrentPlayer.ExperienceLevel()}/{CurrentPlayer.Experience}";
                 
                 if (CurrentPlayer.HungerState < Player.HungerLevel.Satisfied)
@@ -551,8 +551,6 @@ namespace RogueGame
                     if (MonstersNextTurn > 0) MonstersNextTurn = 0;
                 }
 
-                // Then, evaluate the player's current condition.
-                EvaluatePlayer();
                 // Increment current turn number
                 CurrentTurn++;
 
@@ -568,6 +566,9 @@ namespace RogueGame
                     if (CurrentPlayer.Immobile == 0) UpdateStatus("You can move again.", false);
                 }
             } while (CurrentPlayer.Immobile > CurrentTurn);
+
+            // Then, evaluate the player's current condition.
+            EvaluatePlayer();
 
             // End turn
             TurnInProgress = false;
