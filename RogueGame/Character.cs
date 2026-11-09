@@ -92,7 +92,7 @@
                     
                 // Chance of landing a punch: 50% + (5% * attacker min hit points)  - (5% * defender's total protecton)
                 // + (5% * weapon increment)
-                hitChance = 50 + (5 * attack.ExperienceLevel()) - (5 * defend.ArmorClass) + 
+                hitChance = 45 + (5 * attack.ExperienceLevel()) - (5 * defend.ArmorClass) + 
                     (5 * ((attack.Wielding != null) ? attack.Wielding.AccIncrement : 0));
             }
             else
@@ -100,7 +100,7 @@
                 Player defend = (Player)Defender;
                 Monster attack = (Monster)Attacker;
                 // Chance of landing a punch: 50% + (5% * attacker min hit points)  - (5% * defender's total protecton)
-                hitChance = 50 + (attack.MinStartingHP * 5) - (defend.TotalProtection() * 5);
+                hitChance = 55 + (attack.MinStartingHP * 5) - (defend.TotalProtection() * 5);
             }
 
             // If the attacker is confused, decrease the chance to 25%.

@@ -229,7 +229,7 @@ namespace RogueGame
 
         }
         /// <summary>
-        /// Add status line to status box.
+        /// Add status line to status box. A zero-length status will remove a temporary line.
         /// </summary>
         /// <param name="Status">Message to add to status display.</param>
         /// <param name="Confirm">True to display a message box requiring user confirmation.</param>
@@ -238,14 +238,17 @@ namespace RogueGame
             // If the last message started with a space, it was temporary so remove it.
             if(StatusList.Count > 0 && StatusList[0].ToString().StartsWith(' '))
                 StatusList.RemoveAt(0);
-            
+
             // Add new message.
-            if (Confirm)
+            if (Status.Length > 0)
             {
-                StatusList.Insert(0, Status);
-                MessageBox.Show(Status);
+                if (Confirm)
+                {
+                    StatusList.Insert(0, Status);
+                    MessageBox.Show(Status);
+                }
+                else StatusList.Insert(0, Status);
             }
-            else StatusList.Insert(0, Status);
         }
         
         /// <summary>
@@ -302,7 +305,7 @@ namespace RogueGame
         /// </summary>
         public string DisplayInventory()
         {
-            string screenText = "Inventory List\n\n";
+            string screenText = "\nInventory:\n";
             
             // Build list of player's inventory and display.
             foreach (InventoryLine line in InventoryDisplay(CurrentPlayer.CharacterInventory))
@@ -928,8 +931,7 @@ namespace RogueGame
             CurrentPlayer.Opponent = Defender;
 
             // Chance of hitting - 30% + (5% * XP level) - (5% * monster armor class).
-            // Hulk mode can be used for "testing" - certain punch with immediate kill.
-            
+            // Hulk mode can be used for "testing" - certain punch with immediate kill.            
             hitChance = Attacker.Accuracy(Attacker, Defender);
 
             hitSuccess = (HulkMode || Charged) ? true : rand.Next(1, 101) <= hitChance;
@@ -940,8 +942,8 @@ namespace RogueGame
             // Random HP damage within weapon potential.
             if (hitSuccess)
             {
-                UpdateStatus($"You hit the {Defender.CharacterName.ToLower()}.", false);                
-
+                UpdateStatus($"You hit the {Defender.CharacterName.ToLower()}.", false);
+                Debug.Print($"The player hit the {Defender.CharacterName} with a {hitChance.ToString()} chance of hitting.");
                 // Find and invoke the delegate if there is one.
                 if (weapon != null && InventoryActions.TryGetValue(weapon.PriorityId, out var taskInfo))
                 {
@@ -1225,6 +1227,7 @@ namespace RogueGame
                 UserInput = (null, null, null);
                 GameMode = DisplayMode.Primary;
                 keyHandled = true;
+                UpdateStatus("", false);
             }
 
             if (!keyHandled)
