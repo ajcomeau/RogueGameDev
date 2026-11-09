@@ -433,10 +433,13 @@ namespace RogueGame
                     retValue = (1, 7);
                     break;
                 case 8:
+                    retValue = (1, 5);
+                    break;
+                case 9:
                     retValue = (1, 3);
                     break;
-                case > 8:
-                    retValue = (rand.Next(this.ExperienceLevel() - 6), 3);
+                case > 9:
+                    retValue = (rand.Next(this.ExperienceLevel() - 7), 5);
                     break;
                 default:
                     break;

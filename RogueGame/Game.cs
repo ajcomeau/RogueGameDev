@@ -993,10 +993,17 @@ namespace RogueGame
                 UpdateStatus($"You missed the {Defender.CharacterName.ToLower()}.", false);
             }
 
-            // If the monster has been defeated, remove it from the map.
+            // If the monster has been defeated, drop its inventory and remove it from the map.
             if (Defender.CurrentHP < 1)
             {
                 CurrentPlayer.Opponent = null;
+
+                if (Defender.Gold > 0)
+                    CurrentMap.AddInventory(GameInventory.GetInventoryItem(InvTemplateID.Gold)!, Defender.Location!, true);
+
+                foreach (Inventory item in Defender.CharacterInventory)
+                    CurrentMap.AddInventoryNearby(item, Defender.Location!, 2);
+
                 CurrentMap.ActiveMonsters.Remove(Defender);
                 UpdateStatus($"You defeated the {Defender.CharacterName.ToLower()}.", false);
                 CurrentPlayer.Experience += Defender.ExpReward + (int)(Defender.MaxHP / 6);
