@@ -66,7 +66,7 @@ namespace RogueGame
                 // Invalidate to redraw map.
                 this.Invalidate(true);
                 e.Handled = true;
-            }           
+            }
 
         }
 
@@ -80,7 +80,7 @@ namespace RogueGame
             string[] lines;
 
             if (currentGame == null)
-            {                
+            {
                 lines = TitleScreen().Split('\n');
 
                 for (int y = 0; y < lines.Length; y++)
@@ -142,7 +142,7 @@ namespace RogueGame
             "   ║                                                                        ║\n" +
             "   ║                                                                        ║\n" +
             "   ╚════════════════════════════════════════════════════════════════════════╝\n" +
-           
+
             "\n";
 
             return screenText;

@@ -119,7 +119,7 @@
         /// <summary>
         /// Minimum number of initial monsters on a level.
         /// </summary>
-        public const int MIN_INIT_MONSTERS = 5;
+        public const int MIN_INIT_MONSTERS = 7;
         /// <summary>
         /// Probability of a trap being placed on the level.
         /// </summary>

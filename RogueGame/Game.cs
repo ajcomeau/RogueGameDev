@@ -739,7 +739,11 @@ namespace RogueGame
             Inventory? template = GameInventory.InventoryItems.FirstOrDefault(x => x.PriorityId == PriorityID);
 
             // Set the inventory template as identified
-            if (template != null) template.IsIdentified = true;
+            if (template != null)
+            {
+                Debug.Print($"The player discovered a {template.ItemCategory.ToString()} called {template.RealName}.");
+                template.IsIdentified = true;
+            }
 
             // Set all instances in the player's inventory as identified.
             foreach (Inventory item in CurrentPlayer.CharacterInventory)
@@ -989,7 +993,7 @@ namespace RogueGame
                 // If an item was thrown, drop it on the map somewhere near the monster.
                 if (Item != null && !Charged)
                     CurrentMap.AddInventoryNearby(Item, Defender.Location!, 3);
-
+                Debug.Print($"The player missed the {Defender.CharacterName} with a {hitChance.ToString()} chance of hitting.");
                 UpdateStatus($"You missed the {Defender.CharacterName.ToLower()}.", false);
             }
 
@@ -1063,7 +1067,7 @@ namespace RogueGame
             else
             {
                 UpdateStatus($"The {Attacker.CharacterName.ToLower()} missed you.", false);
-                Debug.Print($"The {Attacker.CharacterName} missed you with a {hitChance.ToString()} chance of hitting.");
+                Debug.Print($"The {Attacker.CharacterName} missed with a {hitChance.ToString()} chance of hitting.");
             }
 
             // If the player has been defeated, end the game.
@@ -2463,6 +2467,7 @@ namespace RogueGame
                             GameMode = DisplayMode.Primary;
 
                             // Set the inventory item as identified if necessary.
+                            
                             if (!items[0].IsIdentified) SetInventoryAsIdentified(items[0].PriorityId);
 
                             // Find and invoke the delegate
