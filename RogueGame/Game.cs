@@ -178,7 +178,7 @@ namespace RogueGame
             if (CauseOfDeath == null) CauseOfDeath = "mysterious forces.";
 
             // Assemble the ASCII graphic and return it.
-            screenText = "\n\n\n\n\n\n" +
+            screenText = "\n\n\n\n\n" +
             "\n                        ╔═════════════════════════════╗" +
             "\n                        ║                             ║" +
             "\n                        ║                             ║" +
@@ -188,6 +188,7 @@ namespace RogueGame
             $"\n                        ║{CenterString(CurrentPlayer.CharacterName, 29)}║" +
             "\n                        ║          Killed by          ║" +
             $"\n                        ║{CenterString(string.Concat(CauseOfDeath, "."), 29)}║" +
+            $"\n                        ║{CenterString(string.Concat("Level ", CurrentLevel), 29)}║" +
             "\n                        ║                             ║" +
             $"\n                        ║{CenterString(CurrentPlayer.Gold.ToString() + " Au", 29)}║" +
             $"\n                        ║           {DateTime.Now.Year + " "}             ║" +
@@ -908,6 +909,10 @@ namespace RogueGame
                     // hallway spaces indicate a junction which needs to stop FastPlay.
                     adjacent = CurrentMap.SearchAdjacent(player.Location!.X, player.Location.Y);
 
+                    // Stop moving if the dictionary doesn't contain the direction.
+                    if (!stopMoving)
+                        stopMoving = !adjacent.ContainsKey(direct);
+                        
                 } while (!stopMoving && invFound.Count == 0 && CanAutoMove(player.Location, adjacent[direct]));
             }
 
