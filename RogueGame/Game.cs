@@ -410,7 +410,7 @@ namespace RogueGame
         /// <param name="character"></param>
         private void TrapArrow(Character character)
         {
-            Inventory? arrow = GameInventory.GetInventoryItem(InvTemplateID.Arrow);
+            Inventory? arrow = GameInventory.GetInventoryItem(InvTemplateID.Arrow, 1);
             MapSpace? landing;
             bool arrowHit = rand.Next(100) > GameTools.COIN_FLIP;
 
@@ -1008,7 +1008,7 @@ namespace RogueGame
                 CurrentPlayer.Opponent = null;
 
                 if (Defender.Gold > 0)
-                    CurrentMap.AddInventory(GameInventory.GetInventoryItem(InvTemplateID.Gold)!, Defender.Location!, true);
+                    CurrentMap.AddInventory(GameInventory.GetInventoryItem(InvTemplateID.Gold, Defender.Gold)!, Defender.Location!, true);
 
                 foreach (Inventory item in Defender.CharacterInventory)
                     CurrentMap.AddInventoryNearby(item, Defender.Location!, 2);
@@ -2032,7 +2032,7 @@ namespace RogueGame
                             if(CurrentPlayer.Wielding != null)
                             {
                                 CurrentPlayer.Wielding.IsGroupable = 
-                                    GameInventory.GetInventoryItem(CurrentPlayer.Wielding.PriorityId)!.IsGroupable;                                
+                                    GameInventory.GetInventoryItem(CurrentPlayer.Wielding.PriorityId, 1)!.IsGroupable;                                
                             }
                             
                             // Ungroup selected item and set it as wielded.
@@ -3125,7 +3125,7 @@ namespace RogueGame
 
                 foreach(Inventory item in monster.CharacterInventory)
                 {
-                    invItem = GameInventory.GetInventoryItem(item.PriorityId)!;
+                    invItem = GameInventory.GetInventoryItem(item.PriorityId, 1)!;
                     CurrentMap.AddInventory(item, CurrentMap.GetOpenSpace(true)!, true);
                 }                    
             }

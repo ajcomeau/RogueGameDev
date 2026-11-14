@@ -575,10 +575,9 @@ namespace RogueGame
                 {
                     // Add the gold at the current location to the player's purse and remove
                     // it from the map.
-                    int goldAmt = rand.Next(MIN_GOLD_AMT, MAX_GOLD_AMT + 1);
-                    this.Gold += goldAmt;
+                    this.Gold += item.Increment; 
 
-                    retValue.Add((true, $"You picked up {goldAmt} pieces of gold.", item));
+                    retValue.Add((true, $"You picked up {item.Increment} pieces of gold.", item));
                 }
                 else
                 {

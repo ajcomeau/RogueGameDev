@@ -600,7 +600,7 @@ namespace RogueGame
                 new Inventory(InvCategory.Ammunition, InvTemplateID.Arrow, "arrow", "arrow", "arrows", false, true, true, true, false,  false,0, 0, 0, 0, 1, 1, 4, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Ammunition, InvTemplateID.CrossbowBolt, "crossbow bolt", "crossbow bolt", "crossbow bolts", false, true, false, true, false, false, 0, 0, 0, 0, 1,2, 8, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Ammunition, InvTemplateID.Dart, "dart", "dart", "darts", false, true, false, true, false,  false,0, 0, 0, 0, 1, 1, 2, 25, 0, new MapGlyph('↑', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Gold, InvTemplateID.Gold, "gold", "gold", "gold", true, true, false, false, false,  false,0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('*', Color.Gold, Color.Black), "", "")
+                new Inventory(InvCategory.Gold, InvTemplateID.Gold, "gold", "gold", "gold", true, true, false, false, false,  false, 0, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('*', Color.Gold, Color.Black), "", "")
             };
         }
         /// <summary>
@@ -747,7 +747,7 @@ namespace RogueGame
         /// </summary>
         /// <param name="Item"></param>
         /// <returns></returns>
-        public Inventory? GetInventoryItem(Inventory.InvTemplateID Item)
+        public Inventory? GetInventoryItem(Inventory.InvTemplateID Item, int Increment)
         {
             Inventory? retInv = null;
 
@@ -758,6 +758,7 @@ namespace RogueGame
             // Clone a new object from template and make some adjustments.
             if (retList.Count > 0) {
                 retInv = new Inventory(retList[0]);
+                retInv.Increment = Increment;
                 InventoryVariation(retInv);
             }
 
@@ -773,6 +774,11 @@ namespace RogueGame
 
             switch (item.ItemCategory)
             {
+                case InvCategory.Gold:
+                    if (item.Increment < MIN_GOLD_AMT)
+                        item.Increment = rand.Next(MIN_GOLD_AMT, MAX_GOLD_AMT + 1);
+    
+                    break;
                 case InvCategory.Armor:
                 case InvCategory.Ring:
                     item.Increment = item.IsCursed ? rand.Next(-5, 0) : rand.Next(1, 6);

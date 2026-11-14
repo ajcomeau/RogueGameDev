@@ -451,8 +451,7 @@ namespace RogueGame
             if (defender is Player)
             {
                 player = (Player)defender;
-                // TODO: This will work for now but the protection should be better calculated.
-                if(player.Armor != null && player.TotalProtection() < 1)
+                if (player.Armor != null && !player.Armor.IsProtected)
                 {
                     if(player.Armor!.Increment > 0)
                         player.Armor!.Increment -= 1;
@@ -461,7 +460,7 @@ namespace RogueGame
 
                     returnMsg = "Oh no ... your armor is rusting away!";
                 }
-                else if (player.Armor != null && player.TotalProtection() >= 1)
+                else if (player.Armor != null && player.Armor.IsProtected)
                 {
                     returnMsg = "The aquator drenches your armor but its protection holds.";
                 }
@@ -494,7 +493,7 @@ namespace RogueGame
                 // Take up to 25% of the player's gold and transfer it
                 // to the Leprechaun.
 
-                if(player.Gold > 4 && attacker.DisplayCharacter.DisplayChar == 'L')
+                if(player.Gold > 4)
                 {
                     tax = rand.Next(1, (int)(player.Gold * .25) + 1);
                     player.Gold -= tax;

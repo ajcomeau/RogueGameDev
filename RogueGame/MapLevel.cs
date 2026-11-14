@@ -1,10 +1,6 @@
-﻿using System.CodeDom;
-using System.Diagnostics;
-using System.Globalization;
+﻿using System.Diagnostics;
 using System.Text;
 using static RogueGame.GameTools;
-using static RogueGame.MapLevel;
-using static System.Windows.Forms.AxHost;
 
 namespace RogueGame{
 
@@ -367,7 +363,11 @@ namespace RogueGame{
                     }
 
                 } while (itemSpace == null & --maxSpace > 0);
-                
+
+                // Give leprechauns some gold to start with.
+                if (spawned.CharacterName == "Leprechaun")
+                    spawned.Gold = (int)(rand.Next(MIN_GOLD_AMT, MAX_GOLD_AMT) * 1.5);
+
                 if (spawned != null && itemSpace != null)
                 {                    
                     spawned.Location = itemSpace;
