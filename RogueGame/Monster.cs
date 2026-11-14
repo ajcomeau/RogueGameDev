@@ -18,17 +18,17 @@ namespace RogueGame
             new Monster("Aquator"       , 5, 40, 5, 22, 7, 15, 50, 1, 1,  new MapGlyph('A',  Color.LightGray,  Color.Black), 85,  Aquator,  true, 35,  false),
             new Monster("Bat"           , 1, 8, 3, 2, 1, 5, 50, 1, 2,  new MapGlyph('B',  Color.LightGray,  Color.Black), 0,  null,  true, 35,  false),
             new Monster("Centaur"       , 4, 32, 6, 26, 8, 17, 50, 3, 12,  new MapGlyph('C',  Color.LightGray,  Color.Black), 0,  null,  true, 95,  false),
-            new Monster("Dragon"        , 10, 80, 10, 60, 22, 26, 50, 5, 16,  new MapGlyph('D',  Color.LightGray,  Color.Black), 35,  Dragon,  true, 35,  false),
+            new Monster("Dragon"        , 10, 80, 10, 60, 22, 26, 50, 5, 16,  new MapGlyph('D',  Color.LightGray,  Color.Black), 50,  Dragon,  true, 35,  false),
             new Monster("Emu"           , 1, 8, 3, 2, 2, 11, 50, 1, 2,  new MapGlyph('E',  Color.LightGray,  Color.Black), 0,  null,  true, 35,  false),
             new Monster("Flytrap"       , 8, 64, 9, 40, 15, 20, 50, 0, 0,  new MapGlyph('F',  Color.LightGray,  Color.Black), 35,  Flytrap,  true, 35,   false),
             new Monster("Griffin"       , 13, 104, 5, 75, 12, 20, 50, 7, 27,  new MapGlyph('G',  Color.LightGray,  Color.Black), 0,  null,  true, 35,  false),
             new Monster("Hobgoblin"     , 1, 8, 3, 3, 1, 10, 50, 1, 8,  new MapGlyph('H',  Color.LightGray,  Color.Black), 0,  null,  true, 35,  false),
-            new Monster("Ice Monster"   , 1, 8, 2, 2, 3, 12, 50, 1, 1,  new MapGlyph('I',  Color.LightGray,  Color.Black), 50,  IceMonster,  true, 35,  false),
+            new Monster("Ice Monster"   , 1, 8, 2, 2, 3, 12, 50, 1, 1,  new MapGlyph('I',  Color.LightGray,  Color.Black), 85,  IceMonster,  true, 35,  false),
             new Monster("Jabberwock"    , 15, 120, 9, 89, 20, 26, 50, 5, 32,  new MapGlyph('J',  Color.LightGray,  Color.Black), 0,  null,  true, 35,  false),
             new Monster("Kestral"       , 1, 8, 2, 3, 1, 6, 50, 1, 4,  new MapGlyph('K',  Color.LightGray,  Color.Black), 0,  null,  true, 35,  false),
             new Monster("Leprechaun"    , 3, 24, 5, 15, 7, 16, 50, 1, 3,  new MapGlyph('L',  Color.LightGray,  Color.Black), 95,  Leprechaun,  false, 95,  false),
-            new Monster("Medusa"        , 8, 64, 5, 57, 19, 26, 50, 8, 34,  new MapGlyph('M',  Color.LightGray,  Color.Black), 35,  Medusa,  true, 35,  false),
-            new Monster("Nymph"         , 3, 24, 5, 15, 11, 20, 50, 1, 3,  new MapGlyph('N',  Color.LightGray,  Color.Black), 90,  Nymph,  true, 35,  false),
+            new Monster("Medusa"        , 8, 64, 5, 57, 19, 26, 50, 8, 34,  new MapGlyph('M',  Color.LightGray,  Color.Black), 50,  Medusa,  true, 35,  false),
+            new Monster("Nymph"         , 3, 24, 5, 15, 11, 20, 50, 1, 3,  new MapGlyph('N',  Color.LightGray,  Color.Black), 95,  Nymph,  true, 35,  false),
             new Monster("Orc"           , 1, 8, 3, 5, 4, 13, 50, 1, 8,  new MapGlyph('O',  Color.LightGray,  Color.Black), 0,  null,  true, 85,  false),
             new Monster("Phantom"       , 8, 64, 9, 50, 20, 26, 50, 4, 16,  new MapGlyph('P',  Color.Black,  Color.Black), 0,  null,  true, 35,  false),
             new Monster("Quagga"        , 10, 40, 9, 39, 10, 19, 50, 5, 15,  new MapGlyph('Q',  Color.LightGray,  Color.Black), 0,  null,  true, 35,  false),
@@ -36,7 +36,7 @@ namespace RogueGame
             new Monster("Snake"         , 1, 8, 2, 2, 1, 9, 50, 1, 3,  new MapGlyph('S',  Color.LightGray,  Color.Black), 0,  null,  true, 35,  false),
             new Monster("Troll"         , 10, 50, 9, 50, 13, 22, 50, 5, 28,  new MapGlyph('T',  Color.LightGray,  Color.Black), 0,  null,  true, 35,  false),
             new Monster("Ur-vile"       , 7, 56, 9, 55, 18, 26, 50, 5, 36,  new MapGlyph('U',  Color.LightGray,  Color.Black), 0,  null,  true, 35,  false),
-            new Monster("Vampire"       , 8, 64, 9, 45, 20, 26, 50, 1, 10,  new MapGlyph('V',  Color.LightGray,  Color.Black), 35,  Vampire,  true, 35,  true),
+            new Monster("Vampire"       , 8, 64, 9, 45, 20, 26, 50, 1, 10,  new MapGlyph('V',  Color.LightGray,  Color.Black), 50,  Vampire,  true, 35,  true),
             new Monster("Wraith"        , 5, 40, 9, 29, 14, 23, 50, 1, 6,  new MapGlyph('W',  Color.LightGray,  Color.Black), 75,  Wraith,  true, 35,  false),
             new Monster("Xeroc"         , 7, 56, 9, 45, 17, 26, 50, 4, 16,  new MapGlyph('X',  Color.LightGray,  Color.Black), 0,  null,  true, 35,  false),
             new Monster("Yeti"          , 4, 32, 5, 26, 12, 21, 50, 2, 15,  new MapGlyph('Y',  Color.LightGray,  Color.Black), 0,  null,  true, 35,  false),
@@ -452,7 +452,7 @@ namespace RogueGame
             {
                 player = (Player)defender;
                 // TODO: This will work for now but the protection should be better calculated.
-                if(player.Armor != null && player.ArmorProtection() < 1)
+                if(player.Armor != null && player.TotalProtection() < 1)
                 {
                     if(player.Armor!.Increment > 0)
                         player.Armor!.Increment -= 1;
@@ -461,7 +461,7 @@ namespace RogueGame
 
                     returnMsg = "Oh no ... your armor is rusting away!";
                 }
-                else if (player.Armor != null && player.ArmorProtection() >= 1)
+                else if (player.Armor != null && player.TotalProtection() >= 1)
                 {
                     returnMsg = "The aquator drenches your armor but its protection holds.";
                 }

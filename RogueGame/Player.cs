@@ -240,6 +240,7 @@ namespace RogueGame
 
             return retValue;
         }
+
         /// <summary>
         /// Combines player's armor with other kinds of protection
         /// for total.
@@ -251,7 +252,7 @@ namespace RogueGame
             
             // Get player's armor.
             if (this.Armor != null)
-                retValue = this.Armor.ArmorClass + this.Armor.Increment;
+                retValue = this.Armor.ArmorClass + (this.Armor.Increment - 1);
 
             // Look for the Ring of Protection on both hands.
             if (this.LeftHand != null &&
@@ -259,7 +260,7 @@ namespace RogueGame
             {
                 retValue += this.LeftHand.Increment;
                 this.HungerTurn -= this.LeftHand.Increment;
-            }                
+            }
 
             if (this.RightHand != null &&
                 this.RightHand.PriorityId == RingOfProtection)
@@ -267,6 +268,8 @@ namespace RogueGame
                 retValue += this.RightHand.Increment;
                 this.HungerTurn -= this.RightHand.Increment;
             }
+
+            retValue = (retValue < 0) ? 0 : retValue;
 
             // Return total
             return retValue;
@@ -349,35 +352,6 @@ namespace RogueGame
             {
                 retValue.Min += this.RightHand.Increment;
                 retValue.Max += this.RightHand.Increment;
-                this.HungerTurn -= this.RightHand.Increment;
-            }
-
-            return retValue;
-        }
-
-        /// <summary>
-        /// Ring of Protect armor and other armor enhancements.
-        /// </summary>
-        /// <returns></returns>
-        public int ArmorProtection()
-        {
-            int retValue = 0;
-
-            if (this.Armor != null && this.Armor.IsProtected)
-                retValue++;
-
-            // Look for the Ring of Maintain Armor on both hands.
-            if (this.LeftHand != null &&
-                this.LeftHand.PriorityId == RingOfMaintainArmor)
-            {
-                retValue += this.LeftHand.Increment;
-                this.HungerTurn -= this.LeftHand.Increment;
-            }
-
-            if (this.RightHand != null &&
-                this.RightHand.PriorityId == RingOfIncreaseDamage)
-            {
-                retValue += this.RightHand.Increment;
                 this.HungerTurn -= this.RightHand.Increment;
             }
 

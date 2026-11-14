@@ -1050,7 +1050,8 @@ namespace RogueGame
                     // Roll the dice on whether a special attack should be used.
                     strike = rand.Next(1, 101) < Attacker.SpecialAttackPct;
 
-                    if (strike)
+                    // No special attacks on Hulk Mode
+                    if (strike && !HulkMode)
                     {
                         statusUpdate = Attacker.SpecialAttack.Invoke(Attacker, Defender, CurrentTurn);
                         if (statusUpdate.Length > 0)
@@ -1058,7 +1059,8 @@ namespace RogueGame
                     }
                 }
 
-                damage = rand.Next(Attacker.MinAttackDmg, Attacker.MaxAttackDmg + 1);
+                // No damage on Hulk Mode
+                damage = HulkMode ? 0 : rand.Next(Attacker.MinAttackDmg, Attacker.MaxAttackDmg + 1);
 
                 // If the monster needs relocation, do that now.
                 if (Attacker.Teleport)
