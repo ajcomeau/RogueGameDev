@@ -534,7 +534,15 @@ namespace RogueGame
 
             return retValue;
         }
+        public bool IsShooting()
+        {
+            bool retValue = false;
+            List<InvTemplateID> bows = [InvTemplateID.Crossbow, InvTemplateID.ShortBow];
 
+            retValue = (this.Wielding != null && bows.Contains(this.Wielding.PriorityId));
+            
+            return retValue;
+        }
         /// <summary>
         /// The Ring of Aggravate Monster makes the player very 
         /// unpopular in the dungeon.

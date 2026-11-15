@@ -84,16 +84,16 @@
         {
             int hitChance = 0;
             
-
             if (Attacker is Player)
             {
                 Player attack = (Player)Attacker;
-                Monster defend = (Monster)Defender;               
+                Monster defend = (Monster)Defender;
+                bool wielding = attack.Wielding != null;
                     
                 // Chance of landing a punch: 50% + (5% * attacker min hit points)  - (5% * defender's total protecton)
-                // + (5% * weapon increment)
-                hitChance = 40 + (5 * attack.ExperienceLevel()) - (5 * defend.ArmorClass) + 
-                    (5 * ((attack.Wielding != null) ? attack.Wielding.AccIncrement : 0));
+                // + (5% * weapon accuracy increment)
+                hitChance = 40 + (5 * attack.ExperienceLevel()) - (5 * defend.ArmorClass) 
+                    + (wielding ? (5 * attack.Wielding!.AccIncrement) : 0);
             }
             else
             {
