@@ -107,6 +107,10 @@
             if (Attacker.Confused > 0)
                 hitChance = (int)(hitChance * 0.25);
 
+            // If either attacker or defender is levitating, reduce chance by half.
+            if (Attacker.Floating > 0 || Defender.Floating > 0)
+                hitChance = (int)(hitChance * .5);
+
             return hitChance;
 
         }
