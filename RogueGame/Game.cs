@@ -2234,8 +2234,11 @@ namespace RogueGame
                     }
                     else
                     {
-                        // If the player selects a valid item, add it as their armor.
+                        // If the player selects a valid item, add it as their armor and identify it.
                         CurrentPlayer.Armor = items[0];
+
+                        if (!items[0].IsIdentified)
+                            items[0].IsIdentified = true;
 
                         UpdateStatus($"You are now wearing {ListingDescription(1, items[0])}.", false);
                     }

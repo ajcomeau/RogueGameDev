@@ -665,7 +665,7 @@ namespace RogueGame
 
             string increments = "";
             string retValue = "";
-            string categoryName() => Number == 1 ? AddEnglishArticle(Item.ItemCategory.ToString().ToLower()) : Number.ToString() + Item.ItemCategory.ToString() + "s";
+            string categoryName() => Number == 1 ? AddEnglishArticle(Item.ItemCategory.ToString().ToLower()) : Number.ToString() + " " + Item.ItemCategory.ToString().ToLower() + "s";
             string unIdentified() => Number == 1 ? AddEnglishArticle(Item.CodeName!.ToLower()) + " " + Item.ItemCategory.ToString().ToLower()
                             : Number.ToString() + " " + Item.CodeName!.ToLower() + " " + Item.ItemCategory.ToString().ToLower() + "s";
             string Identified() => Number == 1 ? "a " + Item.ItemCategory.ToString().ToLower() + " of " + Item.RealName
@@ -702,6 +702,8 @@ namespace RogueGame
                         retValue = Number == 1 ? categoryName() + " called \"" + Item.CodeName + "\""
                             : categoryName() + " called \"" + Item.CodeName + "\"";
                     break;
+                case InvCategory.Armor:
+
                 default:
                     retValue = Item.RealName;
                     break;
