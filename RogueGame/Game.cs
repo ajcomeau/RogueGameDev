@@ -2397,6 +2397,11 @@ namespace RogueGame
 
                             UpdateStatus($"You dropped {ListingDescription(items[0].Count, items[0].InvItem)}.", false);
                         }
+                        else if (items[0].InvItem.ItemCategory == InvCategory.Armor &&
+                                    items[0].InvItem == CurrentPlayer.Armor)
+                        {
+                            UpdateStatus($"You are currently wearing that armor. You need to remove it first.", false);
+                        }
                         else
                         {
                             CurrentPlayer.CharacterInventory.Remove(items[0].InvItem);

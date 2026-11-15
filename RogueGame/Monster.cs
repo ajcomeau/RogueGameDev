@@ -28,7 +28,7 @@ namespace RogueGame
             new Monster("Kestral"       , 1, 8, 2, 3, 1, 6, 50, 1, 4,  new MapGlyph('K',  Color.LightGray,  Color.Black), 0,  null,  true, 35,  false),
             new Monster("Leprechaun"    , 3, 24, 5, 15, 7, 16, 50, 1, 3,  new MapGlyph('L',  Color.LightGray,  Color.Black), 95,  Leprechaun,  false, 95,  false),
             new Monster("Medusa"        , 8, 64, 5, 57, 19, 26, 50, 8, 34,  new MapGlyph('M',  Color.LightGray,  Color.Black), 50,  Medusa,  true, 35,  false),
-            new Monster("Nymph"         , 3, 24, 5, 15, 11, 20, 50, 1, 3,  new MapGlyph('N',  Color.LightGray,  Color.Black), 95,  Nymph,  true, 35,  false),
+            new Monster("Nymph"         , 3, 24, 5, 15, 1, 20, 50, 1, 3,  new MapGlyph('N',  Color.LightGray,  Color.Black), 95,  Nymph,  true, 35,  false),
             new Monster("Orc"           , 1, 8, 3, 5, 4, 13, 50, 1, 8,  new MapGlyph('O',  Color.LightGray,  Color.Black), 0,  null,  true, 85,  false),
             new Monster("Phantom"       , 8, 64, 9, 50, 20, 26, 50, 4, 16,  new MapGlyph('P',  Color.Black,  Color.Black), 0,  null,  true, 35,  false),
             new Monster("Quagga"        , 10, 40, 9, 39, 10, 19, 50, 5, 15,  new MapGlyph('Q',  Color.LightGray,  Color.Black), 0,  null,  true, 35,  false),
