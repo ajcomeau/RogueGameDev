@@ -148,7 +148,10 @@ namespace RogueGame
 
                         // Set the first armor added to the worn armor.
                         if (dInv.ItemCategory == Inventory.InvCategory.Armor && this.Armor == null)
+                        {
                             this.Armor = dInv;
+                            dInv.IsIdentified = true;
+                        }
                         // Set the first weapon to be wielded.
                         else if (dInv.ItemCategory == Inventory.InvCategory.Weapon && this.Wielding == null)
                             this.Wielding = dInv;
@@ -252,7 +255,7 @@ namespace RogueGame
             
             // Get player's armor.
             if (this.Armor != null)
-                retValue = this.Armor.ArmorClass + (this.Armor.Increment - 1);
+                retValue = this.Armor.ArmorClass + this.Armor.Increment;
 
             // Look for the Ring of Protection on both hands.
             if (this.LeftHand != null &&

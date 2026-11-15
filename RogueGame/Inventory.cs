@@ -571,12 +571,12 @@ namespace RogueGame
                 new Inventory(InvCategory.Ring, InvTemplateID.RingOfAdornment, "", "Adornment", "Adornment", false, false, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 10, 0, new MapGlyph('ö', Color.Orange, Color.Black), "Such a stylish ring ... it reflects the torchlight nicely.", "It really was kind of useless."),
                 new Inventory(InvCategory.Armor, InvTemplateID.StuddedLeatherArmor, "Studded leather armor", "Studded leather armor", "Studded leather armor", false, false, true, true, false, false,3, 1, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Armor, InvTemplateID.LeatherArmor, "Leather armor", "Leather armor", "Leather armor", false, false, false, true, false,  false, 2, 1, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.RingMail, "ring mail", "ring mail", "ring mail", false, false, false, true, false, false,3, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.ScaleMail, "scale mail", "scale mail", "scale mail", false, false, false, true, false, false,4, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.ChainMail, "chain mail", "chain mail", "chain mail", false, false, false, true, false, false,5, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.SplintMail, "splint mail", "splint mail", "splint mail", false, false, false, true, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0,new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.BandedMail, "banded mail", "banded mail", "banded mail", false, false, false, true, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
-                new Inventory(InvCategory.Armor, InvTemplateID.PlateMail, "plate mail", "plate mail", "plate mail", false, false, false, true, false,  false,7, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.RingMail, "ring mail", "ring mail", "ring mail", false, false, false, false, false, false,3, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.ScaleMail, "scale mail", "scale mail", "scale mail", false, false, false, false, false, false,4, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.ChainMail, "chain mail", "chain mail", "chain mail", false, false, false, false, false, false,5, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.SplintMail, "splint mail", "splint mail", "splint mail", false, false, false, false, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0,new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.BandedMail, "banded mail", "banded mail", "banded mail", false, false, false, false, false, false,6, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
+                new Inventory(InvCategory.Armor, InvTemplateID.PlateMail, "plate mail", "plate mail", "plate mail", false, false, false, false, false,  false,7, 0, 0, 0, 0, 0, 0, 25, 0, new MapGlyph('◘', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Staff, InvTemplateID.StaffOfLight, "Light", "Light", "Light", false, false, false, true, false, false, 0, 1, 1, 1, 0, 0, 0, 25, 300, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Staff, InvTemplateID.StaffOfStriking, "Striking", "Striking", "Striking", false, false, false, true, false, false, 0, 1, 3, 10, 1, 8, 0, 25, 300, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
                 new Inventory(InvCategory.Staff, InvTemplateID.StaffOfMagicMissile, "Magic Missile", "Magic Missile", "Magic Missile", false, false, false, true, false, false, 0, 1, 1, 1, 1, 4, 0, 25, 300, new MapGlyph('ƒ', Color.Blue, Color.Black), "", ""),
@@ -703,7 +703,8 @@ namespace RogueGame
                             : categoryName() + " called \"" + Item.CodeName + "\"";
                     break;
                 case InvCategory.Armor:
-
+                    retValue = Item.RealName;
+                    break;
                 default:
                     retValue = Item.RealName;
                     break;
