@@ -130,6 +130,7 @@ namespace RogueGame{
         /// Class inventory object to be used as reference to game inventory instance.
         /// </summary>
         private Inventory GameInventory { get; }
+        public static int MapGenerationCount = 0;
         #endregion
         /// <summary>
         /// Returns a general list of characters from game to be used for hallucinations or other random purposes.
@@ -324,7 +325,10 @@ namespace RogueGame{
                 amulet = GetOpenSpace(false);
                 if (amulet != null)
                     MapInventory.Add(GameInventory.GetInventoryItem(Inventory.InvCategory.Amulet, amulet));
-            }           
+            }
+
+            MapGenerationCount++;
+            Debug.Print($"Generated map #{MapGenerationCount}.");
 
         }
         /// <summary>
