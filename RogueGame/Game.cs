@@ -1485,7 +1485,7 @@ namespace RogueGame
             }
             else
             {
-                UpdateStatus($"Fire jumps from the wand and hits the {((Monster)character).CharacterName}.", false);
+                UpdateStatus($"Fire shoots from the wand and hits the {((Monster)character).CharacterName}.", false);
                 ((Monster)character).HPDamage += rand.Next(6, 37);
             }
         }
@@ -1526,7 +1526,7 @@ namespace RogueGame
                 if (character is Monster)
                 {
                     ((Monster)character).HPDamage += hpCost;
-                    UpdateStatus("The monster looks weaker now..", false);
+                    UpdateStatus($"The {((Monster)character).CharacterName} looks weaker now..", false);
                 }
             }
             else
@@ -1538,11 +1538,11 @@ namespace RogueGame
         private void StaffOfMagicMissile(Character character)
         {
             if (character is Player)
-                UpdateStatus($"The {CurrentPlayer.Opponent!.CharacterName} dodges the missile.", false);
+                UpdateStatus($"The missle explodes against the far wall.", false);
             else
             {
-                ((Monster)character).HPDamage += rand.Next(1, 5);
-                UpdateStatus("The monster dodges the missile.", false);
+                ((Monster)character).HPDamage += rand.Next(5, 11);
+                UpdateStatus($"The missile hits the {((Monster)character).CharacterName} and dazes it for a moment.", false);
             }
                 
         }
@@ -1552,13 +1552,14 @@ namespace RogueGame
             bool damageBonus = rand.Next(1, 101) <= 20;
 
             if (character is Player)
-                UpdateStatus("The monster dodges the blow with ease.", false);
+                UpdateStatus("The bolt from the staff dissipates harmlessly in the distance.", false);
             else
             {
                 if (damageBonus)
                     ((Monster)character).HPDamage += rand.Next(3, 25) + 9;
                 else
                     ((Monster)character).HPDamage += rand.Next(1, 9) + 3;
+                UpdateStatus($"The bolt from the staff strikes {((Monster)character).CharacterName} dead on.", false);
             }
         }
 
