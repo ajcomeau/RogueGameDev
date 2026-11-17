@@ -884,7 +884,7 @@ namespace RogueGame
                                         UpdateStatus(addInventory[0].Message, false);
                                 }
                                 else
-                                    UpdateStatus("You don't have room in your inventory for this item.", false);
+                                    UpdateStatus("You're carrying too much. You need to drop something first.", false);
 
                             }
                             else

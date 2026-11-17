@@ -1387,7 +1387,7 @@ namespace RogueGame{
                     // If the space is within one space of the character, show standard 
                     // priority character unless character is currently blind.
                     if (CurrentPlayer.Blind > 0)
-                        appendChar = (Player.CHARACTER.Equals(priorityChar)) ? priorityChar : null;
+                        appendChar = (Player.CHARACTER.Equals(priorityChar)) ? priorityChar : EMPTY;
                     else if (CurrentPlayer.Hallucinating > 0)
                     {
                         // If the player is hallucinating, substitute random character
