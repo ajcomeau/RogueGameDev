@@ -57,10 +57,10 @@
             linkLabel1.LinkColor = Color.Gold;
             linkLabel1.Location = new Point(82, 305);
             linkLabel1.Name = "linkLabel1";
-            linkLabel1.Size = new Size(293, 15);
+            linkLabel1.Size = new Size(298, 15);
             linkLabel1.TabIndex = 5;
             linkLabel1.TabStop = true;
-            linkLabel1.Text = "http://www.AndrewComeau.com/rogue-csharp-main";
+            linkLabel1.Text = "http://www.ComeauSoftware.com/rogue-csharp-main";
             linkLabel1.LinkClicked += linkLabel1_LinkClicked;
             // 
             // label1
@@ -93,7 +93,7 @@
             label3.Name = "label3";
             label3.Size = new Size(293, 16);
             label3.TabIndex = 9;
-            label3.Text = "written in C#.";
+            label3.Text = "provided as a C# demo project.";
             label3.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // label4
@@ -132,6 +132,8 @@
             Controls.Add(linkLabel1);
             Controls.Add(pictureBox1);
             FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            MinimizeBox = false;
             Name = "About";
             Text = "About Rogue C#";
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
