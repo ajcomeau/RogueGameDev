@@ -703,7 +703,7 @@ namespace RogueGame
             // They can only go up if they have the Amulet.
             if (Change < 0)
             {
-                allowPass = CurrentPlayer.HasAmulet;
+                allowPass = CurrentPlayer.HasAmulet();
                 failMessage = "You can't go that way.";
             }
             else if (Change > 0)

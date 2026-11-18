@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices.Marshalling;
 using static RogueGame.GameTools;
@@ -76,10 +77,6 @@ namespace RogueGame
         /// Next turn at which hunger state will change
         /// </summary>
         public int HungerTurn { get; set; }
-        /// <summary>
-        /// Whether player has found the amulet
-        /// </summary>
-        public bool HasAmulet { get; set; }
         /// <summary>
         /// Armor currently worn
         /// </summary>
@@ -570,6 +567,18 @@ namespace RogueGame
             return retValue;
         }
         /// <summary>
+        /// Return boolean indicating if the player has the Amulet in their possession.
+        /// </summary>
+        /// <returns></returns>
+        public bool HasAmulet()
+        {
+            List<Inventory> amulet = (from Inventory inv in this.CharacterInventory
+                                            where inv.PriorityId == InvTemplateID.TheAmulet
+                                            select inv).ToList();
+
+            return (amulet.Count > 0);
+        }
+        /// <summary>
         /// Add found items to player's inventory.
         /// </summary>
         /// <returns>Display string with description of item.</returns>
@@ -609,8 +618,7 @@ namespace RogueGame
 
                         if (item.ItemCategory == InvCategory.Amulet)
                         {
-                            this.HasAmulet = true;
-                            retValue.Add((true, "You found the Amulet of Yendor!  It has been added to your inventory.", item));
+                            retValue.Add((true, "Congratulations - you found the Amulet of Yendor! You can now return to the surface.", item));
                         }
                     }
                     else

@@ -320,7 +320,7 @@ namespace RogueGame{
             }
 
             // Add Amulet to final level.
-            if (CurrentLevel == MAX_LEVEL)
+            if (CurrentLevel == MAX_LEVEL && !CurrentPlayer.HasAmulet())
             {
                 amulet = GetOpenSpace(false);
                 if (amulet != null)
