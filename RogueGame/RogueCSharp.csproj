@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Version>$(VersionPrefix)2026.11.18.1-pre</Version>
   </PropertyGroup>
 
   <ItemGroup>

@@ -37,7 +37,11 @@
             txtName = new TextBox();
             lblQuestion = new Label();
             listStatus = new ListBox();
+            mainMenu = new MenuStrip();
+            fileToolStripMenuItem = new ToolStripMenuItem();
+            exitToolStripMenuItem = new ToolStripMenuItem();
             pnlName.SuspendLayout();
+            mainMenu.SuspendLayout();
             SuspendLayout();
             // 
             // lblStats
@@ -45,7 +49,7 @@
             lblStats.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             lblStats.AutoSize = true;
             lblStats.Font = new Font("Consolas", 15F, FontStyle.Bold);
-            lblStats.Location = new Point(13, 767);
+            lblStats.Location = new Point(13, 790);
             lblStats.Margin = new Padding(4, 0, 4, 0);
             lblStats.Name = "lblStats";
             lblStats.Size = new Size(87, 23);
@@ -59,7 +63,7 @@
             pnlName.Controls.Add(btnStart);
             pnlName.Controls.Add(txtName);
             pnlName.Controls.Add(lblQuestion);
-            pnlName.Location = new Point(200, 704);
+            pnlName.Location = new Point(200, 727);
             pnlName.Name = "pnlName";
             pnlName.Size = new Size(727, 69);
             pnlName.TabIndex = 11;
@@ -112,24 +116,49 @@
             listStatus.ForeColor = Color.FromArgb(255, 128, 0);
             listStatus.FormattingEnabled = true;
             listStatus.HorizontalScrollbar = true;
-            listStatus.Location = new Point(12, 12);
+            listStatus.Location = new Point(12, 28);
             listStatus.Name = "listStatus";
             listStatus.Size = new Size(1120, 132);
             listStatus.TabIndex = 12;
             listStatus.Visible = false;
+            // 
+            // mainMenu
+            // 
+            mainMenu.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem });
+            mainMenu.Location = new Point(0, 0);
+            mainMenu.Name = "mainMenu";
+            mainMenu.Size = new Size(1144, 24);
+            mainMenu.TabIndex = 13;
+            mainMenu.Text = "menuStrip1";
+            // 
+            // fileToolStripMenuItem
+            // 
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { exitToolStripMenuItem });
+            fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            fileToolStripMenuItem.Size = new Size(37, 20);
+            fileToolStripMenuItem.Text = "&File";
+            // 
+            // exitToolStripMenuItem
+            // 
+            exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            exitToolStripMenuItem.Size = new Size(180, 22);
+            exitToolStripMenuItem.Text = "E&xit";
+            exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
             // 
             // DungeonMain
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Black;
-            ClientSize = new Size(1144, 798);
+            ClientSize = new Size(1144, 821);
             Controls.Add(pnlName);
             Controls.Add(lblStats);
             Controls.Add(listStatus);
+            Controls.Add(mainMenu);
             Font = new Font("Consolas", 10F, FontStyle.Bold);
             ForeColor = Color.FromArgb(255, 128, 0);
             KeyPreview = true;
+            MainMenuStrip = mainMenu;
             Margin = new Padding(4);
             MinimumSize = new Size(1160, 837);
             Name = "DungeonMain";
@@ -137,6 +166,8 @@
             KeyDown += DungeonMain_KeyDown;
             pnlName.ResumeLayout(false);
             pnlName.PerformLayout();
+            mainMenu.ResumeLayout(false);
+            mainMenu.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -150,5 +181,8 @@
         private Label lblQuestion;
         private ListBox listStatus;
         private Label lblPrompt;
+        private MenuStrip mainMenu;
+        private ToolStripMenuItem fileToolStripMenuItem;
+        private ToolStripMenuItem exitToolStripMenuItem;
     }
 }

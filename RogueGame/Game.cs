@@ -1277,7 +1277,7 @@ namespace RogueGame
 
             // Complete turn if one was started.
             if (GameMode < DisplayMode.GameOver)
-                if (TurnInProgress) CompleteTurn();
+                if (TurnInProgress && UserInput.ReturnFunction == null) CompleteTurn();
 
             // Display the appropriate map mode
             switch (GameMode)

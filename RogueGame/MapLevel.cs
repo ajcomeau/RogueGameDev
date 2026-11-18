@@ -422,7 +422,6 @@ namespace RogueGame{
                     {
                         MapInventory.Add(invItem);
                     }
-
                 }
             }
         }

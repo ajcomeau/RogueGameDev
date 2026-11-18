@@ -148,5 +148,13 @@ namespace RogueGame
             return screenText;
 
         }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DialogResult dialog = MessageBox.Show("Are you sure you want to exit?", "Exit game? ...", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (dialog == DialogResult.Yes)
+                Application.Exit();
+        }
     }
 }
