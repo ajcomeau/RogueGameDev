@@ -148,13 +148,29 @@ namespace RogueGame
             return screenText;
 
         }
-
+        /// <summary>
+        /// Exit the game after user verifies.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DialogResult dialog = MessageBox.Show("Are you sure you want to exit?", "Exit game? ...", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (dialog == DialogResult.Yes)
                 Application.Exit();
+        }
+        /// <summary>
+        /// Show the About dialog.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            Form about = new RogueCSharp.About();
+
+            about.ShowDialog();
         }
     }
 }
